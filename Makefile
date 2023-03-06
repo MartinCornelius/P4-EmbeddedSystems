@@ -1,8 +1,9 @@
 exec = Mucas.exe
-lexer = src/grammar/lexer.l
+lexer = src/lexer.l
 
-$(exec): src/grammar/lex.yy.c
-	gcc src/grammar/lex.yy.c -o $(exec)
+$(exec): src/lex.yy.c
+	gcc src/lex.yy.c -o $(exec)
 
-src/grammar/lex.yy.c: $(lexer)
-	flex $(lexer)
+src/lex.yy.c: $(lexer)
+	flex -osrc/lex.yy.c $(lexer)
+
