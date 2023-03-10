@@ -1671,7 +1671,7 @@ yyreturn:
 #line 98 "parser.y"
 
 
-int error(char *s){
+int yyerror(char *s){
     printf("%s", s);
     return 0;
 }

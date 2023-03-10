@@ -97,7 +97,7 @@ compare       : expr COP expr
               ;
 %%
 
-int error(char *s){
+int yyerror(char *s){
     printf("%s", s);
     return 0;
 }
