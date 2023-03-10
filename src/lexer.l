@@ -19,11 +19,11 @@ digit                   [0-9]
 "->"                    { return RARROW; }
 "<-"                    { return LARROW; }
 
-"("                     { return LBRA; }
-")"                     { return RBRA; }
+"("                     { return LPAR; }
+")"                     { return RPAR; }
 
-"{"                     { return RPAR; }
-"}"                     { return LPAR; }
+"{"                     { return LBRA; }
+"}"                     { return RBRA; }
 
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }
@@ -69,7 +69,7 @@ digit                   [0-9]
 [1-9]{digit}* |
 [1-9]{digit}*\.{digit}+ |
 [0]\.{digit}+           { yylval.val = atof(yytext); return VAL; }
-{alpha}+                { yylval.id = yytext ; return ID; }
+[a-zA-Z\_]+                { yylval.id = yytext ; return ID; }
 [ \t\n]                 { ; }
 .                       { printf("Not implemented\n"); }
 %%

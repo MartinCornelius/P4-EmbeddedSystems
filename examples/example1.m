@@ -6,7 +6,7 @@ import <asm/io.h>
 
 define MS_PER_MIN 1000 * 60
 
-func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m->flaot16 result)
+func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> flaot16 result)
 {
   result <- q / (m * (tEnd - tStart));
 }
