@@ -1,8 +1,7 @@
-%option noyywrap
 
 %{
-#include <stdio.h>
-#include "Parser.tab.h"
+
+#include "parser.tab.h"
 
 %}
 
@@ -17,8 +16,8 @@ digit                   [0-9]
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>.              {  }
 
-"->"                    { return LARROW; }
-"<-"                    { return RARROW; }
+"->"                    { return RARROW; }
+"<-"                    { return LARROW; }
 
 "("                     { return LBRA; }
 ")"                     { return RBRA; }
@@ -75,10 +74,11 @@ digit                   [0-9]
 .                       { printf("Not implemented\n"); }
 %%
 
-void main(int argc, char **argv)
-{
-    if (argc > 1)
-      if (!(yyin = fopen(argv[1], "r")))
-        perror(argv[1]);
-    yylex();
+
+int yywrap()
+{ 
+  return 1; 
+
 }
+
+ 

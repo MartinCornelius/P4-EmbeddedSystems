@@ -1671,11 +1671,12 @@ yyreturn:
 #line 100 "parser.y"
 
 
- int main()
- {
+int main()
+{
+
     yyparse();
-    return 0;
- }
+    return 1;
+}
 
 int yyerror(char *s){
     printf("%s", s);
