@@ -99,6 +99,12 @@ compare       : expr COP expr
               ;
 %%
 
+ int main()
+ {
+    yyparse();
+    return 0;
+ }
+
 int yyerror(char *s){
     printf("%s", s);
     return 0;

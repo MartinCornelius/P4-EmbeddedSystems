@@ -2,7 +2,7 @@
  *  and prints the measurements and result in a terminal
  */
 
-import <asm/io.h>
+import <asmio.h>
 
 define MS_PER_MIN 1000 * 60
 
