@@ -40,7 +40,9 @@ func          : FUNC ID LPAR paramsdecl RPAR LBRA lines RBRA
               ;
 returns       : return SEMI returns
               | return SEMI
+              ;
 return        : ID LARROW expr SEMI
+              ;
 paramsdecl    : paramlistdecl
               |
               ;
