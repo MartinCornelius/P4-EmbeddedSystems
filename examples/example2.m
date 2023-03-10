@@ -3,7 +3,7 @@
  * if brightness is lower than 10% and light is off it toggles on the LED.
  */
 
-import <asmio.h>
+import <asm/io.h>
 
 define MAX_LUMEN 1000
 define MIN_LUMEN 0.1
