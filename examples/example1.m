@@ -13,8 +13,6 @@ func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> float16 
 
 setup()
 {
-  ioperm(0x300, 1, 1); // permission to use IO port 0x300 true
-
   input heatPort = 0x300;
 /*output sysOut = stdout(); */
 
@@ -23,13 +21,15 @@ setup()
   float16 result;
   float16 heaterStrength = 106.92; /* random heater power pr. second multiplied by a minute */
   float16 weight = 1.0;            /* 1L wattah 🧊🔥 */
+
+  ioperm(0x300, 1, 1); // permission to use IO port 0x300 true
 }
 
 mainloop()
 {
-  temperatureStart = inb(heatPort);
+  inb(heatPort -> temperatureStart);
   delay(MS_PER_MIN);
-  temperatureEnd = inb(heatPort);
+  inb(heatPort -> temperatureEnd);
   CalcHeatCapa(temperatureStart, temperatureEnd, heaterStrength, weight -> result);
   PrintTerminal(“Heat capacity is: ”);
   PrintTerminalLine(result);

@@ -67,7 +67,8 @@
      WHILE = 283,
      IF = 284,
      ELSE = 285,
-     COP = 286
+     COP = 286,
+     LOGOP = 287
    };
 #endif
 
@@ -79,11 +80,11 @@ typedef union YYSTYPE
 
 /* Line 1676 of yacc.c  */
 #line 8 "parser.y"
- int val; char* id; char* str; 
+ float val; char* id; char* str; 
 
 
 /* Line 1676 of yacc.c  */
-#line 87 "parser.tab.h"
+#line 88 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

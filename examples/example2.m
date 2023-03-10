@@ -24,8 +24,6 @@ func LuxToPercent(float16 lux -> uint8 intensityPercent)
 
 setup()
 {
-  ioperm(0x300, 2, 1); /* permission to use IO ports 0x300 and 0x301 true */
-
   input  lightSensor  = 0x300;
   output lightLED = 0x301; 
 
@@ -33,19 +31,21 @@ setup()
   float16 lightIn; /* 8 bits range ~ 0.0078 to 480. lux range ~ 0.1 to 1000. */
   uint8 lightPercent; /* goes from 0 to 100 % technically only 7 bits needed */
   uint8 brightnessThreshold = 10;
+
+  ioperm(0x300, 2, 1); /* permission to use IO ports 0x300 and 0x301 true */
 }
 
 mainloop()
 {
-	lightIn = inb(lightPort); /* Should be 2 bytes but idk */
+	inb(lightPort -> lightIn); /* Should be 2 bytes but idk */
 	LuxToPercent(lightIn -> lightPercent);
 	if(lightPercent > brightnessThreshold && isOn == false)
   {
-	  outb(0x1, lightLED); /* assume 0x0 means turn off and 0x1 means turn on for this LED */
+	  outb(1, lightLED); /* assume 0x0 means turn off and 0x1 means turn on for this LED */
 	}
 	else if(lightPercent < brightnessThreshold && isOn == true)
   {
-	  outb(0x0, lightLED);
+	  outb(0, lightLED);
 	}
 	delay(MS_PER_MIN); /* waits 1 minute between each check */
 }

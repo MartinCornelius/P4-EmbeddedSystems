@@ -69,12 +69,16 @@ digit                   [0-9]
 "==" |
 "!="                    { return COP; }
 
+"||" |
+"&&"                    { return LOGOP; }
+
 [0] |
 [1-9]{digit}* |
+"0x"[0-9a-fA-F]+ |
 [1-9]{digit}*\.{digit}+ |
 [0]\.{digit}+           { yylval.val = atof(yytext); return VAL; }
 \"[ a-zA-Z0-9:]*\"      { yylval.str = yytext; return STRING; }
-[a-zA-Z\_]+             { yylval.id = yytext ; return ID; }
+[a-zA-Z_][0-9a-zA-Z_]*             { yylval.id = yytext ; return ID; }
 [ \t\n]                 { ; }
 .                       { printf("Not implemented\n"); }
 %%
