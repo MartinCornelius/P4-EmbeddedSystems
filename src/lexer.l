@@ -44,6 +44,8 @@ digit                   [0-9]
 "mainloop()"            { return MAIN; }
 "func"                  { return FUNC; }
 
+"input" |
+"output" |
 "bool" |
 "int8" |
 "int16" |
@@ -52,6 +54,8 @@ digit                   [0-9]
 "float8" |
 "float16" |
 "char"                  { return TYPE; }
+
+
 
 "="                     { return ASSIGN; }
 "while"                 { return WHILE; }
@@ -69,7 +73,8 @@ digit                   [0-9]
 [1-9]{digit}* |
 [1-9]{digit}*\.{digit}+ |
 [0]\.{digit}+           { yylval.val = atof(yytext); return VAL; }
-[a-zA-Z\_]+                { yylval.id = yytext ; return ID; }
+\"[ a-zA-Z0-9:]*\"      { yylval.str = yytext; return STRING; }
+[a-zA-Z\_]+             { yylval.id = yytext ; return ID; }
 [ \t\n]                 { ; }
 .                       { printf("Not implemented\n"); }
 %%

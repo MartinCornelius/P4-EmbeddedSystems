@@ -5,15 +5,17 @@
     int yyerror(char *s);
 %}
 
-%union{ int val; char* id; }
+%union{ int val; char* id; char* str; }
 
 %start prog
 
 %token<val> VAL
+%token<str> STRING
 %token<id> ID
 
 %token DEFINE SETUP MAIN FUNC LARROW RARROW LBRA RBRA RPAR LPAR PLUS MINUS TIMES DIV COLON QUEST SEMI COMMA IMPORT HEADERF
 %token TYPE ASSIGN WHILE IF ELSE COP
+
 
 %%
 prog          : imports defines funcs setup mainloop
@@ -28,7 +30,7 @@ defines       : define defines
               ;
 define        : DEFINE ID expr
               ;
-setup         : SETUP LBRA funccalls vardecls RBRA
+setup         : SETUP LBRA vardecls funccalls RBRA
               ;
 mainloop      : MAIN LBRA lines RBRA
               ;
@@ -36,12 +38,7 @@ funcs         : func funcs
               |
               ;
 func          : FUNC ID LPAR paramsdecl RPAR LBRA lines RBRA
-              | FUNC ID LPAR paramsdecl RARROW paramlistdecl RPAR LBRA lines returns RBRA
-              ;
-returns       : return SEMI returns
-              | return SEMI
-              ;
-return        : ID LARROW expr SEMI
+              | FUNC ID LPAR paramsdecl RARROW paramlistdecl RPAR LBRA lines RBRA
               ;
 paramsdecl    : paramlistdecl
               |
@@ -54,6 +51,7 @@ lines         : line SEMI lines
               |
               ;
 line          : ID ASSIGN expr
+              | ID LARROW expr
               | expr
               | funccall
               ;
@@ -81,6 +79,8 @@ paramscall    : paramlistcall
               ;
 paramlistcall : ID COMMA paramlistcall
               | ID
+              | const COMMA paramlistcall
+              | const
               ;
 expr          : expr PLUS term
               | expr MINUS term
@@ -94,6 +94,9 @@ term          : term TIMES factor
 factor        : ID
               | VAL
               | LPAR expr RPAR
+              ;
+const         : VAL
+              | STRING
               ;
 compare       : expr COP expr
               ;
