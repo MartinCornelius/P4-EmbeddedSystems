@@ -1,7 +1,8 @@
-%option noyywrap
 
 %{
-#include <stdio.h>
+
+#include "parser.tab.h"
+
 %}
 
 %x COMMENT
@@ -15,17 +16,78 @@ digit                   [0-9]
 <COMMENT>"*/"           { BEGIN(INITIAL); }
 <COMMENT>.              {  }
 
-{digit}+                { printf("Int: %d\n", atoi(yytext)); }
-{alpha}+                { printf("String: %s\n", yytext); }
+"->"                    { return RARROW; }
+"<-"                    { return LARROW; }
+
+"("                     { return LPAR; }
+")"                     { return RPAR; }
+
+"{"                     { return LBRA; }
+"}"                     { return RBRA; }
+
+"+"                     { return PLUS; }
+"-"                     { return MINUS; }
+"*"                     { return TIMES; }
+"/"                     { return DIV; }
+
+":"                     { return COLON; }
+"?"                     { return QUEST; }
+
+";"                     { return SEMI; }
+","                     { return COMMA; }
+
+"import"                { return IMPORT; }
+"<"{alpha}+".h>"        { return HEADERF; }
+
+"define"                { return DEFINE; }
+"setup()"               { return SETUP; }
+"mainloop()"            { return MAIN; }
+"func"                  { return FUNC; }
+
+"input" |
+"output" |
+"bool" |
+"int8" |
+"int16" |
+"uint8" |
+"uint16" |
+"float8" |
+"float16" |
+"char"                  { return TYPE; }
+
+
+
+"="                     { return ASSIGN; }
+"while"                 { return WHILE; }
+"if"                    { return IF; }
+
+"else"                  { return ELSE; }
+"<" |
+"<=" |
+">" |
+">=" |
+"==" |
+"!="                    { return COP; }
+
+"||" |
+"&&"                    { return LOGOP; }
+
+[0] |
+[1-9]{digit}* |
+"0x"[0-9a-fA-F]+ |
+[1-9]{digit}*\.{digit}+ |
+[0]\.{digit}+           { yylval.val = atof(yytext); return VAL; }
+\"[ a-zA-Z0-9:]*\"      { yylval.str = yytext; return STRING; }
+[a-zA-Z_][0-9a-zA-Z_]*             { yylval.id = yytext ; return ID; }
 [ \t\n]                 { ; }
 .                       { printf("Not implemented\n"); }
 %%
 
-void main(int argc, char **argv)
-{
-    if (argc > 1)
-      if (!(yyin = fopen(argv[1], "r")))
-        perror(argv[1]);
-    yylex();
+
+int yywrap()
+{ 
+  return 1; 
+
 }
 
+ 
