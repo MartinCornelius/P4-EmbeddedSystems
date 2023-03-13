@@ -1483,14 +1483,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 94 "parser.y"
-    { createToken((yyvsp[(1) - (2)].type), (yyvsp[(2) - (2)].id)); printTable(); ;}
+    { createToken((yyvsp[(1) - (2)].type), (yyvsp[(2) - (2)].id)); ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
 #line 95 "parser.y"
-    { createToken((yyvsp[(1) - (4)].type), (yyvsp[(2) - (4)].id)); printTable(); ;}
+    { createToken((yyvsp[(1) - (4)].type), (yyvsp[(2) - (4)].id)); ;}
     break;
 
   case 56:

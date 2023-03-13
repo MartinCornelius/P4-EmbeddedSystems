@@ -91,8 +91,8 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain
 vardecls      : vardecl SEMI vardecls
               |
               ;
-vardecl       : TYPE ID                                                     { createToken($1, $2); printTable(); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printTable(); }
+vardecl       : TYPE ID                                                     { createToken($1, $2); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); }
               ;
 funccalls     : funccall SEMI funccalls
               |
