@@ -11,38 +11,38 @@ alpha                   [a-zA-Z]
 digit                   [0-9]
 
 %%
-"//"[ \t].*             { ; } /* SINGLE LINE COMMENT */
-"/*"                    { BEGIN(COMMENT); } /* MULTI LINE COMMENT */
-<COMMENT>"*/"           { BEGIN(INITIAL); }
-<COMMENT>.              {  }
+"//"[ \t].*               { ; } /* SINGLE LINE COMMENT */
+"/*"                      { BEGIN(COMMENT); } /* MULTI LINE COMMENT */
+<COMMENT>"*/"             { BEGIN(INITIAL); }
+<COMMENT>.                {  }
 
-"->"                    { return RARROW; }
-"<-"                    { return LARROW; }
+"->"                      { return RARROW; }
+"<-"                      { return LARROW; }
 
-"("                     { return LPAR; }
-")"                     { return RPAR; }
+"("                       { return LPAR; }
+")"                       { return RPAR; }
 
-"{"                     { return LBRA; }
-"}"                     { return RBRA; }
+"{"                       { return LBRA; }
+"}"                       { return RBRA; }
 
-"+"                     { return PLUS; }
-"-"                     { return MINUS; }
-"*"                     { return TIMES; }
-"/"                     { return DIV; }
+"+"                       { return PLUS; }
+"-"                       { return MINUS; }
+"*"                       { return TIMES; }
+"/"                       { return DIV; }
 
-":"                     { return COLON; }
-"?"                     { return QUEST; }
+":"                       { return COLON; }
+"?"                       { return QUEST; }
 
-";"                     { return SEMI; }
-","                     { return COMMA; }
+";"                       { return SEMI; }
+","                       { return COMMA; }
 
-"import"                { return IMPORT; }
-"<"{alpha}+".h>"        { return HEADERF; }
+"import"                  { return IMPORT; }
+"<"{alpha}+".h>"          { return HEADERF; }
 
-"define"                { return DEFINE; }
-"setup()"               { return SETUP; }
-"mainloop()"            { return MAIN; }
-"func"                  { return FUNC; }
+"define"                  { return DEFINE; }
+"setup()"                 { return SETUP; }
+"mainloop()"              { return MAIN; }
+"func"                    { return FUNC; }
 
 "input" |
 "output" |
@@ -53,34 +53,34 @@ digit                   [0-9]
 "uint16" |
 "float8" |
 "float16" |
-"char"                  { return TYPE; }
+"char"                    { yylval.type = yytext; return TYPE; }
 
 
 
-"="                     { return ASSIGN; }
-"while"                 { return WHILE; }
-"if"                    { return IF; }
+"="                       { return ASSIGN; }
+"while"                   { return WHILE; }
+"if"                      { return IF; }
 
-"else"                  { return ELSE; }
+"else"                    { return ELSE; }
 "<" |
 "<=" |
 ">" |
 ">=" |
 "==" |
-"!="                    { return COP; }
+"!="                      { return COP; }
 
 "||" |
-"&&"                    { return LOGOP; }
+"&&"                      { return LOGOP; }
 
 [0] |
 [1-9]{digit}* |
 "0x"[0-9a-fA-F]+ |
 [1-9]{digit}*\.{digit}+ |
-[0]\.{digit}+           { yylval.val = atof(yytext); return VAL; }
-\"[ a-zA-Z0-9:]*\"      { yylval.str = yytext; return STRING; }
-[a-zA-Z_][0-9a-zA-Z_]*             { yylval.id = yytext ; return ID; }
-[ \t\n]                 { ; }
-.                       { printf("Not implemented\n"); }
+[0]\.{digit}+             { yylval.val = atof(yytext); return VAL; }
+\"[ a-zA-Z0-9:]*\"        { yylval.str = yytext; return STRING; }
+[a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = yytext ; return ID; }
+[ \t\n]                   { ; }
+.                         { printf("Not implemented\n"); }
 %%
 
 

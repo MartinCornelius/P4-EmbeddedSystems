@@ -845,7 +845,7 @@ case 33:
 case 34:
 YY_RULE_SETUP
 #line 56 "lexer.l"
-{ return TYPE; }
+{ yylval.type = yytext; return TYPE; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
