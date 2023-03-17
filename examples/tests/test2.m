@@ -1,7 +1,7 @@
 mainloop(){
-  int test = 1;
+  int8 test = 1;
 }
 
 setup(){
-  int test2 = 2;
+  int8 test2 = 2;
 }

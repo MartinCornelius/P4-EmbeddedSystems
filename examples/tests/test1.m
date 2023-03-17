@@ -1,7 +1,7 @@
 define TEST1 2 * 5 + 3
 setup()
 {
-  int test = TEST1;
+  int16 test = TEST1;
 }
 
 mainloop(){}

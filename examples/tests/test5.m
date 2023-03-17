@@ -1,11 +1,13 @@
-setup(){}
+setup(){
+    bool testif = false;
+
+}
 mainloop(){
-  bool testif = false;
   if (testif) {
-    int testfail = 1;
+    int8 testfail = 1;
   } else if (false && true) {
-    int testfail = 2;
+    int8 testfail = 2;
   } else {
-    int testaccept = 3;
+    int8 testaccept = 3;
   }
 }

@@ -1,9 +1,10 @@
-setup(){}
-mainloop(){
+setup(){
   bool testif = false;
+}
+mainloop(){
   if (testif) {
-    int testfail = 1;
+    int8 testfail = 1;
   } else if (true) {
-    int testaccept = 2;
+    int8 testaccept = 2;
   }
 }

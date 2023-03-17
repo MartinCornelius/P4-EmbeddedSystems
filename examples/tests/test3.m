@@ -1,7 +1,8 @@
-setup(){}
-mainloop(){
+setup(){
   bool testif = false;
+}
+mainloop(){
   if(testif) {
-    int testaccept = 1;
+    int8 testaccept = 1;
   }
 }
