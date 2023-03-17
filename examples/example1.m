@@ -4,11 +4,6 @@
 
 define MS_PER_MIN 1000 * 60
 
-func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> float16 result)
-{
-  result <- q / (m * (tEnd - tStart));
-}
-
 setup()
 {
   input heatPort = 20;
@@ -32,4 +27,9 @@ mainloop()
   PrintTerminal(“Heat capacity is: ”);
   PrintTerminalLine(result);
   EndMainLoop();
+}
+
+func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> float16 result)
+{
+  result <- q / (m * (tEnd - tStart));
 }

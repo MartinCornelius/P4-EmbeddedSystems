@@ -3,24 +3,10 @@
  * if brightness is lower than 10% and light is off it toggles on the LED.
  */
 
-import <asmio.h>
-
 define MAX_LUMEN 1000
 define MIN_LUMEN 0.1
 define LUX_TO_PERCENT 100 / 1000
 define MS_PER_MIN 1000 * 60
-
-func LuxToPercent(float16 lux -> uint8 intensityPercent)
-{
-  if(lux > MAX_LUMEN) {
-    lux = MAX_LUMEN;
-  }
-  else {
-    lux = lux < MIN_LUMEN ? MIN_LUMEN : lux;
-  }	
-  Floor(lux * LUX_TO_PERCENT -> lux);
-  ToInt8(lux -> intensityPercent);
-}
 
 setup()
 {
@@ -48,4 +34,16 @@ mainloop()
 	  outb(0, lightLED);
 	}
 	delay(MS_PER_MIN); /* waits 1 minute between each check */
+}
+
+func LuxToPercent(float16 lux -> uint8 intensityPercent)
+{
+  if(lux > MAX_LUMEN) {
+    lux = MAX_LUMEN;
+  }
+  else {
+    lux = lux < MIN_LUMEN ? MIN_LUMEN : lux;
+  }	
+  Floor(lux * LUX_TO_PERCENT -> lux);
+  ToInt8(lux -> intensityPercent);
 }
