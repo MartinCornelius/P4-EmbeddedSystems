@@ -9,6 +9,8 @@
     void createToken(char* type, char* name);
     void changeTokenVal(char* name, char* s, int f );
 
+    int cOp(int x, int op, int y);
+
     //for debugging skal fjernes senere
     void printTable();
 
@@ -43,12 +45,12 @@
 %token ASSIGN WHILE IF ELSE COP LOGOP
 
 
-%type<boolean> compare
+%type<boolean> compare comparelist
 //ved ikke helt om factor er en value lol
 %type<val> expr term factor
 
 %%
-prog          : defines funcs setup mainloop                                                              
+prog          : defines setup mainloop funcs                                                        
               ;
 defines       : define defines
               |
@@ -107,23 +109,22 @@ paramlistcall : expr COMMA paramlistcall
               ;
 expr          : expr PLUS term                                              { $$ = $1 + $3; }                        
               | expr MINUS term                                             { $$ = $1 - $3; }
-              | comparelist QUEST expr COLON expr
+              | comparelist QUEST expr COLON expr                           { if($1){$$ = $3}else{$$ = $5} }
               | term                                                        { $$ = $1; }
               ;
 term          : term TIMES factor                                           { $$ = $1 * $3; }
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
               | factor                                                      { $$ = $1 }
               ;
-factor        : ID                                                          {  }
+factor        : ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
               | VAL                                                         { $$ = $1; }
-              | STRING
-              | LPAR expr RPAR                                              
+              | LPAR expr RPAR                                              { $$ = $2; }
               ;
-comparelist   : compare LOGOP comparelist
-              | compare
+comparelist   : compare LOGOP comparelist                                   { $$ = cOp($1, $2, $3); }
+              | compare                                                     { $$ = $1; }
               ;
 compare       : boolexpr COP boolexpr                                       { $$ = 1; }
-              | ID                                                          { $$ = 1; }
+              | ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
               ;
 boolexpr      : ID                                                                                                        
               | VAL                                                                                                              
@@ -180,7 +181,7 @@ void createToken(char* type, char* name)
 
    
 
-    if(amount != MAX){
+    if(amount != MAX && findIndex(newName) == -1){
         Token_Struct newStruct;
         newStruct.type = newType;
         newStruct.name = newName;
@@ -188,6 +189,8 @@ void createToken(char* type, char* name)
         newStruct.valueF = 0;
         symbolTable[amount] = newStruct;
         amount++;
+    }else if(findIndex(newName) != -1){
+        printf("Declartion of two types of same name is not valid");
     }else{
         printf("No more availible space");
     }
@@ -224,6 +227,33 @@ int findIndex(char* name)
         return -1;
     }
     return i;
+}
+
+int cOp(int x, int op, int y)
+{
+    
+    if(op[0] == '=')
+    {
+        return x == y;
+    }else if(op[0] == '<')
+    {
+        if(op[1] == '=')
+        {
+            return x <= y;
+        }
+        return x < y;
+    }else if(op[0] == '>')
+    {
+        if(op[1] == '=')
+        {
+            return x >= y;
+        }
+        return x > y;
+    }else if(op[0] = '!' && op[1] == '='){
+        return x != y;
+    }
+
+    return 1;
 }
 
 Token_Struct getToken(char* name)
