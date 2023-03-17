@@ -1,3 +1,5 @@
+// test4 checks if else if, testfail should be undeclared and testaccept should be 2
+
 setup(){
   bool testif = false;
 }

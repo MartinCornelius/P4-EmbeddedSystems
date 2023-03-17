@@ -1,3 +1,5 @@
+// test3 checks if structure testaccept should be 1
+
 setup(){
   bool testif = false;
 }
