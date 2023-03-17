@@ -2,8 +2,6 @@
  *  and prints the measurements and result in a terminal
  */
 
-import <asmio.h>
-
 define MS_PER_MIN 1000 * 60
 
 func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> float16 result)
@@ -13,7 +11,7 @@ func CalcHeatCapa(float16 tStart, float16 tEnd, float16 q, float16 m -> float16 
 
 setup()
 {
-  input heatPort = 0x300;
+  input heatPort = 20;
 /*output sysOut = stdout(); */
 
   float16 temperatureStart;

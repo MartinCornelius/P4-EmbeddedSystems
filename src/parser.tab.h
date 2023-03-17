@@ -61,14 +61,12 @@
      QUEST = 277,
      SEMI = 278,
      COMMA = 279,
-     IMPORT = 280,
-     HEADERF = 281,
-     ASSIGN = 282,
-     WHILE = 283,
-     IF = 284,
-     ELSE = 285,
-     COP = 286,
-     LOGOP = 287
+     ASSIGN = 280,
+     WHILE = 281,
+     IF = 282,
+     ELSE = 283,
+     COP = 284,
+     LOGOP = 285
    };
 #endif
 
@@ -79,12 +77,12 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 30 "parser.y"
- float val; char* type; char* id; char* str; int boolean; 
+#line 29 "parser.y"
+ int val; char* type; char* id; char* str; int boolean; 
 
 
 /* Line 1676 of yacc.c  */
-#line 88 "parser.tab.h"
+#line 86 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

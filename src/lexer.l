@@ -36,9 +36,6 @@ digit                   [0-9]
 ";"                       { return SEMI; }
 ","                       { return COMMA; }
 
-"import"                  { return IMPORT; }
-"<"{alpha}+".h>"          { return HEADERF; }
-
 "define"                  { return DEFINE; }
 "setup()"                 { return SETUP; }
 "mainloop()"              { return MAIN; }
