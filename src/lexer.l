@@ -70,6 +70,9 @@ digit                   [0-9]
 "||" |
 "&&"                      { return LOGOP; }
 
+"true" |
+"false"                   { yylval = yytext return BOOLVAL }
+
 [0] |
 [1-9]{digit}* |
 "0x"[0-9a-fA-F]+ |
