@@ -114,7 +114,7 @@ term          : term TIMES factor                                           { $$
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
               | factor                                                      { $$ = $1 }
               ;
-factor        : ID                                                          { int i = findIndex($1); $$ = symbolTable[i].valueF;}
+factor        : ID                                                          {  }
               | VAL                                                         { $$ = $1; }
               | STRING
               | LPAR expr RPAR                                              
@@ -209,11 +209,11 @@ int findIndex(char* name)
 {
     int i = 0;
     int found = 0;
-    while(i < MAX && !found)
+    while(i < MAX)
     {
-        if(strcmp(symbolTable[i].name, name))
+        if(strcmp(symbolTable[i].name, name) == 0)
         {
-            found = 1;
+            return i;
         }else{
             i++;
         } 
