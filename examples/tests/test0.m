@@ -1,0 +1,6 @@
+setup()
+{
+
+}
+
+mainloop(){}
