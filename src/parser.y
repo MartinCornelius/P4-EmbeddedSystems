@@ -2,6 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <stdbool.h>
     #define MAX 40
     int yylex();
     int yyerror(char *s);
@@ -10,6 +11,7 @@
     void changeTokenVal(char* name, char* s, int f );
 
     int cOp(int x, int op, int y);
+    int logCop(int x, char* logop, int y);
 
     //for debugging skal fjernes senere
     void printTable();
@@ -21,6 +23,8 @@
         int valueF;
     };
     typedef struct Token Token_Struct;
+
+    Token_Struct getToken(char* name);
     
     int amount = 0;
 
@@ -33,7 +37,7 @@
 %start prog
 
 %token<val> VAL
-%token<str> STRING
+%token<str> STRING COP LOGOP
 %token<id> ID
 %token<type> TYPE
 
@@ -42,10 +46,10 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV COLON
         QUEST SEMI COMMA
-%token ASSIGN WHILE IF ELSE COP LOGOP
+%token ASSIGN WHILE IF ELSE
 
 
-%type<boolean> compare comparelist
+%type<boolean> compare comparelist boolexpr
 //ved ikke helt om factor er en value lol
 %type<val> expr term factor
 
@@ -93,7 +97,7 @@ vardecls      : vardecl SEMI vardecls
               |
               ;
 vardecl       : TYPE ID                                                     { createToken($1, $2); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("expr: %d\n", $4); Token_Struct a = getToken($2); printf("token ID: %s, token type: %s, token val: %d", a.name, a.type, a.valueF); }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -109,7 +113,7 @@ paramlistcall : expr COMMA paramlistcall
               ;
 expr          : expr PLUS term                                              { $$ = $1 + $3; }                        
               | expr MINUS term                                             { $$ = $1 - $3; }
-              | comparelist QUEST expr COLON expr                           { if($1){$$ = $3}else{$$ = $5} }
+              | comparelist QUEST expr COLON expr                           { if($1){$$ = $3;}else{$$ = $5;} }
               | term                                                        { $$ = $1; }
               ;
 term          : term TIMES factor                                           { $$ = $1 * $3; }
@@ -120,10 +124,10 @@ factor        : ID                                                          { To
               | VAL                                                         { $$ = $1; }
               | LPAR expr RPAR                                              { $$ = $2; }
               ;
-comparelist   : compare LOGOP comparelist                                   { $$ = cOp($1, $2, $3); }
+comparelist   : compare LOGOP comparelist                                   { $$ = logCop($1, $2, $3); }
               | compare                                                     { $$ = $1; }
               ;
-compare       : boolexpr COP boolexpr                                       { $$ = 1; }
+compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
               | ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
               ;
 boolexpr      : ID                                                                                                        
@@ -229,31 +233,42 @@ int findIndex(char* name)
     return i;
 }
 
-int cOp(int x, int op, int y)
+bool cOp(int x, char* cop, int y)
 {
-    
-    if(op[0] == '=')
+    if(strcmp(cop, "==") == 0)
     {
         return x == y;
-    }else if(op[0] == '<')
+    }else if(strcmp(cop, "<=") == 0)
     {
-        if(op[1] == '=')
-        {
-            return x <= y;
-        }
+        return x <= y;
+    }else if(strcmp(cop, "<") == 0)
+    {
         return x < y;
-    }else if(op[0] == '>')
+    }else if(strcmp(cop, ">=") == 0)
     {
-        if(op[1] == '=')
-        {
-            return x >= y;
-        }
+        return x >= y;
+    }else if(strcmp(cop, ">") == 0)
+    {
         return x > y;
-    }else if(op[0] = '!' && op[1] == '='){
+    }else if(strcmp(cop, "!=") == 0)
+    {
         return x != y;
     }
+    printf("illegal cmpoperator");
+    return false;
+}
 
-    return 1;
+bool logCop(int x, char* logop, int y)
+{
+  if(strcmp(logop, "&&") == 0)
+  {
+    return x && y;
+  }else if(strcmp(logop, "||") == 0)
+  {
+    return x || y;
+  }
+  printf("illegal logoperator");
+  return false;
 }
 
 Token_Struct getToken(char* name)
