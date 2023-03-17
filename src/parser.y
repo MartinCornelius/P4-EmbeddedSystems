@@ -10,7 +10,7 @@
     void createToken(char* type, char* name);
     void changeTokenVal(char* name, char* s, int f );
 
-    int cOp(int x, int op, int y);
+    int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
 
     //for debugging skal fjernes senere
@@ -37,9 +37,10 @@
 %start prog
 
 %token<val> VAL
-%token<str> STRING COP LOGOP
+%token<str> COP LOGOP
 %token<id> ID
 %token<type> TYPE
+%token<boolean> BOOLVAL
 
 
 %token DEFINE SETUP MAIN FUNC LARROW
@@ -97,7 +98,7 @@ vardecls      : vardecl SEMI vardecls
               |
               ;
 vardecl       : TYPE ID                                                     { createToken($1, $2); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("expr: %d\n", $4); Token_Struct a = getToken($2); printf("token ID: %s, token type: %s, token val: %d", a.name, a.type, a.valueF); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("expr: %d\n", $4); Token_Struct b = getToken($2); printf("token ID: %s, token type: %s, token val: %d", b.name, b.type, b.valueF); }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -131,8 +132,7 @@ compare       : boolexpr COP boolexpr                                       { $$
               | ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
               ;
 boolexpr      : ID                                                                                                        
-              | VAL                                                                                                              
-              | LPAR boolexpr RPAR 
+              | VAL
               ;
 %%
 
@@ -146,7 +146,7 @@ int main()
 
 void printTable()
 {
-    printf("yo + %d", amount);
+    printf("\nyo + %d", amount);
     for(int i = 0; i < amount; i++)
     {
         printf("\n_______________________\nname: %s ", symbolTable[i].name);
@@ -158,10 +158,9 @@ void printTable()
 
 void createToken(char* type, char* name)
 {
-
     int count = 0;
     int i = 0;
-    while(type[count] != ' '/* && type[count] != '\0' */)
+    while(type[count] != ' ')
     {
         count++;
     }
@@ -171,6 +170,7 @@ void createToken(char* type, char* name)
     }
     newType[i] = '\0';
 
+    printf("after newType\n");
 
     count = 0;
     while(name[count] != ' ')
@@ -183,9 +183,9 @@ void createToken(char* type, char* name)
     }
     newName[i] = '\0';
 
-   
+    printf("after newName\n");   
 
-    if(amount != MAX && findIndex(newName) == -1){
+    if(amount != MAX /* && findIndex(newName) == -1 */){
         Token_Struct newStruct;
         newStruct.type = newType;
         newStruct.name = newName;
@@ -198,8 +198,9 @@ void createToken(char* type, char* name)
     }else{
         printf("No more availible space");
     }
+    printf("after table update");
     printf("\n");
-    printTable();
+    //printTable();
     printf("\n");
 }
 
@@ -233,7 +234,7 @@ int findIndex(char* name)
     return i;
 }
 
-bool cOp(int x, char* cop, int y)
+int cOp(int x, char* cop, int y)
 {
     if(strcmp(cop, "==") == 0)
     {
@@ -258,7 +259,7 @@ bool cOp(int x, char* cop, int y)
     return false;
 }
 
-bool logCop(int x, char* logop, int y)
+int logCop(int x, char* logop, int y)
 {
   if(strcmp(logop, "&&") == 0)
   {
