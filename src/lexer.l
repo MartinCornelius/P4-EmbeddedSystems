@@ -43,7 +43,7 @@ digit                   [0-9]
 "func"                    { return FUNC; }
 
 
-"int"                     { yylval.type = yytext; return TYPE; }
+"int"                     { yylval.type = strdup(yytext); return TYPE; }
 
 
 "="                       { return ASSIGN; }
@@ -67,8 +67,8 @@ digit                   [0-9]
 
 [0] |
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
-[a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = yytext; printf("\n Lex test: %s, %s \n",yytext, yylval.id); return ID; }
-[ \t\n]                   { ; }
+[a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = strdup(yytext); return ID; }
+[ \t\n]                   { /*Ignore whitespace*/ }
 .                         { printf("Not implemented\n"); }
 %%
 

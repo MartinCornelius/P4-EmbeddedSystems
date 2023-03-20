@@ -80,10 +80,10 @@ lines         : line SEMI lines
               | control lines
               |
               ;
-line          : ID ASSIGN expr
-              | ID LARROW expr
-              | expr
+line          : ID ASSIGN expr                                             { changeTokenVal($1, $3); }
+              | ID LARROW expr                                             { changeTokenVal($1, $3); }
               | funccall
+              |
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA
               | IF LPAR comparelist RPAR LBRA lines RBRA elsechain
@@ -96,7 +96,7 @@ vardecls      : vardecl SEMI vardecls
               |
               ;
 vardecl       : TYPE ID                                                     { createToken($1, $2); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("\n %s | %d \n", $2, $4);  changeTokenVal($2, $4); printTable(); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -110,26 +110,26 @@ paramscall    : paramlistcall
 paramlistcall : expr COMMA paramlistcall
               | expr
               ;
-expr          : expr PLUS term                                              //{ $$ = $1 + $3; }                        
-              | expr MINUS term                                             //{ $$ = $1 - $3; }
-              | term                                                        //{ $$ = $1; }
+expr          : expr PLUS term                                              { $$ = $1 + $3; }                        
+              | expr MINUS term                                             { $$ = $1 - $3; }
+              | term                                                        { $$ = $1; }
               ;
-term          : term TIMES factor                                           //{ $$ = $1 * $3; }
-              | term DIV factor                                             //{ if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
-              | factor                                                      //{ $$ = $1 }
+term          : term TIMES factor                                           { $$ = $1 * $3; }
+              | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
+              | factor                                                      { $$ = $1 }
               ;
-factor        : ID                                                          //{ Token_Struct *a = getToken($1); $$ = a->valueF; }
-              | VAL                                                         //{ $$ = $1; }
-              | LPAR expr RPAR                                              //{ $$ = $2; }
+factor        : ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
+              | VAL                                                         { $$ = $1; }
+              | LPAR expr RPAR                                              { $$ = $2; }
               ;
-comparelist   : compare LOGOP comparelist                                   //{ $$ = logCop($1, $2, $3); }
-              | compare                                                     //{ $$ = $1; }
+comparelist   : compare LOGOP comparelist                                   { $$ = logCop($1, $2, $3); }
+              | compare                                                     { $$ = $1; }
               ;
-compare       : boolexpr COP boolexpr                                       //{ $$ = cOp($1, $2, $3); }
-              | ID                                                          //{ Token_Struct *a = getToken($1); $$ = a->valueF; }
+compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
+              | ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
               ;
-boolexpr      : ID                                                          //{}
-              | VAL                                                         //{}
+boolexpr      : ID                                                          {}
+              | VAL                                                         {}
               ;
 %%
 
@@ -154,7 +154,7 @@ void printTable()
 
 void createToken(char* type, char* name)
 {
-    int count = 0;
+    /* int count = 0;
     int i = 0;
     while(type[count] != ' ')
     {
@@ -179,7 +179,7 @@ void createToken(char* type, char* name)
     }
     newName[i] = '\0';
 
-    printf("after newName: %s\n", newName); 
+    printf("after newName: %s\n", newName); */
 
     // printf("amount %d size %d\n", amount, sizeof(Token_Struct));
 
@@ -187,34 +187,28 @@ void createToken(char* type, char* name)
 
     if(amount != MAX /* && findIndex(newName) == -1 */){
         symbolTable[amount] = malloc(sizeof(Token_Struct));
-        printf("Hello addr: %d \n", symbolTable[amount]);
+        //printf("Hello addr: %d \n", symbolTable[amount]);
         //symbolTable[amount]->type = newType;
-        strcpy(symbolTable[amount]->type, newType);
+        strcpy(symbolTable[amount]->type, type);
         //symbolTable[amount]->name = newName;
-        strcpy(symbolTable[amount]->name, newName);
+        strcpy(symbolTable[amount]->name, name);
         symbolTable[amount]->valueF = 0;
         amount++;
-    }else if(findIndex(newName) != -1){
+    }else if(findIndex(name) != -1){
         printf("Declartion of two types of same name is not valid");
     }else{
         printf("No more availible space");
     }
-    printf("after table update");
-
-
-
-    printTable();
-
-    printf("\n");
-    //printTable();
-    printf("\n");
 }
 
 void changeTokenVal(char* name, int f )
 {
     int i = findIndex(name);
-
-    symbolTable[i]->valueF = f;
+    if(i != -1)
+    {
+        symbolTable[i]->valueF = f;
+    }
+    
 }
 
 int findIndex(char* name)
