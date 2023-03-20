@@ -1,4 +1,4 @@
-// test6 checks symboltable when same var name used multiple times, should be error
+// test6 checks symboltable when more than one var shares a name
 
 setup()
 {

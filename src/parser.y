@@ -17,19 +17,18 @@
     void printTable();
 
     struct Token{
-        char* type;
-        char* name;
+        char type[9];
+        char name[9];
         char* valueS;
         int valueF;
     };
     typedef struct Token Token_Struct;
 
-    Token_Struct getToken(char* name);
+    Token_Struct* getToken(char* name);
     
     int amount = 0;
 
-    Token_Struct symbolTable[MAX];
-
+    Token_Struct *symbolTable[MAX];
 %}
 
 %union{ int val; char* type; char* id; char* str; int boolean; }
@@ -98,7 +97,7 @@ vardecls      : vardecl SEMI vardecls
               |
               ;
 vardecl       : TYPE ID                                                     { createToken($1, $2); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("expr: %d\n", $4); Token_Struct b = getToken($2); printf("token ID: %s, token type: %s, token val: %d", b.name, b.type, b.valueF); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); printf("expr: %d\n", $4); Token_Struct *b = getToken($2); printf("token ID: %s, token type: %s, token val: %d", b->name, b->type, b->valueF); }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -114,14 +113,13 @@ paramlistcall : expr COMMA paramlistcall
               ;
 expr          : expr PLUS term                                              { $$ = $1 + $3; }                        
               | expr MINUS term                                             { $$ = $1 - $3; }
-              | comparelist QUEST expr COLON expr                           { if($1){$$ = $3;}else{$$ = $5;} }
               | term                                                        { $$ = $1; }
               ;
 term          : term TIMES factor                                           { $$ = $1 * $3; }
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
               | factor                                                      { $$ = $1 }
               ;
-factor        : ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
+factor        : ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
               | VAL                                                         { $$ = $1; }
               | LPAR expr RPAR                                              { $$ = $2; }
               ;
@@ -129,7 +127,7 @@ comparelist   : compare LOGOP comparelist                                   { $$
               | compare                                                     { $$ = $1; }
               ;
 compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
-              | ID                                                          { Token_Struct a = getToken($1); $$ = a.valueF; }
+              | ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
               ;
 boolexpr      : ID                                                                                                        
               | VAL
@@ -146,13 +144,13 @@ int main()
 
 void printTable()
 {
-    printf("\nyo + %d", amount);
+    printf("\n_____________________________________________\n");
     for(int i = 0; i < amount; i++)
     {
-        printf("\n_______________________\nname: %s ", symbolTable[i].name);
-        printf("type: %s ", symbolTable[i].type);
-        printf("valS: %s ", symbolTable[i].valueS);
-        printf("valF: %d\n______________\n", symbolTable[i].valueF);
+        printf("\n_______________________\ntable: %d\nname: %s ", i, symbolTable[i]->name);
+        printf("type: %s ", symbolTable[i]->type);
+        printf("valS: %s ", symbolTable[i]->valueS);
+        printf("valF: %d \n______________\n", symbolTable[i]->valueF);
     }
 }
 
@@ -170,7 +168,7 @@ void createToken(char* type, char* name)
     }
     newType[i] = '\0';
 
-    printf("after newType\n");
+    printf("after newType: %s\n", newType);
 
     count = 0;
     while(name[count] != ' ')
@@ -183,15 +181,21 @@ void createToken(char* type, char* name)
     }
     newName[i] = '\0';
 
-    printf("after newName\n");   
+    printf("after newName: %s\n", newName); 
+
+    // printf("amount %d size %d\n", amount, sizeof(Token_Struct));
+
+    // printf("malloc addr: %d \n", newStruct);
 
     if(amount != MAX /* && findIndex(newName) == -1 */){
-        Token_Struct newStruct;
-        newStruct.type = newType;
-        newStruct.name = newName;
-        newStruct.valueS = "";
-        newStruct.valueF = 0;
-        symbolTable[amount] = newStruct;
+        symbolTable[amount] = malloc(sizeof(Token_Struct));
+        printf("Hello addr: %d \n", symbolTable[amount]);
+        //symbolTable[amount]->type = newType;
+        strcpy(symbolTable[amount]->type, newType);
+        //symbolTable[amount]->name = newName;
+        strcpy(symbolTable[amount]->name, newName);
+        symbolTable[amount]->valueS = "";
+        symbolTable[amount]->valueF = 0;
         amount++;
     }else if(findIndex(newName) != -1){
         printf("Declartion of two types of same name is not valid");
@@ -199,6 +203,11 @@ void createToken(char* type, char* name)
         printf("No more availible space");
     }
     printf("after table update");
+
+
+
+    printTable();
+
     printf("\n");
     //printTable();
     printf("\n");
@@ -208,8 +217,8 @@ void changeTokenVal(char* name, char* s, int f )
 {
     int i = findIndex(name);
 
-    symbolTable[i].valueF = f;
-    symbolTable[i].valueS = s;
+    symbolTable[i]->valueF = f;
+    symbolTable[i]->valueS = s;
 
 }
 
@@ -219,7 +228,7 @@ int findIndex(char* name)
     int found = 0;
     while(i < MAX)
     {
-        if(strcmp(symbolTable[i].name, name) == 0)
+        if(strcmp(symbolTable[i]->name, name) == 0)
         {
             return i;
         }else{
@@ -272,7 +281,7 @@ int logCop(int x, char* logop, int y)
   return false;
 }
 
-Token_Struct getToken(char* name)
+Token_Struct* getToken(char* name)
 {
     int i = findIndex(name);
     if(i != -1)
@@ -280,12 +289,13 @@ Token_Struct getToken(char* name)
         return symbolTable[i];
     }
     printf("No such symbol exists");
-    Token_Struct error;
+    Token_Struct *error;
     return error;
 }
 
 int yyerror(char *s){
     printf("%s", s);
+
 
     printTable();
     return 0;
