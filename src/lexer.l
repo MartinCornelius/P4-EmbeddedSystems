@@ -2,6 +2,7 @@
 %{
 
 #include "parser.tab.h"
+#include <string.h>
 
 %}
 
@@ -41,17 +42,8 @@ digit                   [0-9]
 "mainloop()"              { return MAIN; }
 "func"                    { return FUNC; }
 
-"input" |
-"output" |
-"bool" |
-"int8" |
-"int16" |
-"uint8" |
-"uint16" |
-"float8" |
-"float16" |
-"char"                    { yylval.type = yytext; return TYPE; }
 
+"int"                     { yylval.type = yytext; return TYPE; }
 
 
 "="                       { return ASSIGN; }
@@ -74,11 +66,8 @@ digit                   [0-9]
 "false"                   { yylval.boolean = yytext[0] == 't'; return BOOLVAL; }
 
 [0] |
-[1-9]{digit}* |
-"0x"[0-9a-fA-F]+ |
-[1-9]{digit}*\.{digit}+ |
-[0]\.{digit}+             { yylval.val = atof(yytext); return VAL; }
-[a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = yytext ; return ID; }
+[1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
+[a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = yytext; printf("\n Lex test: %s, %s \n",yytext, yylval.id); return ID; }
 [ \t\n]                   { ; }
 .                         { printf("Not implemented\n"); }
 %%

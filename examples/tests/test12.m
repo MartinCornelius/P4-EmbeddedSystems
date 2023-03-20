@@ -1,11 +1,7 @@
 // test12 declares the smallest func last in the file. It should pass
 
-setup(){
+setup(){}
 
-}
-mainloop(){
+mainloop(){}
 
-}
-func(){
-
-}
+func(){}
