@@ -41,8 +41,8 @@ func LuxToPercent(float16 lux -> uint8 intensityPercent)
   if(lux > MAX_LUMEN) {
     lux = MAX_LUMEN;
   }
-  else {
-    lux = lux < MIN_LUMEN ? MIN_LUMEN : lux;
+  else if(lux < MIN_LUMEN){
+    lux = MIN_LUMEN;
   }	
   Floor(lux * LUX_TO_PERCENT -> lux);
   ToInt8(lux -> intensityPercent);
