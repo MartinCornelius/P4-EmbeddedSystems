@@ -1,7 +1,17 @@
 # P4-EmbeddedSystems
 
-This is our going good
+#### By Martin, Thomas, Lucas, Lucas, Nicklas and Hugin.
 
-Nuts
+#### Simple programming language for embedded systems focused on optimizations for memory and power consumption efficiency.
 
-"Cumtribute"
+## Tools used
+* Flex
+* Bison
+* Make
+* GCC
+
+## Setup
+> make
+
+> ./run [input file path]
+

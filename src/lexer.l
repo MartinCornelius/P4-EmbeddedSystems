@@ -1,4 +1,4 @@
-
+%option noyywrap
 %{
 
 #include "parser.tab.h"
@@ -68,15 +68,7 @@ digit                   [0-9]
 [0] |
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
 [a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = strdup(yytext); return ID; }
-[ \t\n]                   { /*Ignore whitespace*/ }
+[ \t\n]                   { /*Ignore whitespace*/; }
 .                         { printf("Not implemented\n"); }
 %%
 
-
-int yywrap()
-{ 
-  return 1; 
-
-}
-
- 
