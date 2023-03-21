@@ -1,4 +1,4 @@
-exec = Mucas.exe
+exec = Mucas
 lexer = src/lexer.l
 parser = src/parser.y
 
