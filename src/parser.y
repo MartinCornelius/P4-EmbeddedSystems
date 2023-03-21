@@ -116,7 +116,7 @@ expr          : expr PLUS term                                              { $$
               ;
 term          : term TIMES factor                                           { $$ = $1 * $3; }
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
-              | factor                                                      { $$ = $1 }
+              | factor                                                      { $$ = $1; }
               ;
 factor        : ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
               | VAL                                                         { $$ = $1; }
