@@ -42,33 +42,31 @@
      VAL = 258,
      STRING = 259,
      ID = 260,
-     DEFINE = 261,
-     SETUP = 262,
-     MAIN = 263,
-     FUNC = 264,
-     LARROW = 265,
-     RARROW = 266,
-     LBRA = 267,
-     RBRA = 268,
-     RPAR = 269,
-     LPAR = 270,
-     PLUS = 271,
-     MINUS = 272,
-     TIMES = 273,
-     DIV = 274,
-     COLON = 275,
-     QUEST = 276,
-     SEMI = 277,
-     COMMA = 278,
-     IMPORT = 279,
-     HEADERF = 280,
-     TYPE = 281,
-     ASSIGN = 282,
-     WHILE = 283,
-     IF = 284,
-     ELSE = 285,
-     COP = 286,
-     LOGOP = 287
+     TYPE = 261,
+     DEFINE = 262,
+     SETUP = 263,
+     MAIN = 264,
+     FUNC = 265,
+     LARROW = 266,
+     RARROW = 267,
+     LBRA = 268,
+     RBRA = 269,
+     RPAR = 270,
+     LPAR = 271,
+     PLUS = 272,
+     MINUS = 273,
+     TIMES = 274,
+     DIV = 275,
+     COLON = 276,
+     QUEST = 277,
+     SEMI = 278,
+     COMMA = 279,
+     ASSIGN = 280,
+     WHILE = 281,
+     IF = 282,
+     ELSE = 283,
+     COP = 284,
+     LOGOP = 285
    };
 #endif
 
@@ -79,12 +77,12 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 8 "parser.y"
- float val; char* id; char* str; 
+#line 29 "parser.y"
+ int val; char* type; char* id; char* str; int boolean; 
 
 
 /* Line 1676 of yacc.c  */
-#line 88 "parser.tab.h"
+#line 86 "parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
