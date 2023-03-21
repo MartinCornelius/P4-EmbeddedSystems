@@ -1,6 +1,12 @@
-exec = Mucas
+execname = run
 lexer = src/lexer.l
 parser = src/parser.y
+
+ifeq ($(OS),Windows_NT)
+	exec = $(execname).exe
+else
+	exec = $(execname).sh
+endif
 
 $(exec): src/lex.yy.c src/parser.tab.c
 	gcc src/lex.yy.c src/parser.tab.c -o $(exec)
