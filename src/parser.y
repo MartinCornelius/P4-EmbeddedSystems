@@ -3,7 +3,11 @@
     #include <stdlib.h>
     #include <string.h>
     #include <stdbool.h>
+
     #define MAX 40
+
+    extern FILE *yyin;
+
     int yylex();
     int yyerror(char *s);
     int findIndex(char* name);
@@ -133,12 +137,12 @@ boolexpr      : ID                                                          {}
               ;
 %%
 
-int main()
+void main(int argc, char **argv)
 {
-
+    if (argc > 1)
+      if (!(yyin = fopen(argv[1], "r")))
+        perror("Error loading file\n");
     yyparse();
-
-    return 1;
 }
 
 void printTable()
@@ -154,43 +158,9 @@ void printTable()
 
 void createToken(char* type, char* name)
 {
-    /* int count = 0;
-    int i = 0;
-    while(type[count] != ' ')
-    {
-        count++;
-    }
-    char newType[count + 1];
-    for(i = 0; i < count; i++){
-        newType[i] = type[i];
-    }
-    newType[i] = '\0';
-
-    printf("after newType: %s\n", newType);
-
-    count = 0;
-    while(name[count] != ' ')
-    {
-        count++;
-    }
-    char newName[count + 1];
-    for(i = 0; i < count; i++){
-        newName[i] = name[i];
-    }
-    newName[i] = '\0';
-
-    printf("after newName: %s\n", newName); */
-
-    // printf("amount %d size %d\n", amount, sizeof(Token_Struct));
-
-    // printf("malloc addr: %d \n", newStruct);
-
     if(amount != MAX /* && findIndex(newName) == -1 */){
         symbolTable[amount] = malloc(sizeof(Token_Struct));
-        //printf("Hello addr: %d \n", symbolTable[amount]);
-        //symbolTable[amount]->type = newType;
         strcpy(symbolTable[amount]->type, type);
-        //symbolTable[amount]->name = newName;
         strcpy(symbolTable[amount]->name, name);
         symbolTable[amount]->valueF = 0;
         amount++;
