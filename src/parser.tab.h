@@ -40,33 +40,33 @@
       know about them.  */
    enum yytokentype {
      VAL = 258,
-     STRING = 259,
-     ID = 260,
-     TYPE = 261,
-     DEFINE = 262,
-     SETUP = 263,
-     MAIN = 264,
-     FUNC = 265,
-     LARROW = 266,
-     RARROW = 267,
-     LBRA = 268,
-     RBRA = 269,
-     RPAR = 270,
-     LPAR = 271,
-     PLUS = 272,
-     MINUS = 273,
-     TIMES = 274,
-     DIV = 275,
-     COLON = 276,
-     QUEST = 277,
-     SEMI = 278,
-     COMMA = 279,
-     ASSIGN = 280,
-     WHILE = 281,
-     IF = 282,
-     ELSE = 283,
-     COP = 284,
-     LOGOP = 285
+     COP = 259,
+     LOGOP = 260,
+     ID = 261,
+     TYPE = 262,
+     BOOLVAL = 263,
+     DEFINE = 264,
+     SETUP = 265,
+     MAIN = 266,
+     FUNC = 267,
+     LARROW = 268,
+     RARROW = 269,
+     LBRA = 270,
+     RBRA = 271,
+     RPAR = 272,
+     LPAR = 273,
+     PLUS = 274,
+     MINUS = 275,
+     TIMES = 276,
+     DIV = 277,
+     COLON = 278,
+     QUEST = 279,
+     SEMI = 280,
+     COMMA = 281,
+     ASSIGN = 282,
+     WHILE = 283,
+     IF = 284,
+     ELSE = 285
    };
 #endif
 
@@ -77,7 +77,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 29 "parser.y"
+#line 33 ".\\parser.y"
  int val; char* type; char* id; char* str; int boolean; 
 
 
