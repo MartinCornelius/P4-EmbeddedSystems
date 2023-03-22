@@ -78,11 +78,10 @@ struct char_symbol {
 };
 typedef struct char_symbol char_Struct;
 
-//flexint ;D
-struct int_symbol {
+struct flexint_symbol {
   char name[32];
   void *next;
   int value;
   int type;
 };
-typedef struct int_symbol int_Struct;
+typedef struct flexint_symbol flexint_Struct;

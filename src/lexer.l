@@ -66,6 +66,8 @@ digit                   [0-9]
 "==" |
 "!="                      { return COP; }
 
+"print"                   { return PRINT; }
+
 "||" |
 "&&"                      { return LOGOP; }
 

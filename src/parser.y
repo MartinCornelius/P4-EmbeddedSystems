@@ -7,6 +7,8 @@
 
     extern FILE *yyin;
 
+    enum types { symbol_type, input_type, output_type, int8_type, int16_type, uint8_type, 
+                 uint16_type, float8_type, float16_type, bool_type, char_type, flexint_type };
 
     struct Symbol{
         char name[32];
@@ -24,6 +26,9 @@
 
     int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
+
+    //for debugging skal fjernes senere
+    void printTable();
 
     // Start of linked list
     Symbol_Struct handle;
@@ -46,7 +51,7 @@
 %token DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
-        COMMA
+        COMMA PRINT
 %token ASSIGN WHILE IF ELSE
 
 
@@ -84,6 +89,7 @@ lines         : line SEMI lines
 line          : ID ASSIGN expr                                             { changeTokenVal($1, $3); }
               | ID LARROW expr                                             { changeTokenVal($1, $3); }
               | funccall
+              | PRINT                                                      { printTable(); }
               |
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA
@@ -136,9 +142,6 @@ boolexpr      : ID                                                          {}
 
 void main(int argc, char **argv)
 {
-    //for debugging skal fjernes senere
-    void printTable();
-
     handle.next = NULL;
     
     listHead = (struct Symbol *)&handle;
@@ -151,15 +154,15 @@ void main(int argc, char **argv)
 
 void printTable()
 {
-    Symbol_Struct *temp = handle.next;
-    while(temp != NULL)
+    Symbol_Struct *temp = &handle;
+    while(temp->next != NULL)
     {
+        temp = temp->next;
         printf("___________________\n");
 
         printf("Name: %s, Type: %d, Value: %d\n", temp->name, temp->type, temp->value);
 
         printf("___________________\n");
-        temp = temp->next;
     }
 }
 
