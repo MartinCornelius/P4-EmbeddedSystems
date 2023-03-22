@@ -39,6 +39,9 @@ digit                   [0-9]
 "mainloop()"              { return MAIN; }
 "func"                    { return FUNC; }
 
+"int8"                    { yylval.type = 2; return TYPE; }
+"float8"                  { yylval.type = 6; return TYPE; }
+
 "input" |
 "output" |
 "bool" |
@@ -46,11 +49,9 @@ digit                   [0-9]
 "int16" |
 "uint8" |
 "uint16" |
-"float8" |
 "float16" |
 "char" |
-"int"                     { yylval.type = strdup(yytext); return TYPE; }
-
+"int"                     { yylval.type = 0; return TYPE; }
 
 "="                       { return ASSIGN; }
 "while"                   { return WHILE; }

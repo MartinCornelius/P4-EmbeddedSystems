@@ -3,25 +3,24 @@
     #include <stdlib.h>
     #include <string.h>
     #include <stdbool.h>
-
-    //#include "include/symbolstructs.h"
+    #include "include/symbolstructs.h"
 
     extern FILE *yyin;
 
+
     struct Symbol{
-        char type[9];
         char name[32];
+        void *next;
         int value;
-        struct Symbol *next;
+        int type;
     };
     typedef struct Symbol Symbol_Struct;
 
     int yylex();
     int yyerror(char *s);
     Symbol_Struct* findSymbol(char* name);
-    void createToken(char* type, char* name);
+    void createToken(int type, char* name);
     void changeTokenVal(char* name, int f );
-    /* Symbol_Struct* getToken(char* name); */
 
     int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
@@ -29,11 +28,11 @@
     // Start of linked list
     Symbol_Struct handle;
     // Last element in list
-    Symbol_Struct *listHead;
+    void *listHead;
 
 %}
 
-%union{ int val; char* type; char* id; char* str; int boolean; }
+%union{ int val; int type; char* id; char* str; int boolean; }
 
 %start prog
 
@@ -52,7 +51,6 @@
 
 
 %type<boolean> compare comparelist boolexpr
-//ved ikke helt om factor er en value lol
 %type<val> expr term factor
 
 %%
@@ -143,7 +141,7 @@ void main(int argc, char **argv)
 
     handle.next = NULL;
     
-    listHead = &handle;
+    listHead = (struct Symbol *)&handle;
 
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
@@ -158,22 +156,52 @@ void printTable()
     {
         printf("___________________\n");
 
-        printf("Name: %s, Type: %s, Value: %d\n", temp->name, temp->type, temp->value);
+        printf("Name: %s, Type: %d, Value: %d\n", temp->name, temp->type, temp->value);
 
         printf("___________________\n");
         temp = temp->next;
     }
 }
 
-void createToken(char* type, char* name)
+void createToken(int type, char* name)
 {
     if(findSymbol(name) == NULL){
-        Symbol_Struct *newSymbol = calloc(1, sizeof(Symbol_Struct));
-        strcpy(newSymbol->type, type);
+        int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
         strcpy(newSymbol->name, name);
-
-        listHead->next = newSymbol;
+        newSymbol->type = 2;
+        ((Symbol_Struct *)listHead)->next = newSymbol;
         listHead = newSymbol;
+        /*
+        switch(type) {
+            case 2:
+                int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
+                
+                strcpy(newSymbol->name, name);
+
+                //convert the void pointer and make space
+                listHead->next = malloc(sizeof(int8_Struct));
+                listHead->next = (int8_Struct*)newSymbol;
+                listHead = newSymbol;
+                break;
+            case 6:
+                struct float8_symbol *newSymbol = calloc(1, sizeof(struct float8_symbol));
+
+                strcpy(newSymbol->name, name);
+
+                //convert the void pointer and make space
+                listHead->next = malloc(sizeof(struct float8_symbol));
+                listHead->next = (struct float8_symbol*)newSymbol;
+                listHead = newSymbol;
+                break;
+            default:
+                Symbol_Struct *newSymbol = calloc(1, sizeof(Symbol_Struct));
+                strcpy(newSymbol->type, type);
+                strcpy(newSymbol->name, name);
+                listHead->next = newSymbol;
+                listHead = newSymbol;
+        }
+        */
+        
     }else{
         printf("Declartion of two types of same name is not valid");
     }
@@ -239,18 +267,6 @@ int logCop(int x, char* logop, int y)
   printf("illegal logoperator");
   return false;
 }
-
-/* Symbol_Struct* getToken(char* name)
-{
-    Symbol_Struct *geese = findIndex(name);
-    if(i != -1)
-    {
-        return symbolTable[i];
-    }
-    printf("No such symbol exists");
-    Symbol_Struct *error;
-    return error;
-} */
 
 int yyerror(char *s){
     printf("The error: %s", s);
