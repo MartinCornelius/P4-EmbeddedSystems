@@ -20,18 +20,18 @@
     //for debugging skal fjernes senere
     void printTable();
 
-    struct Token{
+    struct Symbol{
         char type[9];
         char name[32];
         int valueF;
     };
-    typedef struct Token Token_Struct;
+    typedef struct Symbol Symbol_Struct;
 
-    Token_Struct* getToken(char* name);
+    Symbol_Struct* getToken(char* name);
     
     int amount = 0;
 
-    Token_Struct *symbolTable[MAX];
+    Symbol_Struct *symbolTable[MAX];
 %}
 
 %union{ int val; char* type; char* id; char* str; int boolean; }
@@ -122,7 +122,7 @@ term          : term TIMES factor                                           { $$
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
               | factor                                                      { $$ = $1; }
               ;
-factor        : ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
+factor        : ID                                                          { Symbol_Struct *a = getToken($1); $$ = a->valueF; }
               | VAL                                                         { $$ = $1; }
               | LPAR expr RPAR                                              { $$ = $2; }
               ;
@@ -130,7 +130,7 @@ comparelist   : compare LOGOP comparelist                                   { $$
               | compare                                                     { $$ = $1; }
               ;
 compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
-              | ID                                                          { Token_Struct *a = getToken($1); $$ = a->valueF; }
+              | ID                                                          { Symbol_Struct *a = getToken($1); $$ = a->valueF; }
               ;
 boolexpr      : ID                                                          {}
               | VAL                                                         {}
@@ -159,7 +159,7 @@ void printTable()
 void createToken(char* type, char* name)
 {
     if(amount != MAX /* && findIndex(newName) == -1 */){
-        symbolTable[amount] = malloc(sizeof(Token_Struct));
+        symbolTable[amount] = malloc(sizeof(Symbol_Struct));
         strcpy(symbolTable[amount]->type, type);
         strcpy(symbolTable[amount]->name, name);
         symbolTable[amount]->valueF = 0;
@@ -240,7 +240,7 @@ int logCop(int x, char* logop, int y)
   return false;
 }
 
-Token_Struct* getToken(char* name)
+Symbol_Struct* getToken(char* name)
 {
     int i = findIndex(name);
     if(i != -1)
@@ -248,7 +248,7 @@ Token_Struct* getToken(char* name)
         return symbolTable[i];
     }
     printf("No such symbol exists");
-    Token_Struct *error;
+    Symbol_Struct *error;
     return error;
 }
 
