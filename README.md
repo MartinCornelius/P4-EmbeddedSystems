@@ -24,6 +24,15 @@ make clean
 * Make
 * GCC
 * Github Actions
+* Valgrind & Massif visualizer
+
+## Memory usage
+```bash
+valgrind --tool=massif ./run.out [input file]
+```
+```bash
+massif-visualizer [generated file]
+```
 
 ## About
 #### By Martin, Thomas, Lucas, Lucas, Nicklas and Hugin
