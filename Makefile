@@ -21,3 +21,10 @@ check:
 ifeq (,$(wildcard $(exec)))
 	exit 1
 endif
+
+# TESTS
+testexec = tests/RunTests
+testsources = $(wildcard tests/*.c)
+
+test: $(testsources)
+	gcc $(testsources) -o $(testexec)
