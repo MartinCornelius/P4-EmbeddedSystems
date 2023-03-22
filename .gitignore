@@ -1,5 +1,5 @@
 *.exe
-*.sh
+*.out
 *.tab.c
 *.tab.h
 *.yy.c
