@@ -16,3 +16,10 @@ src/parser.tab.c: $(parser)
 
 src/lex.yy.c: $(lexer)
 	flex -osrc/lex.yy.c $(lexer)
+
+# TESTS
+testexec = tests/RunTests
+testsources = $(wildcard tests/*.c)
+
+test: $(testsources)
+	gcc $(testsources) -o $(testexec)
