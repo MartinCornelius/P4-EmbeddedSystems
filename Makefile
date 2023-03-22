@@ -16,3 +16,8 @@ src/parser.tab.c: $(parser)
 
 src/lex.yy.c: $(lexer)
 	flex -osrc/lex.yy.c $(lexer)
+
+check:
+ifeq (,$(wildcard $(exec)))
+	exit 1
+endif
