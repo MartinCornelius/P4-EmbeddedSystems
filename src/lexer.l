@@ -31,9 +31,6 @@ digit                   [0-9]
 "*"                       { return TIMES; }
 "/"                       { return DIV; }
 
-":"                       { return COLON; }
-"?"                       { return QUEST; }
-
 ";"                       { return SEMI; }
 ","                       { return COMMA; }
 
@@ -42,7 +39,16 @@ digit                   [0-9]
 "mainloop()"              { return MAIN; }
 "func"                    { return FUNC; }
 
-
+"input" |
+"output" |
+"bool" |
+"int8" |
+"int16" |
+"uint8" |
+"uint16" |
+"float8" |
+"float16" |
+"char" |
 "int"                     { yylval.type = strdup(yytext); return TYPE; }
 
 
