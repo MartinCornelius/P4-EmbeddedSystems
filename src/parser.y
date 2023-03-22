@@ -4,34 +4,33 @@
     #include <string.h>
     #include <stdbool.h>
 
-    #define MAX 40
+    //#include "include/symbolstructs.h"
 
     extern FILE *yyin;
-
-    int yylex();
-    int yyerror(char *s);
-    int findIndex(char* name);
-    void createToken(char* type, char* name);
-    void changeTokenVal(char* name, int f );
-
-    int cOp(int x, char* op, int y);
-    int logCop(int x, char* logop, int y);
-
-    //for debugging skal fjernes senere
-    void printTable();
 
     struct Symbol{
         char type[9];
         char name[32];
-        int valueF;
+        int value;
+        struct Symbol *next;
     };
     typedef struct Symbol Symbol_Struct;
 
-    Symbol_Struct* getToken(char* name);
-    
-    int amount = 0;
+    int yylex();
+    int yyerror(char *s);
+    Symbol_Struct* findSymbol(char* name);
+    void createToken(char* type, char* name);
+    void changeTokenVal(char* name, int f );
+    /* Symbol_Struct* getToken(char* name); */
 
-    Symbol_Struct *symbolTable[MAX];
+    int cOp(int x, char* op, int y);
+    int logCop(int x, char* logop, int y);
+
+    // Start of linked list
+    Symbol_Struct handle;
+    // Last element in list
+    Symbol_Struct *listHead;
+
 %}
 
 %union{ int val; char* type; char* id; char* str; int boolean; }
@@ -47,8 +46,8 @@
 
 %token DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
-        PLUS MINUS TIMES DIV COLON
-        QUEST SEMI COMMA
+        PLUS MINUS TIMES DIV SEMI 
+        COMMA
 %token ASSIGN WHILE IF ELSE
 
 
@@ -122,7 +121,7 @@ term          : term TIMES factor                                           { $$
               | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
               | factor                                                      { $$ = $1; }
               ;
-factor        : ID                                                          { Symbol_Struct *a = getToken($1); $$ = a->valueF; }
+factor        : ID                                                          { Symbol_Struct *a = findSymbol($1); $$ = a->value; }
               | VAL                                                         { $$ = $1; }
               | LPAR expr RPAR                                              { $$ = $2; }
               ;
@@ -130,7 +129,7 @@ comparelist   : compare LOGOP comparelist                                   { $$
               | compare                                                     { $$ = $1; }
               ;
 compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
-              | ID                                                          { Symbol_Struct *a = getToken($1); $$ = a->valueF; }
+              | ID                                                          { Symbol_Struct *a = findSymbol($1); $$ = a->value; }
               ;
 boolexpr      : ID                                                          {}
               | VAL                                                         {}
@@ -139,6 +138,13 @@ boolexpr      : ID                                                          {}
 
 void main(int argc, char **argv)
 {
+    //for debugging skal fjernes senere
+    void printTable();
+
+    handle.next = NULL;
+    
+    listHead = &handle;
+
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
@@ -147,59 +153,53 @@ void main(int argc, char **argv)
 
 void printTable()
 {
-    printf("\n_____________________________________________\n");
-    for(int i = 0; i < amount; i++)
+    Symbol_Struct *temp = handle.next;
+    while(temp != NULL)
     {
-        printf("\n_______________________\ntable: %d\nname: %s ", i, symbolTable[i]->name);
-        printf("type: %s ", symbolTable[i]->type);
-        printf("valF: %d \n______________\n", symbolTable[i]->valueF);
+        printf("___________________\n");
+
+        printf("Name: %s, Type: %s, Value: %d\n", temp->name, temp->type, temp->value);
+
+        printf("___________________\n");
+        temp = temp->next;
     }
 }
 
 void createToken(char* type, char* name)
 {
-    if(amount != MAX /* && findIndex(newName) == -1 */){
-        symbolTable[amount] = malloc(sizeof(Symbol_Struct));
-        strcpy(symbolTable[amount]->type, type);
-        strcpy(symbolTable[amount]->name, name);
-        symbolTable[amount]->valueF = 0;
-        amount++;
-    }else if(findIndex(name) != -1){
-        printf("Declartion of two types of same name is not valid");
+    if(findSymbol(name) == NULL){
+        Symbol_Struct *newSymbol = calloc(1, sizeof(Symbol_Struct));
+        strcpy(newSymbol->type, type);
+        strcpy(newSymbol->name, name);
+
+        listHead->next = newSymbol;
+        listHead = newSymbol;
     }else{
-        printf("No more availible space");
+        printf("Declartion of two types of same name is not valid");
     }
 }
 
-void changeTokenVal(char* name, int f )
+void changeTokenVal(char* name, int val )
 {
-    int i = findIndex(name);
-    if(i != -1)
+    Symbol_Struct* symbol = findSymbol(name);
+    if(symbol != NULL)
     {
-        symbolTable[i]->valueF = f;
+        symbol->value = val;
     }
-    
 }
 
-int findIndex(char* name)
+Symbol_Struct* findSymbol(char* name)
 {
-    int i = 0;
-    int found = 0;
-    while(i < MAX)
+    Symbol_Struct* temp = &handle;
+    while(temp->next != NULL)
     {
-        if(strcmp(symbolTable[i]->name, name) == 0)
+        temp = temp->next;
+        if(strcmp(temp->name, name) == 0)
         {
-            return i;
-        }else{
-            i++;
-        } 
+            return temp;
+        }
     }
-    if(i == MAX)
-    {
-        printf("Error,\"%s\" was not in the table", name);
-        return -1;
-    }
-    return i;
+    return NULL;
 }
 
 int cOp(int x, char* cop, int y)
@@ -240,9 +240,9 @@ int logCop(int x, char* logop, int y)
   return false;
 }
 
-Symbol_Struct* getToken(char* name)
+/* Symbol_Struct* getToken(char* name)
 {
-    int i = findIndex(name);
+    Symbol_Struct *geese = findIndex(name);
     if(i != -1)
     {
         return symbolTable[i];
@@ -250,12 +250,10 @@ Symbol_Struct* getToken(char* name)
     printf("No such symbol exists");
     Symbol_Struct *error;
     return error;
-}
+} */
 
 int yyerror(char *s){
-    printf("%s", s);
-
-
+    printf("The error: %s", s);
     printTable();
     return 0;
 }
