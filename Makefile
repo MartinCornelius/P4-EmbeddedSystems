@@ -9,7 +9,7 @@ else
 endif
 
 $(exec): src/lex.yy.c src/parser.tab.c
-	gcc src/lex.yy.c src/parser.tab.c -o $(exec) -dsdsds
+	gcc src/lex.yy.c src/parser.tab.c -o $(exec)
 	
 src/parser.tab.c: $(parser)
 	bison -d $(parser) -o src/parser.tab.c
