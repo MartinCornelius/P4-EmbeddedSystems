@@ -10,6 +10,7 @@
     enum types { symbol_type, input_type, output_type, int8_type, int16_type, uint8_type, 
                  uint16_type, float8_type, float16_type, bool_type, char_type, flexint_type };
 
+
     struct Symbol{
         char name[32];
         void *next;
