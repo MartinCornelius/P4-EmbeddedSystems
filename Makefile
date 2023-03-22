@@ -15,4 +15,4 @@ src/parser.tab.c: $(parser)
 	bison -d $(parser) -o src/parser.tab.c
 
 src/lex.yy.c: $(lexer)
-	flex -o src/lex.yy.c $(lexer)
+	flex -osrc/lex.yy.c $(lexer)
