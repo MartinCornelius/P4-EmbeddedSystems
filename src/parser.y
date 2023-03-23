@@ -57,13 +57,13 @@
 
 
 %type<boolean> compare comparelist boolexpr
-%type<val> expr term factor
-%type<str> paramsdecl paramlistdecl lines line
+%type<val> term factor expr
+%type<str> paramsdecl paramlistdecl lines line 
 
 %%
 prog          : defines funcs setup mainloop                               { emit("}\0"); /* printToFile(); */}
               ;
-defines       : define defines                                             { emit("void main()\n{\n"); }
+defines       : define defines                                             { printf("yellow"); emit("void main()\n{\n"); }
               |
               ;
 define        : DEFINE ID expr                                             { sprintf(temp, "#define %s %d\n", $2, $3); emit(temp);}
@@ -88,7 +88,7 @@ lines         : line SEMI lines
               | control lines
               |                                                            { $$ = ""; }
               ;
-line          : ID ASSIGN expr                                             { changeTokenVal($1, $3); }
+line          : ID ASSIGN expr                                             { changeTokenVal($1, $3);  sprintf(temp, "%s = %d;\n", $1, $3); emit(temp); }
               | ID LARROW expr                                             { changeTokenVal($1, $3); }
               | funccall
               | PRINT                                                      { printTable(); }
@@ -101,11 +101,11 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain
               | ELSE LBRA lines RBRA
               |
               ;
-vardecls      : vardecl SEMI vardecls
+vardecls      : vardecl SEMI vardecls                                       { ; }
               |
               ;
-vardecl       : TYPE ID                                                     { createToken($1, $2); printf(programString); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); printf(programString); }
+vardecl       : TYPE ID                                                     { createToken($1, $2); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %d;\n", type, $2, $4); emit(temp);  }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -144,7 +144,7 @@ boolexpr      : ID                                                          {}
 
 void main(int argc, char **argv)
 {
-    emit("#include <stdio.h>\n#include <stdint.h>\n");
+    emit("#include <stdio.h>\n#include <stdint.h>\nvoid main(){\n");
     handle.next = NULL;
     listHead = (struct Symbol *)&handle;
     if (argc > 1)
