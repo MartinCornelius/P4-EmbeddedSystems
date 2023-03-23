@@ -5,19 +5,10 @@
     #include <stdbool.h>
     #include "include/symbolstructs.h"
 
-    extern FILE *yyin;
+    extern FILE *yyin; 
 
-    enum types { symbol_type, input_type, output_type, int8_type, int16_type, uint8_type, 
-                 uint16_type, float8_type, float16_type, bool_type, char_type, flexint_type };
-
-
-    struct Symbol{
-        char name[32];
-        void *next;
-        int value;
-        int type;
-    };
-    typedef struct Symbol Symbol_Struct;
+    enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, uint8_enum, 
+                 uint16_enum, float8_enum, float16_enum, bool_enum, char_enum, flexint_enum };
 
     int yylex();
     int yyerror(char *s);
@@ -170,46 +161,76 @@ void printTable()
 void createToken(int type, char* name)
 {
     if(findSymbol(name) == NULL){
-        int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
-        strcpy(newSymbol->name, name);
-        newSymbol->type = 2;
-        ((Symbol_Struct *)listHead)->next = newSymbol;
-        listHead = newSymbol;
-        /*
-        switch(type) {
-            case 2:
-                int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
-                
-                strcpy(newSymbol->name, name);
 
-                //convert the void pointer and make space
-                listHead->next = malloc(sizeof(int8_Struct));
-                listHead->next = (int8_Struct*)newSymbol;
-                listHead = newSymbol;
+        switch(type)
+        {
+            case -1:
                 break;
-            case 6:
-                struct float8_symbol *newSymbol = calloc(1, sizeof(struct float8_symbol));
-
-                strcpy(newSymbol->name, name);
-
-                //convert the void pointer and make space
-                listHead->next = malloc(sizeof(struct float8_symbol));
-                listHead->next = (struct float8_symbol*)newSymbol;
-                listHead = newSymbol;
+            case input_enum:
+                printf("yo3");
+                break;
+            case output_enum:
+                printf("yo");
+                break;
+            case int8_enum:
+                ; // is necessary!
+                int8_Struct *newInt8Symbol = calloc(1, sizeof(int8_Struct));
+                strcpy(newInt8Symbol->name, name);
+                newInt8Symbol->type = int8_enum;
+                ((int8_Struct *)listHead)->next = newInt8Symbol;
+                listHead = newInt8Symbol;
+                break;
+            case float8_enum:
+                ; // is still necessary!!
+                float8_Struct *newFloat8Symbol = calloc(1, sizeof(float8_Struct));
+                strcpy(newFloat8Symbol->name, name);
+                newFloat8Symbol->type = float8_enum;
+                ((float8_Struct *)listHead)->next = newFloat8Symbol;
+                listHead = newFloat8Symbol;
                 break;
             default:
-                Symbol_Struct *newSymbol = calloc(1, sizeof(Symbol_Struct));
-                strcpy(newSymbol->type, type);
-                strcpy(newSymbol->name, name);
-                listHead->next = newSymbol;
-                listHead = newSymbol;
+                printf("Illegal type (defaulting as flexint)\n");
+                flexint_Struct *newFlexIntSymbol = calloc(1, sizeof(flexint_Struct));
+                strcpy(newFlexIntSymbol->name, name);
+                newFlexIntSymbol->type = flexint_enum;
+                ((flexint_Struct *)listHead)->next = newFlexIntSymbol;
+                listHead = newFlexIntSymbol;
         }
-        */
         
     }else{
         printf("Declartion of two types of same name is not valid");
     }
 }
+
+/* void inputSymbolTable(int type)
+{
+    switch(type)
+        {
+            case -1:
+                break;
+            case input_enum:
+                printf("yo3");
+                break;
+            case output_enum:
+                printf("yo");
+                break;
+            case int8_enum:
+                ; // is necessary!
+                int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
+                strcpy(newSymbol->name, name);
+                newSymbol->type = int8_enum;
+                break;
+            case float8_enum:
+                ; // is still necessary!!
+                float8_Struct *newSymbol = calloc(1, sizeof(float8_Struct));
+                strcpy(newSymbol->name, name);
+                newSymbol->type = float8_enum;
+                
+                break;
+            default:
+                printf("Illegal type\n");
+        }
+} */
 
 void changeTokenVal(char* name, int val )
 {

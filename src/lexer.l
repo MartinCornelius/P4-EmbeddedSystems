@@ -26,45 +26,44 @@ digit                   [0-9]
 "{"                       { return LBRA; }
 "}"                       { return RBRA; }
 
-"+"                       { return PLUS; }
+"+"                       { return PLUS;  }
 "-"                       { return MINUS; }
 "*"                       { return TIMES; }
-"/"                       { return DIV; }
+"/"                       { return DIV;   }
 
-";"                       { return SEMI; }
+";"                       { return SEMI;  }
 ","                       { return COMMA; }
 
 "define"                  { return DEFINE; }
-"setup()"                 { return SETUP; }
-"mainloop()"              { return MAIN; }
-"func"                    { return FUNC; }
+"setup()"                 { return SETUP;  }
+"mainloop()"              { return MAIN;   }
+"func"                    { return FUNC;   }
 
+
+"input"                   { yylval.type = 0; return TYPE; }
+"output"                  { yylval.type = 1; return TYPE; }
 "int8"                    { yylval.type = 2; return TYPE; }
+"int16"                   { yylval.type = 3; return TYPE; }
+"uint8"                   { yylval.type = 4; return TYPE; }
+"uint16"                  { yylval.type = 5; return TYPE; }
 "float8"                  { yylval.type = 6; return TYPE; }
-
-"input" |
-"output" |
-"bool" |
-"int8" |
-"int16" |
-"uint8" |
-"uint16" |
-"float16" |
-"char" |
-"int"                     { yylval.type = 0; return TYPE; }
+"float16"                 { yylval.type = 7; return TYPE; }
+"bool"                    { yylval.type = 8; return TYPE; }
+"char"                    { yylval.type = 9; return TYPE; }
+"int"                     { yylval.type = 10; return TYPE;}
 
 "="                       { return ASSIGN; }
-"while"                   { return WHILE; }
-"if"                      { return IF; }
+"while"                   { return WHILE;  }
+"if"                      { return IF;     }
 
-"else"                    { return ELSE; }
+"else"                    { return ELSE;   }
 
 "<" |
 "<=" |
 ">" |
 ">=" |
 "==" |
-"!="                      { return COP; }
+"!="                      { return COP;   }
 
 "print"                   { return PRINT; }
 
