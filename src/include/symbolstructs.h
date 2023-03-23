@@ -1,99 +1,95 @@
-typedef struct input input_Struct;
-
-struct input {
-  char type[9];
+struct Symbol{
   char name[32];
+  void *next;
+  int value;
+  int type;     // -1
+};
+typedef struct Symbol Symbol_Struct;
+
+struct input_symbol {
+  char name[32];
+  void *next;
   int value;    // 0x45 hex work in c, print as hex with %x
-  void *next;
+  int type;     // 0
 };
+typedef struct input_symbol input_Struct;
 
-typedef struct output output_Struct;
-
-struct output {
-  char type[9];
+struct output_symbol {
   char name[32];
+  void *next;
   int value;    // hex
-  void *next;
+  int type;     // 1
 };
+typedef struct output_symbol output_Struct;
 
-typedef struct int8 int8_Struct;
-
-struct int8 {
-  char type[9];
+struct int8_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //2
 };
+typedef struct int8_symbol int8_Struct;
 
-typedef struct int16 int16_Struct;
-
-struct int16 {
-  char type[9];
+struct int16_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //3
 };
+typedef struct int16_symbol int16_Struct;
 
-typedef struct uint8 uint8_Struct;
-
-struct uint8 {
-  char type[9];
+struct uint8_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //4
 };
+typedef struct uint8_symbol uint8_Struct;
 
-typedef struct uint16 uint16_Struct;
-
-struct uint16 {
-  char type[9];
+struct uint16_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //5
 };
+typedef struct uint16_symbol uint16_Struct;
 
-typedef struct float8 float8_Struct;
-
-struct float8 {
-  char type[9];
+struct float8_symbol {
   char name[32];
+  void *next;
   float value;
-  void *next;
+  int type;     //6
 };
+typedef struct float8_symbol float8_Struct;
 
-typedef struct float16 float16_Struct;
-
-struct float16 {
-  char type[9];
+struct float16_symbol {
   char name[32];
+  void *next;
   float value;
-  void *next;
+  int type;     //7
 };
+typedef struct float16_symbol float16_Struct;
 
-typedef struct bool bool_Struct;
-
-struct bool {
-  char type[9];
+struct bool_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //8
 };
+typedef struct bool_symbol bool_Struct;
 
-typedef struct char char_Struct;
-
-struct char {
-  char type[9];
+struct char_symbol {
   char name[32];
-  char value;
   void *next;
+  int type;
+  char value;   //9
 };
+typedef struct char_symbol char_Struct;
 
-//flexint ;D
-typedef struct int int_Struct;
-
-struct int {
-  char type[9];
+struct flexint_symbol {
   char name[32];
+  void *next;
   int value;
-  void *next;
+  int type;     //10
 };
+typedef struct flexint_symbol flexint_Struct;

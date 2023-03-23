@@ -3,37 +3,33 @@
     #include <stdlib.h>
     #include <string.h>
     #include <stdbool.h>
+    #include "include/symbolstructs.h"
 
-    //#include "include/symbolstructs.h"
+    extern FILE *yyin; 
 
-    extern FILE *yyin;
-
-    struct Symbol{
-        char type[9];
-        char name[32];
-        int value;
-        struct Symbol *next;
-    };
-    typedef struct Symbol Symbol_Struct;
+    enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, uint8_enum, 
+                 uint16_enum, float8_enum, float16_enum, bool_enum, char_enum, flexint_enum };
 
     int yylex();
     int yyerror(char *s);
     Symbol_Struct* findSymbol(char* name);
-    void createToken(char* type, char* name);
+    void createToken(int type, char* name);
     void changeTokenVal(char* name, int f );
-    /* Symbol_Struct* getToken(char* name); */
 
     int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
 
+    //for debugging skal fjernes senere
+    void printTable();
+
     // Start of linked list
     Symbol_Struct handle;
     // Last element in list
-    Symbol_Struct *listHead;
+    void *listHead;
 
 %}
 
-%union{ int val; char* type; char* id; char* str; int boolean; }
+%union{ int val; int type; char* id; char* str; int boolean; }
 
 %start prog
 
@@ -47,12 +43,11 @@
 %token DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
-        COMMA
+        COMMA PRINT
 %token ASSIGN WHILE IF ELSE
 
 
 %type<boolean> compare comparelist boolexpr
-//ved ikke helt om factor er en value lol
 %type<val> expr term factor
 
 %%
@@ -86,6 +81,7 @@ lines         : line SEMI lines
 line          : ID ASSIGN expr                                             { changeTokenVal($1, $3); }
               | ID LARROW expr                                             { changeTokenVal($1, $3); }
               | funccall
+              | PRINT                                                      { printTable(); }
               |
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA
@@ -138,12 +134,9 @@ boolexpr      : ID                                                          {}
 
 void main(int argc, char **argv)
 {
-    //for debugging skal fjernes senere
-    void printTable();
-
     handle.next = NULL;
     
-    listHead = &handle;
+    listHead = (struct Symbol *)&handle;
 
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
@@ -153,31 +146,91 @@ void main(int argc, char **argv)
 
 void printTable()
 {
-    Symbol_Struct *temp = handle.next;
-    while(temp != NULL)
+    Symbol_Struct *temp = &handle;
+    while(temp->next != NULL)
     {
-        printf("___________________\n");
-
-        printf("Name: %s, Type: %s, Value: %d\n", temp->name, temp->type, temp->value);
-
-        printf("___________________\n");
         temp = temp->next;
+        printf("___________________\n");
+
+        printf("Name: %s, Type: %d, Value: %d\n", temp->name, temp->type, temp->value);
+
+        printf("___________________\n");
     }
 }
 
-void createToken(char* type, char* name)
+void createToken(int type, char* name)
 {
     if(findSymbol(name) == NULL){
-        Symbol_Struct *newSymbol = calloc(1, sizeof(Symbol_Struct));
-        strcpy(newSymbol->type, type);
-        strcpy(newSymbol->name, name);
 
-        listHead->next = newSymbol;
-        listHead = newSymbol;
+        switch(type)
+        {
+            case -1:
+                break;
+            case input_enum:
+                printf("yo3");
+                break;
+            case output_enum:
+                printf("yo");
+                break;
+            case int8_enum:
+                ; // is necessary!
+                int8_Struct *newInt8Symbol = calloc(1, sizeof(int8_Struct));
+                strcpy(newInt8Symbol->name, name);
+                newInt8Symbol->type = int8_enum;
+                ((int8_Struct *)listHead)->next = newInt8Symbol;
+                listHead = newInt8Symbol;
+                break;
+            case float8_enum:
+                ; // is still necessary!!
+                float8_Struct *newFloat8Symbol = calloc(1, sizeof(float8_Struct));
+                strcpy(newFloat8Symbol->name, name);
+                newFloat8Symbol->type = float8_enum;
+                ((float8_Struct *)listHead)->next = newFloat8Symbol;
+                listHead = newFloat8Symbol;
+                break;
+            default:
+                printf("Illegal type (defaulting as flexint)\n");
+                flexint_Struct *newFlexIntSymbol = calloc(1, sizeof(flexint_Struct));
+                strcpy(newFlexIntSymbol->name, name);
+                newFlexIntSymbol->type = flexint_enum;
+                ((flexint_Struct *)listHead)->next = newFlexIntSymbol;
+                listHead = newFlexIntSymbol;
+        }
+        
     }else{
         printf("Declartion of two types of same name is not valid");
     }
 }
+
+/* void inputSymbolTable(int type)
+{
+    switch(type)
+        {
+            case -1:
+                break;
+            case input_enum:
+                printf("yo3");
+                break;
+            case output_enum:
+                printf("yo");
+                break;
+            case int8_enum:
+                ; // is necessary!
+                int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
+                strcpy(newSymbol->name, name);
+                newSymbol->type = int8_enum;
+                break;
+            case float8_enum:
+                ; // is still necessary!!
+                float8_Struct *newSymbol = calloc(1, sizeof(float8_Struct));
+                strcpy(newSymbol->name, name);
+                newSymbol->type = float8_enum;
+                
+                break;
+            default:
+                printf("Illegal type\n");
+        }
+} */
 
 void changeTokenVal(char* name, int val )
 {
@@ -239,18 +292,6 @@ int logCop(int x, char* logop, int y)
   printf("illegal logoperator");
   return false;
 }
-
-/* Symbol_Struct* getToken(char* name)
-{
-    Symbol_Struct *geese = findIndex(name);
-    if(i != -1)
-    {
-        return symbolTable[i];
-    }
-    printf("No such symbol exists");
-    Symbol_Struct *error;
-    return error;
-} */
 
 int yyerror(char *s){
     printf("The error: %s", s);
