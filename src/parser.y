@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include <stdbool.h>
+    #include <stdint.h>
     #include "include/symbolstructs.h"
 
     extern FILE *yyin; 
@@ -18,15 +19,23 @@
 
     int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
+    // Emitter
+    void emit(const char* input);
 
-    //for debugging skal fjernes senere
+    void typeToString(char* input, int type);
+
+    // For debugging skal fjernes senere
     void printTable();
+    void printToFile();
 
     // Start of linked list
     Symbol_Struct handle;
     // Last element in list
     void *listHead;
 
+    // String that will become the C file
+    char programString[3000];
+    char temp[240];
 %}
 
 %union{ int val; int type; char* id; char* str; int boolean; }
@@ -49,40 +58,41 @@
 
 %type<boolean> compare comparelist boolexpr
 %type<val> expr term factor
+%type<str> paramsdecl paramlistdecl lines line
 
 %%
-prog          : defines setup mainloop funcs                                                        
+prog          : defines funcs setup mainloop                               { emit("}\0"); /* printToFile(); */}
               ;
-defines       : define defines
+defines       : define defines                                             { emit("void main()\n{\n"); }
               |
               ;
-define        : DEFINE ID expr
+define        : DEFINE ID expr                                             { sprintf(temp, "#define %s %d\n", $2, $3); emit(temp);}
               ;
-setup         : SETUP LBRA vardecls funccalls RBRA
+setup         : SETUP LBRA vardecls funccalls RBRA                         { emit("while(1){\n"); }
               ;
-mainloop      : MAIN LBRA lines RBRA                                                
+mainloop      : MAIN LBRA lines RBRA                                       { emit("}\n"); /*Den anden parantes kommer oppe i toppen*/}        
               ;
 funcs         : func funcs
               |
               ;
-func          : FUNC ID LPAR paramsdecl RPAR LBRA lines RBRA
-              | FUNC ID LPAR paramsdecl RARROW paramlistdecl RPAR LBRA lines RBRA
+func          : FUNC ID LPAR paramsdecl RPAR LBRA lines RBRA                        { sprintf(temp, "void %s(%s){\n%s}", $2, $4, $7); emit(temp); }
+              | FUNC ID LPAR paramsdecl RARROW paramlistdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}", $2, $4, $6, $9); emit(temp); }
               ;
-paramsdecl    : paramlistdecl
-              |
+paramsdecl    : paramlistdecl                                              { $$ = $1; }
+              |                                                            { $$ = ""; }
               ;
-paramlistdecl : TYPE ID COMMA paramlistdecl                                 
-              | TYPE ID                                                     
+paramlistdecl : TYPE ID COMMA paramlistdecl                                { char* type; typeToString(type, $1); sprintf(temp, "", type, $2, $4); $$ = temp; }  
+              | TYPE ID                                                    { char* type; typeToString(type, $1); sprintf(temp, "%s %s", type, $2); $$ = temp; }         
               ;
-lines         : line SEMI lines
+lines         : line SEMI lines                                            
               | control lines
-              |
+              |                                                            { $$ = ""; }
               ;
 line          : ID ASSIGN expr                                             { changeTokenVal($1, $3); }
               | ID LARROW expr                                             { changeTokenVal($1, $3); }
               | funccall
               | PRINT                                                      { printTable(); }
-              |
+              |                                                            { $$ = ""; }
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA
               | IF LPAR comparelist RPAR LBRA lines RBRA elsechain
@@ -94,8 +104,8 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain
 vardecls      : vardecl SEMI vardecls
               |
               ;
-vardecl       : TYPE ID                                                     { createToken($1, $2); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); }
+vardecl       : TYPE ID                                                     { createToken($1, $2); printf(programString); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); printf(programString); }
               ;
 funccalls     : funccall SEMI funccalls
               |
@@ -134,14 +144,20 @@ boolexpr      : ID                                                          {}
 
 void main(int argc, char **argv)
 {
+    emit("#include <stdio.h>\n#include <stdint.h>\n");
     handle.next = NULL;
-    
     listHead = (struct Symbol *)&handle;
-
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
     yyparse();
+}
+
+void printToFile()
+{
+    FILE *fp = fopen("program.c", "w");
+    fprintf(fp, "%s", programString);
+    fclose(fp);
 }
 
 void printTable()
@@ -201,36 +217,6 @@ void createToken(int type, char* name)
         printf("Declartion of two types of same name is not valid");
     }
 }
-
-/* void inputSymbolTable(int type)
-{
-    switch(type)
-        {
-            case -1:
-                break;
-            case input_enum:
-                printf("yo3");
-                break;
-            case output_enum:
-                printf("yo");
-                break;
-            case int8_enum:
-                ; // is necessary!
-                int8_Struct *newSymbol = calloc(1, sizeof(int8_Struct));
-                strcpy(newSymbol->name, name);
-                newSymbol->type = int8_enum;
-                break;
-            case float8_enum:
-                ; // is still necessary!!
-                float8_Struct *newSymbol = calloc(1, sizeof(float8_Struct));
-                strcpy(newSymbol->name, name);
-                newSymbol->type = float8_enum;
-                
-                break;
-            default:
-                printf("Illegal type\n");
-        }
-} */
 
 void changeTokenVal(char* name, int val )
 {
@@ -293,8 +279,29 @@ int logCop(int x, char* logop, int y)
   return false;
 }
 
+void emit(const char* input)
+{
+    strcat(programString, input);
+}
+
+void typeToString(char* input, int type)
+{
+    switch(type)
+    {
+        case 2:
+            strcpy(input, "int");
+            break;
+        case 6:
+            strcpy(input, "float");
+            break;
+        default:
+        ;
+    }
+}
+
 int yyerror(char *s){
     printf("The error: %s", s);
     printTable();
+    printToFile();
     return 0;
 }
