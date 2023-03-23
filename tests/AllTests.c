@@ -1,12 +1,13 @@
+#include <stdio.h>
 #include "CuTest.h"
 
-CuSuite* tests__GetSuite(); // <- change me
+CuSuite* ParserTestGetSuite(); // <- change me
 
 void RunAllTests(void) {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
     
-    CuSuiteAddSuite(suite, tests__GetSuite()); // <- change me
+    CuSuiteAddSuite(suite, ParserTestGetSuite()); // <- change me
 
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
