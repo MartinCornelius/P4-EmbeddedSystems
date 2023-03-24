@@ -105,8 +105,8 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { st
 vardecls      : vardecl SEMI vardecls                                       { ; }
               |                                                             { strcpy($$, ""); }
               ;
-vardecl       : TYPE ID                                                     { /*createToken($1, $2);*/                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
-              | TYPE ID ASSIGN expr                                         { /*createToken($1, $2); changeTokenVal($2, $4);*/ char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); emit(temp); }
+vardecl       : TYPE ID                                                     { createToken($1, $2);                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
+              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); emit(temp); }
               ;
 funccalls     : funccall SEMI funccalls                                     { sprintf(temp, "%s;\n%s", $1, $3); strcpy($$, temp); }
               |                                                             { strcpy($$, ""); }
