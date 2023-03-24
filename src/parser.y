@@ -15,14 +15,14 @@
     int yyerror(char *s);
     Symbol_Struct* findSymbol(char* name);
     void createToken(int type, char* name);
-    void changeTokenVal(char* name, int f );
+    void changeTokenVal(char* name, char* val);
 
     int cOp(int x, char* op, int y);
     int logCop(int x, char* logop, int y);
     // Emitter
     void emit(const char* input);
 
-    void typeToString(char* input, int type);
+    void typeToString(char* input, int type); 
 
     // For debugging skal fjernes senere
     void printTable();
@@ -38,7 +38,7 @@
     char temp[240];
 %}
 
-%union{ int val; int type; char* id; char* str; int boolean; }
+%union{ int val; int type; char* id; char str[200]; int boolean; }
 
 %start prog
 
@@ -56,95 +56,96 @@
 %token ASSIGN WHILE IF ELSE
 
 
-%type<boolean> compare comparelist boolexpr
-%type<val> term factor expr
-%type<str> paramsdecl paramlistdecl lines line 
+%type<str> compare comparelist boolexpr funcs func vardecls vardecl
+%type<str> term factor expr defines define setup mainloop funccalls funccall paramlistcall paramscall
+%type<str> paramoutdecl paramindecl lines line control elsechain
 
 %%
-prog          : defines funcs setup mainloop                               { emit("}\0"); /* printToFile(); */}
+prog          : defines funcs setup mainloop                                { emit("}"); printToFile(); }
               ;
-defines       : define defines                                             { printf("yellow"); emit("void main()\n{\n"); }
-              |
+defines       : define defines                                              { ; }
+              |                                                             { ; }
               ;
-define        : DEFINE ID expr                                             { sprintf(temp, "#define %s %d\n", $2, $3); emit(temp);}
+define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp); }
               ;
-setup         : SETUP LBRA vardecls funccalls RBRA                         { emit("while(1){\n"); }
+setup         : SETUP LBRA vardecls funccalls RBRA                          { emit("while(1){\n"); }
               ;
-mainloop      : MAIN LBRA lines RBRA                                       { emit("}\n"); /*Den anden parantes kommer oppe i toppen*/}        
+mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp); }
               ;
-funcs         : func funcs
-              |
+funcs         : func funcs                                                  { ; }
+              |                                                             { emit("void main(){\n"); }
               ;
-func          : FUNC ID LPAR paramsdecl RPAR LBRA lines RBRA                        { sprintf(temp, "void %s(%s){\n%s}", $2, $4, $7); emit(temp); }
-              | FUNC ID LPAR paramsdecl RARROW paramlistdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}", $2, $4, $6, $9); emit(temp); }
+func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                       { sprintf(temp, "void %s(%s){\n%s}\n", $2, $4, $7); emit(temp); }
+              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}\n", $2, $4, $6, $9); emit(temp); }
               ;
-paramsdecl    : paramlistdecl                                              { $$ = $1; }
-              |                                                            { $$ = ""; }
+paramoutdecl  : TYPE ID COMMA paramoutdecl                                  { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s, ", type, $2); strcpy($$, temp);; }
+              | TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s", type, $2); strcpy($$, temp);; }
+              |                                                             { ; }
               ;
-paramlistdecl : TYPE ID COMMA paramlistdecl                                { char* type; typeToString(type, $1); sprintf(temp, "", type, $2, $4); $$ = temp; }  
-              | TYPE ID                                                    { char* type; typeToString(type, $1); sprintf(temp, "%s %s", type, $2); $$ = temp; }         
+paramindecl   : TYPE ID COMMA paramindecl                                   { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s, ", type, $2); strcpy($$, temp); }  
+              | TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s", type, $2); strcpy($$, temp); }         
+              |                                                             { ; }
               ;
-lines         : line SEMI lines                                            
-              | control lines
-              |                                                            { $$ = ""; }
+lines         : line SEMI lines                                             { ; }
+              | control lines                                               { ; }
+              |                                                             { strcpy($$, ""); }
               ;
-line          : ID ASSIGN expr                                             { changeTokenVal($1, $3);  sprintf(temp, "%s = %d;\n", $1, $3); emit(temp); }
-              | ID LARROW expr                                             { changeTokenVal($1, $3); }
-              | funccall
-              | PRINT                                                      { printTable(); }
-              |                                                            { $$ = ""; }
+line          : ID ASSIGN expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "%s = %s;\n", $1, $3); strcpy($$, temp); }
+              | ID LARROW expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "*%s = %s", $1, $3); strcpy($$, temp); }
+              | funccall                                                    { strcpy($$, ""); }
+              |                                                             { ; }
               ;
-control       : WHILE LPAR comparelist RPAR LBRA lines RBRA
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain
+control       : WHILE LPAR comparelist RPAR LBRA lines RBRA                 { sprintf(temp, "while(%s){\n%s\n}", $3, $6); strcpy($$, temp); }
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain          { sprintf(temp, "if(%s){\n%s\n} %s", $3, $6, $8); strcpy($$, temp); }
               ;
-elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain
-              | ELSE LBRA lines RBRA
-              |
+elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { strcpy($$, ""); }
+              | ELSE LBRA lines RBRA                                        { strcpy($$, ""); }
+              |                                                             { strcpy($$, ""); }
               ;
 vardecls      : vardecl SEMI vardecls                                       { ; }
-              |
+              |                                                             { strcpy($$, ""); }
               ;
-vardecl       : TYPE ID                                                     { createToken($1, $2); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
-              | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %d;\n", type, $2, $4); emit(temp);  }
+vardecl       : TYPE ID                                                     { /*createToken($1, $2);*/                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
+              | TYPE ID ASSIGN expr                                         { /*createToken($1, $2); changeTokenVal($2, $4);*/ char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); emit(temp); }
               ;
-funccalls     : funccall SEMI funccalls
-              |
+funccalls     : funccall SEMI funccalls                                     { sprintf(temp, "%s;\n%s", $1, $3); strcpy($$, temp); }
+              |                                                             { strcpy($$, ""); }
               ;
-funccall      : ID LPAR paramscall RPAR
-              | ID LPAR paramscall RARROW paramlistcall RPAR
+funccall      : ID LPAR paramscall RPAR                                     { sprintf(temp, "%s(%s)", $1, $3); strcpy($$, temp); }
+              | ID LPAR paramscall RARROW paramlistcall RPAR                { sprintf(temp, "%s(%s,%s)", $1, $3, $5); strcpy($$, temp); }
               ;
-paramscall    : paramlistcall
-              |
+paramscall    : paramlistcall                                               { strcpy($$, $1); }
+              |                                                             { strcpy($$, temp); }
               ;
-paramlistcall : expr COMMA paramlistcall
-              | expr
+paramlistcall : expr COMMA paramlistcall                                    { sprintf(temp, "%s,%s", $1, $3); strcpy($$, temp); }
+              | expr                                                        { strcpy($$, temp); }
               ;
-expr          : expr PLUS term                                              { $$ = $1 + $3; }                        
-              | expr MINUS term                                             { $$ = $1 - $3; }
-              | term                                                        { $$ = $1; }
+expr          : expr PLUS term                                              { sprintf(temp, "%s + %s", $1, $3); strcpy($$, temp); }                        
+              | expr MINUS term                                             { sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
+              | term                                                        { strcpy($$, $1); }
               ;
-term          : term TIMES factor                                           { $$ = $1 * $3; }
-              | term DIV factor                                             { if($3 != 0){ $$ = $1 / $3; }else{ $$ = 0; } }
-              | factor                                                      { $$ = $1; }
+term          : term TIMES factor                                           { sprintf(temp, "%s * %s", $1, $3); strcpy($$, temp); }
+              | term DIV factor                                             { sprintf(temp, "%s / %s", $1, $3); strcpy($$, temp); }
+              | factor                                                      { strcpy($$, $1);}
               ;
-factor        : ID                                                          { Symbol_Struct *a = findSymbol($1); $$ = a->value; }
-              | VAL                                                         { $$ = $1; }
-              | LPAR expr RPAR                                              { $$ = $2; }
+factor        : ID                                                          { /* Symbol_Struct *a = findSymbol($1); $$ = a->name;*/ strcpy($$, $1); }
+              | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp);  }
+              | LPAR expr RPAR                                              { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
               ;
-comparelist   : compare LOGOP comparelist                                   { $$ = logCop($1, $2, $3); }
-              | compare                                                     { $$ = $1; }
+comparelist   : compare LOGOP comparelist                                   { /* $$ = logCop($1, $2, $3); */ sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
+              | compare                                                     { strcpy($$, $1); }
               ;
-compare       : boolexpr COP boolexpr                                       { $$ = cOp($1, $2, $3); }
-              | ID                                                          { Symbol_Struct *a = findSymbol($1); $$ = a->value; }
+compare       : boolexpr COP boolexpr                                       { /* $$ = cOp($1, $2, $3);*/ sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp) }
+              | ID                                                          { /* Symbol_Struct *a = findSymbol($1);*/ strcpy($$, $1); }
               ;
-boolexpr      : ID                                                          {}
-              | VAL                                                         {}
+boolexpr      : ID                                                          { strcpy($$, $1); }
+              | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp); }
               ;
 %%
 
 void main(int argc, char **argv)
 {
-    emit("#include <stdio.h>\n#include <stdint.h>\nvoid main(){\n");
+    emit("#include <stdio.h>\n#include <stdint.h>\n");
     handle.next = NULL;
     listHead = (struct Symbol *)&handle;
     if (argc > 1)
@@ -218,8 +219,9 @@ void createToken(int type, char* name)
     }
 }
 
-void changeTokenVal(char* name, int val )
+void changeTokenVal(char* name, char* sval)
 {
+    int val = atoi(sval);
     Symbol_Struct* symbol = findSymbol(name);
     if(symbol != NULL)
     {
@@ -281,27 +283,30 @@ int logCop(int x, char* logop, int y)
 
 void emit(const char* input)
 {
+    printf("\n%s\n", input);
     strcat(programString, input);
 }
 
 void typeToString(char* input, int type)
 {
+    
     switch(type)
     {
         case 2:
-            strcpy(input, "int");
+            strcpy(input, "int8_T");
             break;
         case 6:
             strcpy(input, "float");
             break;
         default:
-        ;
+            printf("invalid type given, defaulting to flexint\n");
+            strcpy(input, "flexint");
     }
 }
 
 int yyerror(char *s){
     printf("The error: %s", s);
     printTable();
-    printToFile();
+    /* printToFile(); */
     return 0;
 }

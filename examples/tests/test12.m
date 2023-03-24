@@ -1,4 +1,4 @@
-// test12 declares the smallest func last in the file. It should pass
+// test12 declares the smallest func last in the file. It should not pass
 
 setup(){}
 
