@@ -38,7 +38,7 @@
     char temp[240];
 %}
 
-%union{ int val; int type; char* id; char str[200]; int boolean; }
+%union{ int val; int type; char* id; char str[200]; int boolean; char* string; }
 
 %start prog
 
@@ -47,6 +47,7 @@
 %token<id> ID
 %token<type> TYPE
 %token<boolean> BOOLVAL
+%token<string> STRING
 
 
 %token DEFINE SETUP MAIN FUNC LARROW
@@ -93,6 +94,7 @@ lines         : line SEMI lines                                             { ; 
 line          : ID ASSIGN expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "%s = %s;\n", $1, $3); strcpy($$, temp); }
               | ID LARROW expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "*%s = %s", $1, $3); strcpy($$, temp); }
               | funccall                                                    { strcpy($$, ""); }
+              | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s;\n", $3); strcpy($$, temp); }
               |                                                             { ; }
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA                 { sprintf(temp, "while(%s){\n%s\n}", $3, $6); strcpy($$, temp); }
@@ -293,7 +295,7 @@ void typeToString(char* input, int type)
     switch(type)
     {
         case 2:
-            strcpy(input, "int8_T");
+            strcpy(input, "int8_t");
             break;
         case 6:
             strcpy(input, "float");
