@@ -57,7 +57,7 @@
 %token ASSIGN WHILE IF ELSE
 
 
-%type<str> compare comparelist boolexpr funcs func vardecls vardecl
+%type<str> compare comparelist boolexpr funcs func vardecl
 %type<str> term factor expr defines define setup mainloop funccalls funccall paramlistcall paramscall
 %type<str> paramoutdecl paramindecl lines line control elsechain
 
@@ -69,7 +69,7 @@ defines       : define defines                                              { ; 
               ;
 define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp); }
               ;
-setup         : SETUP LBRA vardecls funccalls RBRA                          { emit("while(1){\n"); }
+setup         : SETUP LBRA lines RBRA                          { emit("while(1){\n"); }
               ;
 mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp); }
               ;
@@ -95,6 +95,7 @@ line          : ID ASSIGN expr                                              { /*
               | ID LARROW expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "*%s = %s", $1, $3); strcpy($$, temp); }
               | funccall                                                    { strcpy($$, ""); }
               | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s;\n", $3); strcpy($$, temp); }
+              | vardecl                                                     { ; }
               |                                                             { ; }
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA                 { sprintf(temp, "while(%s){\n%s\n}", $3, $6); strcpy($$, temp); }
@@ -104,9 +105,7 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { st
               | ELSE LBRA lines RBRA                                        { strcpy($$, ""); }
               |                                                             { strcpy($$, ""); }
               ;
-vardecls      : vardecl SEMI vardecls                                       { ; }
-              |                                                             { strcpy($$, ""); }
-              ;
+
 vardecl       : TYPE ID                                                     { createToken($1, $2);                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
               | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); emit(temp); }
               ;

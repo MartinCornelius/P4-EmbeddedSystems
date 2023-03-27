@@ -38,7 +38,7 @@ digit                   [0-9]
 "mainloop()"              { return MAIN;   }
 "func"                    { return FUNC;   }
 "print"                   { return PRINT;  }
-\"[A-Za-z% ]*\"(," "*[A-Za-z0-9_ ]+)*     { yylval.string = yytext; return STRING; }
+\"[A-Za-z%\\/ ]*\"(," "*[A-Za-z0-9_ ]+)*     { yylval.string = yytext; return STRING; }
 
 
 "input"                   { yylval.type = 0; return TYPE; }
@@ -76,6 +76,6 @@ digit                   [0-9]
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
 [a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = strdup(yytext); return ID; }
 [ \t\n]                   { /*Ignore whitespace*/; }
-.                         { printf("Not implemented\n"); }
+.                         { printf("%s", yytext); }
 %%
 
