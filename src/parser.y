@@ -58,7 +58,7 @@
 
 
 %type<str> compare comparelist boolexpr funcs func vardecl
-%type<str> term factor expr defines define setup mainloop funccalls funccall paramlistcall paramscall
+%type<str> term factor expr defines define setup mainloop funccall paramlistcall paramscall
 %type<str> paramoutdecl paramindecl lines line control elsechain
 
 %%
@@ -69,9 +69,9 @@ defines       : define defines                                              { ; 
               ;
 define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp); }
               ;
-setup         : SETUP LBRA lines RBRA                          { emit("while(1){\n"); }
+setup         : SETUP LBRA lines RBRA                                       { emit("while(1){\n"); }
               ;
-mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp); }
+mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "}\n"); emit(temp); }
               ;
 funcs         : func funcs                                                  { ; }
               |                                                             { emit("void main(){\n"); }
@@ -89,13 +89,13 @@ paramindecl   : TYPE ID COMMA paramindecl                                   { ch
               ;
 lines         : line SEMI lines                                             { ; }
               | control lines                                               { ; }
-              |                                                             { strcpy($$, ""); }
+              |                                                             { ; }
               ;
 line          : ID ASSIGN expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "%s = %s;\n", $1, $3); strcpy($$, temp); }
               | ID LARROW expr                                              { /*changeTokenVal($1, $3);*/ sprintf(temp, "*%s = %s", $1, $3); strcpy($$, temp); }
               | funccall                                                    { strcpy($$, ""); }
               | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s;\n", $3); strcpy($$, temp); }
-              | vardecl                                                     { ; }
+              | vardecl                                                     { strcpy($$, $1); }
               |                                                             { ; }
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA                 { sprintf(temp, "while(%s){\n%s\n}", $3, $6); strcpy($$, temp); }
@@ -108,9 +108,6 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { st
 
 vardecl       : TYPE ID                                                     { createToken($1, $2);                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); emit(temp); }
               | TYPE ID ASSIGN expr                                         { createToken($1, $2); changeTokenVal($2, $4); char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); emit(temp); }
-              ;
-funccalls     : funccall SEMI funccalls                                     { sprintf(temp, "%s;\n%s", $1, $3); strcpy($$, temp); }
-              |                                                             { strcpy($$, ""); }
               ;
 funccall      : ID LPAR paramscall RPAR                                     { sprintf(temp, "%s(%s)", $1, $3); strcpy($$, temp); }
               | ID LPAR paramscall RARROW paramlistcall RPAR                { sprintf(temp, "%s(%s,%s)", $1, $3, $5); strcpy($$, temp); }
