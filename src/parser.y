@@ -133,7 +133,7 @@ factor        : ID                                                          { /*
 comparelist   : compare LOGOP comparelist                                   { /* $$ = logCop($1, $2, $3); */ sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
               | compare                                                     { strcpy($$, $1); }
               ;
-compare       : boolexpr COP boolexpr                                       { /* $$ = cOp($1, $2, $3);*/ sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp) }
+compare       : boolexpr COP boolexpr                                       { /* $$ = cOp($1, $2, $3);*/ sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
               | ID                                                          { /* Symbol_Struct *a = findSymbol($1);*/ strcpy($$, $1); }
               ;
 boolexpr      : ID                                                          { strcpy($$, $1); }
