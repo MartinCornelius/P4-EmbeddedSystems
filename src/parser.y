@@ -7,6 +7,7 @@
     #include "include/symbolstructs.h"
 
     extern FILE *yyin; 
+    char outputFile[512] = "output/output.c";
 
     enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, uint8_enum, 
                  uint16_enum, float8_enum, float16_enum, bool_enum, char_enum, flexint_enum };
@@ -151,12 +152,15 @@ void main(int argc, char **argv)
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
+    if (argc > 2)
+        sprintf(outputFile, "output/%s", argv[2]);
+
     yyparse();
 }
 
 void printToFile()
 {
-    FILE *fp = fopen("program.c", "w");
+    FILE *fp = fopen(outputFile, "w");
     fprintf(fp, "%s", programString);
     fclose(fp);
 }
