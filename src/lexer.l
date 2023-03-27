@@ -38,8 +38,8 @@ digit                   [0-9]
 "mainloop()"              { return MAIN;   }
 "func"                    { return FUNC;   }
 "print"                   { return PRINT;  }
-\"[A-Za-z%\\/ ]*\"(," "*[A-Za-z0-9_ ]+)*     { yylval.string = yytext; return STRING; }
 
+\"[A-Za-z%\\/ ]*\"[\,a-zA-Z ]*     { yylval.string = strdup(yytext); return STRING; }
 
 "input"                   { yylval.type = 0; return TYPE; }
 "output"                  { yylval.type = 1; return TYPE; }
@@ -59,15 +59,15 @@ digit                   [0-9]
 
 "else"                    { return ELSE;   }
 
-"<" |
 "<=" |
-">" |
 ">=" |
 "==" |
-"!="                      { return COP;   }
+"!=" |
+"<"  |
+">"                       { yylval.string = strdup(yytext); return COP;   }
 
 "||" |
-"&&"                      { return LOGOP; }
+"&&"                      { yylval.string = strdup(yytext); return LOGOP; }
 
 "true" |
 "false"                   { yylval.boolean = yytext[0] == 't'; return BOOLVAL; }
