@@ -8,7 +8,6 @@
 
 %x COMMENT
 
-alpha                   [a-zA-Z]
 digit                   [0-9]
 
 %%
@@ -38,6 +37,8 @@ digit                   [0-9]
 "setup()"                 { return SETUP;  }
 "mainloop()"              { return MAIN;   }
 "func"                    { return FUNC;   }
+"print"                   { return PRINT;  }
+\"[A-Za-z%\\/ ]*\"(," "*[A-Za-z0-9_ ]+)*     { yylval.string = yytext; return STRING; }
 
 
 "input"                   { yylval.type = 0; return TYPE; }
@@ -65,18 +66,16 @@ digit                   [0-9]
 "==" |
 "!="                      { return COP;   }
 
-"print"                   { return PRINT; }
-
 "||" |
 "&&"                      { return LOGOP; }
 
 "true" |
 "false"                   { yylval.boolean = yytext[0] == 't'; return BOOLVAL; }
 
-[0] |
+"0" |
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
 [a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = strdup(yytext); return ID; }
 [ \t\n]                   { /*Ignore whitespace*/; }
-.                         { printf("Not implemented\n"); }
+.                         { printf("%s", yytext); }
 %%
 

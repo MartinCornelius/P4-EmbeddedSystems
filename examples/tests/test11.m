@@ -1,4 +1,4 @@
-// test11 declares the smallest func first in the file. It should not pass
+// test11 declares the smallest func first in the file. It should pass
 
 func(){}
 

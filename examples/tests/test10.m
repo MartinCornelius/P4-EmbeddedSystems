@@ -2,5 +2,8 @@
 
 setup(){
   int8 test = 12 / 3;
+  int8 testO = 4;
 }
-mainloop(){}
+mainloop(){
+  test = test - testO;
+}
