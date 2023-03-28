@@ -25,15 +25,16 @@
 
 %}
 
-%union{ int val; int type; char* id; char str[500]; char* string; }
+%union{ int val; float valf; int type; char* id; char str[500]; char* string; }
 
 %start prog
 
 %token<val> VAL
+%token<valf> VALF
 %token<string> COP LOGOP
 %token<id> ID
 %token<type> TYPE
-%token<str> STRING
+%token<string> STRING
 
 %token DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
@@ -90,8 +91,9 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { sp
               | ELSE LBRA lines RBRA                                        { sprintf(temp, "else{\n%s\n}", $3); strcpy($$, temp); }
               |                                                             { strcpy($$, ""); }
               ;
-vardecl       : TYPE ID                                                     { /*createSymbol($1, $2, handle, listHead);*/                         char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
-              | TYPE ID ASSIGN expr                                         { /*createSymbol($1, $2, handle, listHead);*/ /*changeSymbolVal($2, $4, handle);*/ char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
+vardecl       : TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
+              | TYPE ID ASSIGN expr                                         { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
+              | TYPE ID ASSIGN STRING                                       { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
               ;
 funccall      : ID LPAR paramincall RPAR                                    { sprintf(temp, "%s(%s);\n", $1, $3); strcpy($$, temp); }
               | ID LPAR paramincall RARROW paramoutcall RPAR                { sprintf(temp, "%s(%s, %s);\n", $1, $3, $5); strcpy($$, temp); }
@@ -115,6 +117,7 @@ term          : term TIMES factor                                           { sp
               ;
 factor        : ID                                                          { strcpy($$, $1); }
               | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp);  }
+              | VALF                                                        { sprintf(temp, "%f", $1); strcpy($$, temp);  }
               | LPAR expr RPAR                                              { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
               ;
 comparelist   : compare LOGOP comparelist                                   { sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
