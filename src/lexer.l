@@ -69,9 +69,6 @@ digit                   [0-9]
 "||" |
 "&&"                      { yylval.string = strdup(yytext); return LOGOP; }
 
-"true" |
-"false"                   { yylval.boolean = yytext[0] == 't'; return BOOLVAL; }
-
 "0" |
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
 [a-zA-Z_][0-9a-zA-Z_]*    { yylval.id = strdup(yytext); return ID; }
