@@ -9,7 +9,7 @@ void printToFile(char* path, char* programString)
     fclose(fp);
 }
 
-void emit(const char* input)
+void emit(const char* input, char* programString)
 {
     strcat(programString, input);
 }

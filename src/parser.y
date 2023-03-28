@@ -7,7 +7,7 @@
 
     // String that will become the C file
     char temp[500];
-    static char programString[3000];
+    char programString[3000];
 
     #include "include/symbol_types.h"
     #include "include/code_gen.h"
@@ -47,22 +47,22 @@
 %type<str> paramoutdecl paramindecl lines line control elsechain
 
 %%
-prog          : defines funcs setup mainloop                                { emit("}"); printToFile(outputFile, programString); }
+prog          : defines funcs setup mainloop                                { emit("}", programString); printToFile(outputFile, programString); }
               ;
 defines       : define defines                                              { sprintf(temp, "%s\n%s", $1, $2); strcpy($$, temp); }
               |                                                             { strcpy($$, ""); }
               ;
-define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp); }
+define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp, programString); }
               ;
-setup         : SETUP LBRA lines RBRA                                       { sprintf(temp, "%s\nwhile(1){\n", $3); emit(temp); }
+setup         : SETUP LBRA lines RBRA                                       { sprintf(temp, "%s\nwhile(1){\n", $3); emit(temp, programString); }
               ;
-mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp); }
+mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp, programString); }
               ;
 funcs         : func funcs                                                  { strcpy($$, ""); }
-              |                                                             { emit("void main(){\n"); }
+              |                                                             { emit("void main(){\n", programString); }
               ;
-func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                       { sprintf(temp, "void %s(%s){\n%s}\n", $2, $4, $7); emit(temp); }
-              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}\n", $2, $4, $6, $9); emit(temp); }
+func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                       { sprintf(temp, "void %s(%s){\n%s}\n", $2, $4, $7); emit(temp, programString); }
+              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}\n", $2, $4, $6, $9); emit(temp, programString); }
               ;
 paramoutdecl  : TYPE ID COMMA paramoutdecl                                  { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s, %s", type, $2, $4); strcpy($$, temp); }
               | TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s", type, $2); strcpy($$, temp); }
@@ -130,7 +130,7 @@ boolexpr      : ID                                                          { st
 
 void main(int argc, char **argv)
 {
-    emit("#include <stdio.h>\n#include <stdint.h>\n");
+    emit("#include <stdio.h>\n#include <stdint.h>\n", programString);
     /* handle->next = NULL;
     listHead = (struct Symbol *)handle; */
     if (argc > 1)
