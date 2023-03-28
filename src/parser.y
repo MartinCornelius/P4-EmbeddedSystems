@@ -22,7 +22,6 @@
     Symbol_Struct* handle;
     // Last element in list
     void *listHead;
-
 %}
 
 %union{ int val; float valf; int type; char* id; char str[500]; char* string; }
@@ -55,7 +54,7 @@ defines       : define defines                                              { sp
               ;
 define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp, programString); }
               ;
-setup         : SETUP LBRA lines RBRA                                       { sprintf(temp, "%s\nwhile(1){\n", $3); emit(temp, programString); }
+setup         : SETUP LBRA lines RBRA                                       { sprintf(temp, "%s\nif(1){\n", $3); emit(temp, programString); }
               ;
 mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp, programString); }
               ;
@@ -80,7 +79,7 @@ lines         : line SEMI lines                                             { sp
 line          : ID ASSIGN expr                                              { sprintf(temp, "%s = %s;\n", $1, $3); strcpy($$, temp); }
               | ID LARROW expr                                              { sprintf(temp, "*%s = %s;\n", $1, $3); strcpy($$, temp); }
               | funccall                                                    { strcpy($$, $1); }
-              | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s;\n", $3); strcpy($$, temp); }
+              | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s);\n", $3); strcpy($$, temp); }
               | vardecl                                                     { strcpy($$, $1); }
               |                                                             { strcpy($$, ""); }
               ;
@@ -126,7 +125,8 @@ comparelist   : compare LOGOP comparelist                                   { sp
 compare       : boolexpr COP compare                                        { sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
               | boolexpr                                                    { strcpy($$, $1); }
               ;
-boolexpr      : ID                                                          { strcpy($$, $1); }
+boolexpr      : LPAR comparelist RPAR                                       { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
+              | ID                                                          { strcpy($$, $1); }
               | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp); }
               ;
 %%
