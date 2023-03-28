@@ -1,9 +1,9 @@
 // test17
 
 setup(){
-  int8 a = 1;
+  uint16 hugin = 2938;
 }
 
 mainloop(){
-  int8 b = 40;
+  char nicklas = 'k';
 }

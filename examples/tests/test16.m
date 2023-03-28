@@ -2,10 +2,9 @@
 
 setup(){
   int8 a = 1;
-  float8 b = 2;
+  float b = -2.23;
 }
 
 mainloop(){
-  print("a value is %d and b is %f", a, b);
   a = a + 1;
 }
