@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "../src/include/symbol_types.h"
 #include "../src/include/code_gen.h"
 #include "CuTest.h"
 
@@ -17,7 +18,7 @@ void EmitAppendString(CuTest* tc)
 
 void TypeToStringEqualsInt8t(CuTest* tc)
 {
-    int type = 2;
+    int type = int8_enum;
     char testInput[20];
 
     char* expected = "int8_t";
@@ -28,7 +29,7 @@ void TypeToStringEqualsInt8t(CuTest* tc)
 
 void TypeToStringNotEqualsInt8t(CuTest* tc)
 {
-    int type = 6;
+    int type = float_enum;
     char testInput[20];
 
     char* notExpected = "int8_t";
@@ -42,7 +43,7 @@ void TypeToStringNotEqualsInt8t(CuTest* tc)
 
 void TypeToStringEqualsFloat(CuTest* tc)
 {
-    int type = 6;
+    int type = float_enum;
     char testInput[20];
 
     char* expected = "float";
@@ -53,7 +54,7 @@ void TypeToStringEqualsFloat(CuTest* tc)
 
 void TypeToStringNotEqualsFloat(CuTest* tc)
 {
-    int type = 2;
+    int type = int8_enum;
     char testInput[20];
 
     char* notExpected = "float";
@@ -67,7 +68,7 @@ void TypeToStringNotEqualsFloat(CuTest* tc)
 
 void TypeToStringEqualsDefaultFlexInt(CuTest* tc)
 {
-    int type = 13;
+    int type = 87;
     char testInput[20];
 
     char* expected = "flexint";
@@ -80,7 +81,7 @@ void TypeToStringEqualsDefaultFlexInt(CuTest* tc)
 
 void TypeToStringNotEqualsDefaultFlexInt(CuTest* tc)
 {
-    int type = 2;
+    int type = int8_enum;
     char testInput[20];
 
     char* notExpected = "flexint";
