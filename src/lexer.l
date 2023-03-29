@@ -58,6 +58,9 @@ digit                   [0-9]
 "||" |
 "&&"                      { yylval.string = strdup(yytext); return LOGOP; }
 
+"-0x"[0-9a-fA-F]+ |
+"0x"[0-9a-fA-F]+          { yylval.string = strdup(yytext); return STRING; }
+
 "0" |
 "-"[1-9]{digit}* |
 [1-9]{digit}*             { yylval.val = atoi(yytext); return VAL; }
