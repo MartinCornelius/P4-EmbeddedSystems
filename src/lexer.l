@@ -4,6 +4,8 @@
 #include "parser.tab.h"
 #include <string.h>
 
+#include "include/symbol_types.h"
+
 %}
 
 %x COMMENT
@@ -27,16 +29,18 @@ digit                   [0-9]
 \'{alpha}\'                        { yylval.string = strdup(yytext); return STRING; }
 \"[A-Za-z%\\/ ]*\"[\,a-zA-Z ]*     { yylval.string = strdup(yytext); return STRING; }
 
-"input"                   { yylval.type = 0; return TYPE; }
-"output"                  { yylval.type = 1; return TYPE; }
-"int8"                    { yylval.type = 2; return TYPE; }
-"int16"                   { yylval.type = 3; return TYPE; }
-"uint8"                   { yylval.type = 4; return TYPE; }
-"uint16"                  { yylval.type = 5; return TYPE; }
-"float"                   { yylval.type = 6; return TYPE; }
-"bool"                    { yylval.type = 8; return TYPE; }
-"char"                    { yylval.type = 9; return TYPE; }
-"int"                     { yylval.type = 10; return TYPE;}
+"input"                   { yylval.type = input_enum; return TYPE; }
+"output"                  { yylval.type = output_enum; return TYPE; }
+"int8"                    { yylval.type = int8_enum; return TYPE; }
+"int16"                   { yylval.type = int16_enum; return TYPE; }
+"int32"                   { yylval.type = int32_enum; return TYPE; }
+"uint8"                   { yylval.type = uint8_enum; return TYPE; }
+"uint16"                  { yylval.type = uint16_enum; return TYPE; }
+"uint32"                  { yylval.type = uint32_enum; return TYPE; }
+"float"                   { yylval.type = float_enum; return TYPE; }
+"bool"                    { yylval.type = bool_enum; return TYPE; }
+"char"                    { yylval.type = char_enum; return TYPE; }
+"int"                     { yylval.type = flexint_enum; return TYPE;}
 
 "="                       { return ASSIGN; }
 "while"                   { return WHILE;  }
