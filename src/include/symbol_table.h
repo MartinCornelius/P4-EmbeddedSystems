@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "symbol_types.h"
 
 void createSymbol(int type, char* name, Symbol_Struct* handle, void* listHead)
@@ -25,13 +26,13 @@ void createSymbol(int type, char* name, Symbol_Struct* handle, void* listHead)
                 ((int8_Struct *)listHead)->next = newInt8Symbol;
                 listHead = newInt8Symbol;
                 break;
-            case float8_enum:
+            case float_enum:
                 ; // is still necessary!!
-                float8_Struct *newFloat8Symbol = calloc(1, sizeof(float8_Struct));
-                strcpy(newFloat8Symbol->name, name);
-                newFloat8Symbol->type = float8_enum;
-                ((float8_Struct *)listHead)->next = newFloat8Symbol;
-                listHead = newFloat8Symbol;
+                float_Struct *newFloatSymbol = calloc(1, sizeof(float_Struct));
+                strcpy(newFloatSymbol->name, name);
+                newFloatSymbol->type = float_enum;
+                ((float_Struct *)listHead)->next = newFloatSymbol;
+                listHead = newFloatSymbol;
                 break;
             default:
                 printf("Illegal type (defaulting as flexint)\n");
