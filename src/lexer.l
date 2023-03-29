@@ -55,6 +55,8 @@ digit                   [0-9]
 "<"  |
 ">"                       { yylval.string = strdup(yytext); return COP;   }
 
+"!"                       { return NOT;   }
+
 "||" |
 "&&"                      { yylval.string = strdup(yytext); return LOGOP; }
 
