@@ -1,5 +1,9 @@
-enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, uint8_enum, 
-                 uint16_enum, float_enum, float16_enum, bool_enum, char_enum, flexint_enum };
+#ifndef SYMBOLTYPES_H
+#define SYMBOLTYPES_H
+
+enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, int32_enum, uint8_enum, 
+                 uint16_enum, uint32_enum, float_enum, bool_enum, char_enum, flexint_enum };
+
 struct Symbol{
   char name[32];
   void *next;
@@ -95,3 +99,5 @@ struct flexint_symbol {
   int type;     //10
 };
 typedef struct flexint_symbol flexint_Struct;
+
+#endif

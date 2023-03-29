@@ -1,3 +1,6 @@
+#ifndef CODEGEN_H
+#define CODEGEN_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,28 +21,40 @@ void typeToString(char* input, int type)
 {
     switch(type)
     {
-        case 2:
+        case input_enum:
+            strcpy(input, "input");
+            break;
+        case output_enum:
+            strcpy(input, "output");
+            break;
+        case int8_enum:
             strcpy(input, "int8_t");
             break;
-        case 3:
+        case int16_enum:
             strcpy(input, "int16_t");
             break;
-        case 4:
+        case int32_enum:
+            strcpy(input, "int");
+            break;
+        case uint8_enum:
             strcpy(input, "uint8_t");
             break;
-        case 5:
+        case uint16_enum:
             strcpy(input, "uint16_t");
             break;
-        case 6:
+        case uint32_enum:
+            strcpy(input, "unsigned int");
+            break;
+        case float_enum:
             strcpy(input, "float");
             break;
-        case 8:
+        case bool_enum:
             strcpy(input, "bool");
             break;
-        case 9:
+        case char_enum:
             strcpy(input, "char");
             break;
-        case 10:
+        case flexint_enum:
             strcpy(input, "flexint");
             break;
         default:
@@ -47,3 +62,5 @@ void typeToString(char* input, int type)
             strcpy(input, "flexint");
     }
 }
+
+#endif
