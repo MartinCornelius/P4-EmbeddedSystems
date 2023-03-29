@@ -30,7 +30,7 @@
 
 %token<val> VAL
 %token<valf> VALF
-%token<string> COP LOGOP
+%token<string> COP LOGOP NOT
 %token<id> ID
 %token<type> TYPE
 %token<string> STRING
@@ -123,7 +123,9 @@ comparelist   : compare LOGOP comparelist                                   { sp
               | compare                                                     { strcpy($$, $1); }
               ;
 compare       : boolexpr COP compare                                        { sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
+              | NOT boolexpr COP compare                                    { sprintf(temp, "!%s %s %s", $2, $3, $4); strcpy($$, temp); }
               | boolexpr                                                    { strcpy($$, $1); }
+              | NOT boolexpr                                                { sprintf(temp, "!%s", $2); strcpy($$, temp); }
               ;
 boolexpr      : LPAR comparelist RPAR                                       { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
               | ID                                                          { strcpy($$, $1); }
