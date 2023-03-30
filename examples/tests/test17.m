@@ -1,14 +1,9 @@
-// test17
+setup()
+{
 
-setup(){
-  input abe = 40;
-  output babe = 30;
-
-  uint16 hexTest = 0x40;
-  uint16 hexTest2 = -0xfF;
 }
 
-mainloop(){
-  uint16 hugin = 12;
-  print("%d\n", hexTest);
+mainloop()
+{
+  t = 2 + 5;
 }
