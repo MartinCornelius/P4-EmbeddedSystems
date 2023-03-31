@@ -269,15 +269,32 @@ void freeAST(struct ast *node)
 {
   switch (node->type)
   {
-  case LINES:
+  case CONTROL:
+  case IF:
+  case ELSEIF:
+  case WHILE:
+  case LOGOR:
+  case LOGAND:
+  case COPGE:
+  case COPLE:
+  case COPEQ:
+  case COPNEQ:
+  case COPG:
+  case COPL:
   case ASSIGN:
+  case LARROW:
   case PLUS:
   case MINUS:
-  case TIMES:
   case DIV:
+  case TIMES:
+  case LINES:
+    freeAST(node->right);
+  case ELSE:
     freeAST(node->left);
   case ID:
   case VAL:
+  case VALF:
+  case EMPTY:
     free(node);
     break;
   default:
