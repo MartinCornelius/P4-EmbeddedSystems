@@ -19,7 +19,10 @@ mainloop()
   else if (2 > 1) {
     martin = 69;
   }
-  else {
+  else if(1 != 2){
     lucas = 96;
+  }
+  else{
+    a = 20;
   }
 }

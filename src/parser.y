@@ -47,7 +47,7 @@
 
 %type<node> compare comparelist boolexpr funcs func vardecl
 %type<node> term factor expr defines define setup mainloop funccall paramincall paramoutcall
-%type<node> paramoutdecl paramindecl lines line control elsechain
+%type<node> paramoutdecl paramindecl lines line control controlElse elsechain 
 
 %%
 prog          : defines funcs setup mainloop    
@@ -96,10 +96,11 @@ line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, 
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
               | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocAST(IF, $3, $6); } 
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(CONTROL, allocAST(IF, $3, $6), allocAST(ELSE, $8, NULL)); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(CONTROL, allocAST(IF, $3, $6), $8); } 
               ;
-elsechain     : ELSE control                                              { $$ = $2; }
-              | ELSE LBRA lines RBRA                                      { $$ = $3; }                
+elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA             { $$ = allocAST(ELSEIF, $4, $7); } 
+              | ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain   { $$ = allocAST(CONTROL, allocAST(ELSEIF, $4, $7), $9); } 
+              | ELSE LBRA lines RBRA                                      { $$ = allocAST(ELSE, $3, NULL); }
               ;
 vardecl       : TYPE ID                                                   
               | TYPE ID ASSIGN expr                                      
@@ -107,7 +108,7 @@ vardecl       : TYPE ID
               ;
 funccall      : ID LPAR paramincall RPAR                                  
               | ID LPAR paramincall RARROW paramoutcall RPAR              
-              ;
+              ; 
 paramoutcall  : ID COMMA paramoutcall                                     
               | ID                                                        
               ;
