@@ -1,3 +1,6 @@
+#ifndef AST_H
+#define AST_H
+
 #include "../parser.tab.h"
 
 struct ast
@@ -11,6 +14,12 @@ struct astLeaf
 {
   int type;
   int value;
+};
+
+struct astLeafStr
+{
+  int type;
+  char *string;
 };
 
 /* Build AST */
@@ -28,7 +37,7 @@ struct ast *allocAST(int type, struct ast *left, struct ast *right)
   return node;
 }
 
-struct ast *allocASTLeaf(int value)
+struct ast *allocASTLeafInt(int type, int value)
 {
   struct astLeaf *node = malloc(sizeof(struct astLeaf));
   if (!node)
@@ -36,8 +45,21 @@ struct ast *allocASTLeaf(int value)
     printf("out of space\n");
     exit(0);
   }
-  node->type = VAL;
+  node->type = type;
   node->value = value;
+  return (struct ast *)node;
+}
+
+struct ast *allocASTLeafStr(int type, char *string)
+{
+  struct astLeafStr *node = malloc(sizeof(struct astLeafStr));
+  if (!node)
+  {
+    printf("out of space\n");
+    exit(0);
+  }
+  node->type = type;
+  node->string = string;
   return (struct ast *)node;
 }
 
@@ -55,7 +77,7 @@ int evalAST(struct ast *node)
     result = ((struct astLeaf *)node)->value;
     break;
   default:
-    printf("bad node\n");
+    printf("internal error: bad node\n");
   }
 
   return result;
@@ -79,4 +101,16 @@ void printAST(struct ast *node)
 /* Free memory */
 void freeAST(struct ast *node)
 {
+  switch (node->type)
+  {
+  case PLUS:
+    freeAST(node->left);
+  case VAL:
+    free(node);
+    break;
+  default:
+    printf("internal error: free bad node\n");
+  }
 }
+
+#endif

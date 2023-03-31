@@ -23,6 +23,8 @@
     Symbol_Struct* handle;
     // Last element in list
     void *listHead;
+
+    struct ast *root;
 %}
 
 %union{ int val; float valf; int type; char* id; char str[500]; char* string; struct ast *node; }
@@ -39,16 +41,19 @@
 %token DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
-        COMMA PRINT
+        COMMA PRINT 
 %token ASSIGN WHILE IF ELSE
-
 
 %type<node> compare comparelist boolexpr funcs func vardecl
 %type<node> term factor expr defines define setup mainloop funccall paramincall paramoutcall
 %type<node> paramoutdecl paramindecl lines line control elsechain
 
 %%
-prog          : defines funcs setup mainloop    { printAST($4); printf("\nresult: %d\n", evalAST($4)); printf("Done.\n"); }                          
+prog          : defines funcs setup mainloop    
+                { 
+                    struct ast *node = $4;
+                    generateCode(node);
+                }
               ;
 defines       : define defines                                            
               |                                                           
@@ -57,7 +62,7 @@ define        : DEFINE ID expr
               ;
 setup         : SETUP LBRA lines RBRA                                     
               ;
-mainloop      : MAIN LBRA lines RBRA    { $$ = $3; }                                  
+mainloop      : MAIN LBRA lines RBRA    { $$ = $3; }
               ;
 funcs         : func funcs                                                
               |                                                           
@@ -73,11 +78,11 @@ paramindecl   : TYPE ID COMMA paramindecl
               | TYPE ID                                                   
               |                                                           
               ;
-lines         : line SEMI lines     { $$ = $1; }                                      
+lines         : line SEMI lines     { $$ = $1; }
               | control lines                                             
               |                                                           
               ;
-line          : ID ASSIGN expr      { $$ = $3; }                                      
+line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr                                            
               | funccall                                                  
               | PRINT LPAR STRING RPAR                                    
@@ -116,7 +121,7 @@ term          : term TIMES factor
               | factor              { $$ = $1; }                                      
               ;
 factor        : ID                                                        
-              | VAL                 { $$ = allocASTLeaf($1); }                                      
+              | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
               | VALF                                                      
               | LPAR expr RPAR                                            
               ;
@@ -130,7 +135,7 @@ compare       : boolexpr COP compare
               ;
 boolexpr      : LPAR comparelist RPAR                                     
               | ID                  
-              | VAL        
+              | VAL                { $$ = allocASTLeafInt(VAL, $1); }
               ;
 %%
 
