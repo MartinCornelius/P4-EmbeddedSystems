@@ -9,6 +9,7 @@
     char temp[500];
     char programString[3000];
 
+    #include "include/symbol_table.h"
     #include "include/symbol_types.h"
     #include "include/code_gen.h"
 
@@ -90,8 +91,8 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { sp
               | ELSE LBRA lines RBRA                                        { sprintf(temp, "else{\n%s\n}", $3); strcpy($$, temp); }
               |                                                             { strcpy($$, ""); }
               ;
-vardecl       : TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
-              | TYPE ID ASSIGN expr                                         { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
+vardecl       : TYPE ID                                                     { char type[20]; typeToString(type, $1); printf("vardecl 94 %s %s = %s;\n", type, $2); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
+              | TYPE ID ASSIGN expr                                         { char type[20]; createSymbol($1, $2); typeToString(type, $1);  printf("vardecl 95: %s %s = %s;\n", type, $2, $4); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
               | TYPE ID ASSIGN STRING                                       { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
               ;
 funccall      : ID LPAR paramincall RPAR                                    { sprintf(temp, "%s(%s);\n", $1, $3); strcpy($$, temp); }
@@ -107,10 +108,10 @@ paramincall   : ID COMMA paramincall                                        { sp
               |                                                             { strcpy($$, ""); }
               ;
 expr          : expr PLUS term                                              { sprintf(temp, "%s + %s", $1, $3); strcpy($$, temp); }                        
-              | expr MINUS term                                             { sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
+              | expr MINUS term                                             { printf("Expr minus term: %s - %s", $1, $3); sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
               | term                                                        { strcpy($$, $1); }
               ;
-term          : term TIMES factor                                           { sprintf(temp, "%s * %s", $1, $3); strcpy($$, temp); }
+term          : term TIMES factor                                           { strcpy($$, temp); }
               | term DIV factor                                             { sprintf(temp, "%s / %s", $1, $3); strcpy($$, temp); }
               | factor                                                      { strcpy($$, $1);}
               ;
@@ -136,8 +137,10 @@ boolexpr      : LPAR comparelist RPAR                                       { sp
 void main(int argc, char **argv)
 {
     emit("#include <stdio.h>\n#include <stdint.h>\n", programString);
-    /* handle->next = NULL;
-    listHead = (struct Symbol *)handle; */
+    // handle->next = NULL;
+    // listHead = (struct Symbol *)handle;
+    HashTable *hTable = createTable(100);
+
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
