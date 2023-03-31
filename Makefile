@@ -44,3 +44,8 @@ endif
 
 out: output/output.c
 	gcc output/output.c -o output/output
+
+sttest:
+	rm -f run.out
+	make
+	./run.out examples/tests/test10.m
