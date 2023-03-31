@@ -48,17 +48,17 @@ digit                   [0-9]
 
 "else"                    { return ELSE;   }
 
-"<=" |
-">=" |
-"==" |
-"!=" |
-"<"  |
-">"                       { yylval.string = strdup(yytext); return COP;   }
+"<="                      { yylval.string = strdup(yytext); return COPLE;  }
+">="                      { yylval.string = strdup(yytext); return COPGE;  }
+"=="                      { yylval.string = strdup(yytext); return COPEQ;  }
+"!="                      { yylval.string = strdup(yytext); return COPNEQ; }
+"<"                       { yylval.string = strdup(yytext); return COPL;   }
+">"                       { yylval.string = strdup(yytext); return COPG;   }
 
 "!"                       { return NOT;   }
 
-"||" |
-"&&"                      { yylval.string = strdup(yytext); return LOGOP; }
+"||"                      { yylval.string = strdup(yytext); return LOGOR; }
+"&&"                      { yylval.string = strdup(yytext); return LOGAND; }
 
 "-0x"[0-9a-fA-F]+ |
 "0x"[0-9a-fA-F]+          { yylval.string = strdup(yytext); return STRING; }

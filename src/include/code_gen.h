@@ -9,28 +9,131 @@ void generateCode(struct ast *node)
 {
     switch (node->type)
     {
+    case LINES:
+        generateCode(node->left);
+        printf(";\n");
+        generateCode(node->right);
+        break;
+    case CONTROL:
+        generateCode(node->left);
+        printf("\n");
+        generateCode(node->right);
+        break;
+    case IF:
+        printf("if(");
+        generateCode(node->left);
+        printf(") {\n");
+        generateCode(node->right);
+        printf("}");
+        break;
+    case ELSEIF:
+        printf("else if(");
+        generateCode(node->left);
+        printf(") {\n");
+        generateCode(node->right);
+        printf("}");
+        break;
+    case ELSE:
+        printf("else ");
+        printf("{\n");
+        generateCode(node->left);
+        printf("\n}");
+        break;
+    case WHILE:
+        printf("while(");
+        generateCode(node->left);
+        printf(") {\n");
+        generateCode(node->right);
+        printf("}");
+        break;
+    case LOGOR:
+        generateCode(node->left);
+        printf(" || ");
+        generateCode(node->right);
+        break;
+    case LOGAND:
+        generateCode(node->left);
+        printf(" && ");
+        generateCode(node->right);
+        break;
+    case COPGE:
+        generateCode(node->left);
+        printf(" >= ");
+        generateCode(node->right);
+        break;
+    case COPLE:
+        generateCode(node->left);
+        printf(" <= ");
+        generateCode(node->right);
+        break;
+    case COPEQ:
+        generateCode(node->left);
+        printf(" == ");
+        generateCode(node->right);
+        break;
+    case COPNEQ:
+        generateCode(node->left);
+        printf(" != ");
+        generateCode(node->right);
+        break;
+    case COPL:
+        generateCode(node->left);
+        printf(" < ");
+        generateCode(node->right);
+        break;
+    case COPG:
+        generateCode(node->left);
+        printf(" > ");
+        generateCode(node->right);
+        break;
     case PLUS:
         printf("(");
         generateCode(node->left);
-        printf("+");
+        printf(" + ");
+        generateCode(node->right);
+        printf(")");
+        break;
+    case MINUS:
+        printf("(");
+        generateCode(node->left);
+        printf(" - ");
+        generateCode(node->right);
+        printf(")");
+        break;
+    case DIV:
+        printf("(");
+        generateCode(node->left);
+        printf(" / ");
+        generateCode(node->right);
+        printf(")");
+        break;
+    case TIMES:
+        printf("(");
+        generateCode(node->left);
+        printf(" * ");
         generateCode(node->right);
         printf(")");
         break;
     case VAL:
-        printf("%d", ((struct astLeaf *)node)->value);
+        printf("%d", ((struct astLeafInt *)node)->value);
         break;
-    case LINES:
-        generateCode(node->left);
-        printf(";");
-        generateCode(node->right);
+    case VALF:
+        printf("%f", ((struct astLeafFloat *)node)->value);
         break;
     case ID:
         printf("%s", ((struct astLeafStr *)node)->string);
         break;
     case ASSIGN:
         generateCode(node->left);
-        printf("=");
+        printf(" = ");
         generateCode(node->right);
+        break;
+    case LARROW:
+        generateCode(node->left);
+        printf(" <- ");
+        generateCode(node->right);
+        break;
+    case EMPTY:
         break;
     default:
         printf("Error: unsupported type\n");
