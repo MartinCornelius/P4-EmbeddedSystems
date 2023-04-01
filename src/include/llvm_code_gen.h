@@ -5,6 +5,56 @@
 #include <stdlib.h>
 #include <string.h>
 
+int ifCounter = 1;
+int cmpCounter = 1;
+char *currentVarName = "";
+
+char variables[25][25]; // Remove me when symbol table
+
+void addVariable(char *name)
+{
+  int found = 0;
+  int i = 0;
+  for (i = 0; i < 25; i++)
+  {
+    if (strcmp(name, variables[i]) == 0)
+    {
+      found = 1;
+    }
+  }
+  if (found == 0)
+  {
+    for (i = 0; i < 25; i++)
+    {
+      if (strcmp(variables[i], "") == 0)
+      {
+        strcpy(variables[i], name);
+        break;
+      }
+    }
+  }
+}
+
+void generateLLVMCode(struct ast *node);
+
+void generateSetup(struct ast *node)
+{
+  fprintf(file, "define void @setup() {\n");
+  fprintf(file, "entry:\n");
+  generateLLVMCode(node->left);
+  fprintf(file, "\tret void\n");
+  fprintf(file, "}\n\n");
+}
+
+void generateMainloop(struct ast *node)
+{
+  fprintf(file, "define void @mainloop() {\n");
+  fprintf(file, "entry:\n");
+  generateLLVMCode(node->left);
+  fprintf(file, "\tret void\n");
+  fprintf(file, "}\n\n");
+}
+
 void generateLLVMCode(struct ast *node)
 {
   if (node == NULL)
@@ -12,36 +62,63 @@ void generateLLVMCode(struct ast *node)
 
   switch (node->type)
   {
+  /* Main */
   case ROOT:
     generateLLVMCode(node->left);
     generateLLVMCode(node->right);
     break;
-
   case SETUP:
-    fprintf(file, "define void @setup() {\n");
-    fprintf(file, "entry:\n");
-    generateLLVMCode(node->left);
-    fprintf(file, "\tret void\n");
-    fprintf(file, "}\n\n");
+    generateSetup(node);
     break;
   case MAIN:
-    fprintf(file, "define void @mainloop() {\n");
-    fprintf(file, "entry:\n");
-    generateLLVMCode(node->left);
-    fprintf(file, "\tret void\n");
-    fprintf(file, "}\n\n");
+    generateMainloop(node);
     break;
   case LINES:
     generateLLVMCode(node->left);
     fprintf(file, "\n");
     generateLLVMCode(node->right);
     break;
+
+  /* Operations */
   case ASSIGN:
     fprintf(file, "\t");
     generateLLVMCode(node->left);
     fprintf(file, " = ");
     generateLLVMCode(node->right);
+    fprintf(file, "\n\tstore i32 %%%s, i32* @%s", currentVarName, currentVarName);
+
+    addVariable(currentVarName); // Change me later
     break;
+
+  /* Conditional */
+  case CONTROL:
+    generateLLVMCode(node->left);
+    generateLLVMCode(node->right);
+    break;
+  case IF:
+    fprintf(file, "\t%%cmp%d = ", cmpCounter);
+    generateLLVMCode(node->left);
+    fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, ifCounter);
+
+    fprintf(file, "if%d.then:\n", ifCounter);
+    generateLLVMCode(node->right);
+    fprintf(file, "\tbr label %%if%d.end\n", ifCounter);
+    fprintf(file, "if%d.end:\n", ifCounter);
+
+    cmpCounter++;
+    ifCounter++;
+    break;
+
+  /* Logical operators */
+  case COPL:
+    fprintf(file, "icmp slt i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+
+  /* Arithmetic */
   case PLUS:
     fprintf(file, "add i32 ");
     generateLLVMCode(node->left);
@@ -54,16 +131,31 @@ void generateLLVMCode(struct ast *node)
     fprintf(file, ", ");
     generateLLVMCode(node->right);
     break;
+  case TIMES:
+    fprintf(file, "mul i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    break;
+  case DIV:
+    fprintf(file, "sdiv i32 "); // using sdiv signed division, alternative is udiv for unsigned
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    break;
+
+  /* Leafs */
   case VAL:
     fprintf(file, "%d", ((struct astLeafInt *)node)->value);
     break;
   case ID:
     fprintf(file, "%%%s", ((struct astLeafStr *)node)->string);
+    currentVarName = ((struct astLeafStr *)node)->string;
     break;
   case EMPTY:
     break;
   default:
-    printf("Error: unsupported type\n");
+    printf("Error: unsupported type: %d\n", node->type);
     break;
   }
 }
@@ -76,7 +168,14 @@ void generateLLVMFile(struct ast *node)
   fprintf(file, "\tcall void @setup()\n");
   fprintf(file, "\tcall void @mainloop()\n");
   fprintf(file, "\tret i32 0\n");
-  fprintf(file, "}\n");
+  fprintf(file, "}\n\n");
+
+  /* Change when symbol table */
+  for (int i = 0; i < 25; i++)
+  {
+    if (strcmp(variables[i], "") != 0)
+      fprintf(file, "@%s = global i32 0\n", variables[i]);
+  }
 }
 
 #endif
