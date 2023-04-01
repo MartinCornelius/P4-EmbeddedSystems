@@ -9,6 +9,20 @@ void generateCode(struct ast *node)
 {
     switch (node->type)
     {
+    case ROOT:
+        generateCode(node->left);
+        generateCode(node->right);
+        break;
+    case SETUP:
+        printf("setup {\n");
+        generateCode(node->left);
+        printf("}\n");
+        break;
+    case MAIN:
+        printf("main {\n");
+        generateCode(node->left);
+        printf("}\n");
+        break;
     case LINES:
         generateCode(node->left);
         printf(";\n");
