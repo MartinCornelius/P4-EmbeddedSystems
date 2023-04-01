@@ -9,12 +9,15 @@
     char temp[500];
     char programString[3000];
 
+    FILE *file;
+
     #include "include/symbol_types.h"
     #include "include/ast.h"
     #include "include/code_gen.h"
+    #include "include/llvm_code_gen.h"
 
     extern FILE *yyin; 
-    char outputFile[512] = "output/output.c";
+
 
     int yylex();
     int yyerror(char *s);
@@ -38,7 +41,7 @@
 %token<type> TYPE
 %token<string> STRING
 
-%token DEFINE SETUP MAIN FUNC LARROW
+%token ROOT DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
@@ -52,11 +55,14 @@
 %%
 prog          : defines funcs setup mainloop    
                 { 
-                    root = $4;
+                    root = allocAST(ROOT, $3, $4);
                     printf("\n\n=========== AST ===========\n");
                     printAST(root);
                     printf("\n\n=========== CODE GEN ===========\n");
                     generateCode(root);
+                    printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    generateLLVMFile(root);
+                    printf("Done generating file\n");
                     freeAST(root);
                     printf("\nDone.");
                 }
@@ -66,9 +72,9 @@ defines       : define defines
               ;
 define        : DEFINE ID expr                                            
               ;
-setup         : SETUP LBRA lines RBRA   
+setup         : SETUP LBRA lines RBRA   { $$ = allocAST(SETUP, $3, NULL); }
               ;
-mainloop      : MAIN LBRA lines RBRA    { $$ = $3; }
+mainloop      : MAIN LBRA lines RBRA    { $$ = allocAST(MAIN, $3, NULL); }
               ;
 funcs         : func funcs                                                
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
@@ -157,14 +163,16 @@ boolexpr      : LPAR comparelist RPAR
 %%
 
 void main(int argc, char **argv)
-{
+{ 
+    file = fopen("output/example_program.ll", "w");
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
-    if (argc > 2)
-        sprintf(outputFile, "output/%s", argv[2]);
+    /* if (argc > 2)
+        sprintf(outputFile, "output/%s", argv[2]); */
 
     yyparse();
+    fclose(file);
 }
 
 int yyerror(char *s){
