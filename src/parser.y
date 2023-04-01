@@ -47,7 +47,7 @@
 
 %type<node> compare comparelist boolexpr funcs func vardecl
 %type<node> term factor expr defines define setup mainloop funccall paramincall paramoutcall
-%type<node> paramoutdecl paramindecl lines line control elsechain
+%type<node> paramoutdecl paramindecl lines line control elsechain 
 
 %%
 prog          : defines funcs setup mainloop    
@@ -66,7 +66,7 @@ defines       : define defines
               ;
 define        : DEFINE ID expr                                            
               ;
-setup         : SETUP LBRA lines RBRA                                     
+setup         : SETUP LBRA lines RBRA   
               ;
 mainloop      : MAIN LBRA lines RBRA    { $$ = $3; }
               ;
@@ -91,15 +91,16 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
 line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                                                  
-              | PRINT LPAR STRING RPAR                                    
+              | PRINT LPAR STRING RPAR
               | vardecl                                                   
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
               | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocAST(IF, $3, $6); } 
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(CONTROL, allocAST(IF, $3, $6), allocAST(ELSE, $8, NULL)); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(CONTROL, allocAST(IF, $3, $6), $8); } 
               ;
-elsechain     : ELSE control                                              { $$ = $2; }
-              | ELSE LBRA lines RBRA                                      { $$ = $3; }                
+elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA             { $$ = allocAST(ELSEIF, $4, $7); } 
+              | ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain   { $$ = allocAST(CONTROL, allocAST(ELSEIF, $4, $7), $9); } 
+              | ELSE LBRA lines RBRA                                      { $$ = allocAST(ELSE, $3, NULL); }
               ;
 vardecl       : TYPE ID                                                   
               | TYPE ID ASSIGN expr                                      
@@ -107,7 +108,7 @@ vardecl       : TYPE ID
               ;
 funccall      : ID LPAR paramincall RPAR                                  
               | ID LPAR paramincall RARROW paramoutcall RPAR              
-              ;
+              ; 
 paramoutcall  : ID COMMA paramoutcall                                     
               | ID                                                        
               ;
@@ -134,22 +135,22 @@ comparelist   : compare LOGOR comparelist  { $$ = allocAST(LOGOR, $1, $3); }
               | compare LOGAND comparelist { $$ = allocAST(LOGAND, $1, $3); }                                  
               | compare                    { $$ = $1; }                               
               ;
-compare       : boolexpr COPLE compare       { $$ = allocAST(COPLE, $1, $3); }                          
+compare       : boolexpr COPLE compare          { $$ = allocAST(COPLE, $1, $3);     }                          
               | NOT boolexpr COPLE compare
-              | boolexpr COPGE compare       { $$ = allocAST(COPGE, $1, $3); }                               
+              | boolexpr COPGE compare          { $$ = allocAST(COPGE, $1, $3);     }                               
               | NOT boolexpr COPGE compare 
-              | boolexpr COPEQ compare       { $$ = allocAST(COPEQ, $1, $3); }                               
+              | boolexpr COPEQ compare          { $$ = allocAST(COPEQ, $1, $3);     }                               
               | NOT boolexpr COPEQ compare 
-              | boolexpr COPNEQ compare       { $$ = allocAST(COPNEQ, $1, $3); }                               
+              | boolexpr COPNEQ compare         { $$ = allocAST(COPNEQ, $1, $3);    }                               
               | NOT boolexpr COPNEQ compare
-              | boolexpr COPL compare       { $$ = allocAST(COPL, $1, $3); }                               
+              | boolexpr COPL compare           { $$ = allocAST(COPL, $1, $3);      }                               
               | NOT boolexpr COPL compare 
-              | boolexpr COPG compare       { $$ = allocAST(COPG, $1, $3); }                               
+              | boolexpr COPG compare           { $$ = allocAST(COPG, $1, $3);      }                               
               | NOT boolexpr COPG compare                                    
-              | boolexpr                   { $$ = $1; }                               
+              | boolexpr                        { $$ = $1; }                               
               | NOT boolexpr                                              
               ;
-boolexpr      : LPAR comparelist RPAR                                     
+boolexpr      : LPAR comparelist RPAR           
               | ID                  
               | VAL                { $$ = allocASTLeafInt(VAL, $1); }
               ;

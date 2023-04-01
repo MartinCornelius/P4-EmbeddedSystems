@@ -29,7 +29,7 @@ void generateCode(struct ast *node)
     case ELSEIF:
         printf("else if(");
         generateCode(node->left);
-        printf(") {\n");
+        printf("){\n");
         generateCode(node->right);
         printf("}");
         break;
@@ -37,7 +37,7 @@ void generateCode(struct ast *node)
         printf("else ");
         printf("{\n");
         generateCode(node->left);
-        printf("\n}");
+        printf("}");
         break;
     case WHILE:
         printf("while(");
