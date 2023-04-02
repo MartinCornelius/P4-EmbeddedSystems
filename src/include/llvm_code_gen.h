@@ -7,6 +7,7 @@
 
 int ifCounter = 1;
 int cmpCounter = 1;
+int whileCounter = 1;
 char *currentVarName = "";
 
 char variables[25][25]; // Remove me when symbol table
@@ -95,6 +96,26 @@ void generateLLVMCode(struct ast *node)
     generateLLVMCode(node->left);
     generateLLVMCode(node->right);
     break;
+  case WHILE:
+    fprintf(file, "br label %%while%d.cond\n\n", whileCounter);
+
+    // While condition
+    fprintf(file, "while%d.cond:\n", whileCounter);
+    fprintf(file, "\t%%cmp%d = ", cmpCounter);
+    generateLLVMCode(node->left);
+    fprintf(file, "\tbr i1 %%cmp%d, label %%while%d.body, label %%while%d.end\n", cmpCounter, whileCounter, whileCounter);
+
+    // While body
+    fprintf(file, "while%d.body:\n", whileCounter);
+    generateLLVMCode(node->right);
+    fprintf(file, "\tbr label %%while%d.cond\n", whileCounter);
+
+    // While end
+    fprintf(file, "while%d.end:\n", whileCounter);
+
+    whileCounter++;
+    cmpCounter++;
+    break;
   case IF:
     fprintf(file, "\t%%cmp%d = ", cmpCounter);
     generateLLVMCode(node->left);
@@ -110,8 +131,59 @@ void generateLLVMCode(struct ast *node)
     break;
 
   /* Logical operators */
+  case LOGOR:
+    fprintf(file, "or i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+  case LOGAND:
+    fprintf(file, "and i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+
+  /* Compare operators */
+  case COPLE:
+    fprintf(file, "icmp sle i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+  case COPGE:
+    fprintf(file, "icmp sge i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
   case COPL:
     fprintf(file, "icmp slt i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+  case COPG:
+    fprintf(file, "icmp sgt i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+  case COPEQ:
+    fprintf(file, "icmp eq i32 ");
+    generateLLVMCode(node->left);
+    fprintf(file, ", ");
+    generateLLVMCode(node->right);
+    fprintf(file, "\n");
+    break;
+  case COPNEQ:
+    fprintf(file, "icmp ne i32 ");
     generateLLVMCode(node->left);
     fprintf(file, ", ");
     generateLLVMCode(node->right);
