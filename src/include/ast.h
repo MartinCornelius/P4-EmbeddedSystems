@@ -2,6 +2,7 @@
 #define AST_H
 
 #include "../parser.tab.h"
+#include "type2text.h"
 
 struct ast
 {
@@ -110,6 +111,41 @@ struct ast *allocASTLeafStr(int type, char *string)
   node->type = type;
   node->string = strdup(string);
   return (struct ast *)node;
+}
+
+void printASTNice(struct ast *node, int level)
+{
+  int leafFound = 0;
+
+  if (node == NULL)
+    return;
+
+  // Print out the node's type and value if applicable
+  printf("%*s", level * 4, ""); // Indent based on the level of the node
+  printf("%s", printType(node->type));
+  if (node->type == VAL)
+  {
+    printf(" %d", ((struct astLeafInt *)node)->value);
+    leafFound = 1;
+  }
+  else if (node->type == VALF)
+  {
+    printf(" %f", ((struct astLeafFloat *)node)->value);
+    leafFound = 1;
+  }
+  else if (node->type == ID)
+  {
+    printf(" %s", ((struct astLeafStr *)node)->string);
+    leafFound = 1;
+  }
+  printf("\n");
+
+  if (leafFound == 1)
+    return;
+
+  // Recursively print out the node's children
+  printASTNice(node->left, level + 1);
+  printASTNice(node->right, level + 1);
 }
 
 void printAST(struct ast *node)
