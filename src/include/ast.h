@@ -112,34 +112,23 @@ struct ast *allocASTLeafStr(int type, char *string)
   return (struct ast *)node;
 }
 
-/* Evaluate AST */
-int evalAST(struct ast *node)
-{
-  int result;
-
-  printf("type: %s\n", typeToOut(node->type));
-  switch (node->type)
-  {
-  case LINES:
-  case ASSIGN:
-  case ID:
-  case PLUS:
-    result = evalAST(node->left) + evalAST(node->right);
-    break;
-  case VAL:
-    result = ((struct astLeafInt *)node)->value;
-    break;
-  default:
-    printf("internal error: bad node\n");
-  }
-
-  return result;
-}
-
 void printAST(struct ast *node)
 {
   switch (node->type)
   {
+  /* Main */
+  case ROOT:
+    printAST(node->left);
+    printAST(node->right);
+    break;
+  case SETUP:
+    printf("SETUP ");
+    printAST(node->left);
+    break;
+  case MAIN:
+    printf("MAIN ");
+    printAST(node->left);
+    break;
   case LINES:
     printAST(node->left);
     printf(";\n");
@@ -190,7 +179,7 @@ void printAST(struct ast *node)
     printAST(node->right);
     break;
 
-  /* Compare opeartors */
+  /* Compare operators */
   case COPGE:
     printAST(node->left);
     printf(" COPGE ");
@@ -222,6 +211,7 @@ void printAST(struct ast *node)
     printAST(node->right);
     break;
 
+  /* Operations */
   case ASSIGN:
     printAST(node->left);
     printf(" ASSIGN ");
@@ -232,6 +222,8 @@ void printAST(struct ast *node)
     printf(" LARROW ");
     printAST(node->right);
     break;
+
+  /* Arithmetic */
   case PLUS:
     printAST(node->left);
     printf(" PLUS ");
@@ -252,6 +244,8 @@ void printAST(struct ast *node)
     printf(" TIMES ");
     printAST(node->right);
     break;
+
+  /* Leafs */
   case ID:
     printf("ID: %s", ((struct astLeafStr *)node)->string);
     break;
@@ -269,6 +263,8 @@ void freeAST(struct ast *node)
 {
   switch (node->type)
   {
+  case SETUP:
+  case MAIN:
   case CONTROL:
   case IF:
   case ELSEIF:

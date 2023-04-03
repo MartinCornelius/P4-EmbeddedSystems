@@ -25,6 +25,7 @@ make clean
 * GCC
 * Github Actions
 * Valgrind & Massif visualizer
+* LLVM
 
 ## Memory usage
 ```bash
@@ -32,6 +33,15 @@ valgrind --tool=massif ./run.out [input file]
 ```
 ```bash
 massif-visualizer [generated file]
+```
+
+## LLVM
+For windows
+```bash
+llc --filetype=obj [filename].ll
+```
+```bash
+gcc [filename].obj -o [filename]
 ```
 
 ## About
