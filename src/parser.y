@@ -13,6 +13,7 @@
 
     #include "include/symbol_types.h"
     #include "include/ast.h"
+    #include "include/const_folding.h"
     #include "include/code_gen.h"
     #include "include/llvm_code_gen.h"
 
@@ -57,9 +58,9 @@ prog          : defines funcs setup mainloop
                 { 
                     root = allocAST(ROOT, $3, $4);
                     printf("\n\n=========== AST ===========\n");
-                    printAST(root);
-                    printf("\n\n=========== CODE GEN ===========\n");
-                    generateCode(root);
+                    printASTNice(root, 0);
+                    printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                    constantFolding(root);
                     printf("\n\n=========== LLVM CODE GEN ===========\n");
                     generateLLVMFile(root);
                     printf("Done generating file\n");
