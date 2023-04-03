@@ -37,6 +37,14 @@ char *printType(int type)
     sprintf(result, "div");
     break;
 
+  /* Expression */
+  case TERM:
+    sprintf(result, "term");
+    break;
+  case FACTOR:
+    sprintf(result, "factor");
+    break;
+
   /* Types */
   case ID:
     sprintf(result, "identifier");
