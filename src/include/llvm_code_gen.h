@@ -84,11 +84,9 @@ void generateLLVMCode(struct ast *node)
 
   /* Operations */
   case ASSIGN:
-    printf("assign %s\n", printType(node->right->type));
     // Plus & Minus
     if (node->right->type == PLUS || node->right->type == MINUS)
     {
-      printf("plus or minus\n");
       fprintf(file, "\t");
       generateLLVMCode(node->left);
       fprintf(file, " = ");
@@ -97,13 +95,11 @@ void generateLLVMCode(struct ast *node)
     }
     else if (node->right->type == VAL)
     {
-      printf("val\n");
       /* Don't touch the following 3 lines :) */
       fseek(file, 0, SEEK_CUR);
       generateLLVMCode(node->left);
       fseek(file, -2, SEEK_CUR);
       sprintf(tmpVarName, "tmp%d", tmpVarCounter);
-      printf("%s %d\n", tmpVarName, tmpVarCounter);
 
       fprintf(file, "\t");
       fprintf(file, "%%%s = alloca i32\n", tmpVarName);
@@ -118,13 +114,11 @@ void generateLLVMCode(struct ast *node)
     }
     else if (node->right->left->left->type == VAL)
     {
-      printf("val\n");
       /* Don't touch the following 3 lines :) */
       fseek(file, 0, SEEK_CUR);
       generateLLVMCode(node->left);
       fseek(file, -2, SEEK_CUR);
       sprintf(tmpVarName, "tmp%d", tmpVarCounter);
-      printf("%s %d\n", tmpVarName, tmpVarCounter);
 
       fprintf(file, "\t");
       fprintf(file, "%%%s = alloca i32\n", tmpVarName);
@@ -140,16 +134,11 @@ void generateLLVMCode(struct ast *node)
     // Times and Division
     else if (node->right->left->type == TIMES || node->right->left->type == DIV)
     {
-      printf("times or div\n");
       fprintf(file, "\t");
       generateLLVMCode(node->left);
       fprintf(file, " = ");
       generateLLVMCode(node->right->left);
       fprintf(file, "\n\tstore i32 %%%s, i32* @%s", currentVarName, currentVarName);
-    }
-    else
-    {
-      printf("something else\n");
     }
 
     addVariable(currentVarName); // Change me later
