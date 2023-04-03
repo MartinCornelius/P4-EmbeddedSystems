@@ -120,7 +120,6 @@ void printASTNice(struct ast *node, int level)
   if (node == NULL)
     return;
 
-  // Print out the node's type and value if applicable
   printf("%*s", level * 4, ""); // Indent based on the level of the node
   printf("%s", printType(node->type));
   if (node->type == VAL)
@@ -143,7 +142,6 @@ void printASTNice(struct ast *node, int level)
   if (leafFound == 1)
     return;
 
-  // Recursively print out the node's children
   printASTNice(node->left, level + 1);
   printASTNice(node->right, level + 1);
 }
