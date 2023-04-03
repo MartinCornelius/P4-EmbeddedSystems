@@ -9,6 +9,8 @@
     char temp[500];
     char programString[3000];
 
+    int optimize = 0;
+
     FILE *file;
 
     #include "include/symbol_types.h"
@@ -46,7 +48,7 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL EMPTY /* Extra */
+%token LINES LINE CONTROL EMPTY TERM FACTOR /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
@@ -59,8 +61,14 @@ prog          : defines funcs setup mainloop
                     root = allocAST(ROOT, $3, $4);
                     printf("\n\n=========== AST ===========\n");
                     printASTNice(root, 0);
-                    printf("\n\n=========== OPTIMIZATIONS ===========\n");
-                    constantFolding(root);
+                    if (optimize)
+                    {
+                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                        constantFolding(root);
+
+                        printf("\n\n=========== OPTIMIZED AST ===========\n");
+                        printASTNice(root, 0);
+                    }
                     printf("\n\n=========== LLVM CODE GEN ===========\n");
                     generateLLVMFile(root);
                     printf("Done generating file\n");
@@ -127,11 +135,11 @@ paramincall   : ID COMMA paramincall
               ;
 expr          : expr PLUS term      { $$ = allocAST(PLUS, $1, $3); }                                      
               | expr MINUS term     { $$ = allocAST(MINUS, $1, $3); }                                      
-              | term                { $$ = $1; }                                      
+              | term                { $$ = allocAST(TERM, $1, NULL); }                                      
               ;
 term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }                                      
               | term DIV factor     { $$ = allocAST(DIV, $1, $3); }                                      
-              | factor              { $$ = $1; }                                      
+              | factor              { $$ = allocAST(FACTOR, $1, NULL); }                                      
               ;
 factor        : ID                                                        
               | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
@@ -171,6 +179,11 @@ void main(int argc, char **argv)
         perror("Error loading file\n");
     /* if (argc > 2)
         sprintf(outputFile, "output/%s", argv[2]); */
+
+    if (argc > 2)
+        if (strcmp(argv[2], "1") == 0) {
+            optimize = 1;
+        }
 
     yyparse();
     fclose(file);
