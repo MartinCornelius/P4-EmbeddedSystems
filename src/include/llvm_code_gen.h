@@ -8,6 +8,8 @@
 int ifCounter = 1;
 int cmpCounter = 1;
 int whileCounter = 1;
+int tmpVarCounter = 1;
+char tmpVarName[30];
 char *currentVarName = "";
 
 char variables[25][25]; // Remove me when symbol table
@@ -82,11 +84,73 @@ void generateLLVMCode(struct ast *node)
 
   /* Operations */
   case ASSIGN:
-    fprintf(file, "\t");
-    generateLLVMCode(node->left);
-    fprintf(file, " = ");
-    generateLLVMCode(node->right);
-    fprintf(file, "\n\tstore i32 %%%s, i32* @%s", currentVarName, currentVarName);
+    printf("assign %s\n", printType(node->right->type));
+    // Plus & Minus
+    if (node->right->type == PLUS || node->right->type == MINUS)
+    {
+      printf("plus or minus\n");
+      fprintf(file, "\t");
+      generateLLVMCode(node->left);
+      fprintf(file, " = ");
+      generateLLVMCode(node->right);
+      fprintf(file, "\n\tstore i32 %%%s, i32* @%s", currentVarName, currentVarName);
+    }
+    else if (node->right->type == VAL)
+    {
+      printf("val\n");
+      /* Don't touch the following 3 lines :) */
+      fseek(file, 0, SEEK_CUR);
+      generateLLVMCode(node->left);
+      fseek(file, -2, SEEK_CUR);
+      sprintf(tmpVarName, "tmp%d", tmpVarCounter);
+      printf("%s %d\n", tmpVarName, tmpVarCounter);
+
+      fprintf(file, "\t");
+      fprintf(file, "%%%s = alloca i32\n", tmpVarName);
+      fprintf(file, "\tstore i32 ");
+      generateLLVMCode(node->right);
+      fprintf(file, ", i32* %%%s", tmpVarName);
+
+      fprintf(file, "\n\tstore i32 %%%s, i32* @%s", tmpVarName, currentVarName);
+
+      tmpVarCounter++;
+      sprintf(tmpVarName, "tmp%d", tmpVarCounter);
+    }
+    else if (node->right->left->left->type == VAL)
+    {
+      printf("val\n");
+      /* Don't touch the following 3 lines :) */
+      fseek(file, 0, SEEK_CUR);
+      generateLLVMCode(node->left);
+      fseek(file, -2, SEEK_CUR);
+      sprintf(tmpVarName, "tmp%d", tmpVarCounter);
+      printf("%s %d\n", tmpVarName, tmpVarCounter);
+
+      fprintf(file, "\t");
+      fprintf(file, "%%%s = alloca i32\n", tmpVarName);
+      fprintf(file, "\tstore i32 ");
+      generateLLVMCode(node->right->left->left);
+      fprintf(file, ", i32* %%%s", tmpVarName);
+
+      fprintf(file, "\n\tstore i32 %%%s, i32* @%s", tmpVarName, currentVarName);
+
+      tmpVarCounter++;
+      sprintf(tmpVarName, "tmp%d", tmpVarCounter);
+    }
+    // Times and Division
+    else if (node->right->left->type == TIMES || node->right->left->type == DIV)
+    {
+      printf("times or div\n");
+      fprintf(file, "\t");
+      generateLLVMCode(node->left);
+      fprintf(file, " = ");
+      generateLLVMCode(node->right->left);
+      fprintf(file, "\n\tstore i32 %%%s, i32* @%s", currentVarName, currentVarName);
+    }
+    else
+    {
+      printf("something else\n");
+    }
 
     addVariable(currentVarName); // Change me later
     break;
@@ -193,25 +257,25 @@ void generateLLVMCode(struct ast *node)
   /* Arithmetic */
   case PLUS:
     fprintf(file, "add i32 ");
-    generateLLVMCode(node->left);
+    generateLLVMCode(node->left->left->left);
     fprintf(file, ", ");
-    generateLLVMCode(node->right);
+    generateLLVMCode(node->right->left);
     break;
   case MINUS:
     fprintf(file, "sub i32 ");
-    generateLLVMCode(node->left);
+    generateLLVMCode(node->left->left->left);
     fprintf(file, ", ");
-    generateLLVMCode(node->right);
+    generateLLVMCode(node->right->left);
     break;
   case TIMES:
     fprintf(file, "mul i32 ");
-    generateLLVMCode(node->left);
+    generateLLVMCode(node->left->left);
     fprintf(file, ", ");
     generateLLVMCode(node->right);
     break;
   case DIV:
     fprintf(file, "sdiv i32 "); // using sdiv signed division, alternative is udiv for unsigned
-    generateLLVMCode(node->left);
+    generateLLVMCode(node->left->left);
     fprintf(file, ", ");
     generateLLVMCode(node->right);
     break;
