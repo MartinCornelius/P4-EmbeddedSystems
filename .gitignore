@@ -3,4 +3,9 @@
 *.tab.c
 *.tab.h
 *.yy.c
-output/*
+output/*.bc
+output/*.obj
+output/*.o
+output/*.exe
+output/*.S
+output/*.s
