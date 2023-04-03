@@ -20,6 +20,9 @@ while1.end:
 	ret void
 }
 
+@a = global i32 0
+@b = global i32 0
+
 define i32 @main() {
 entry:
 	call void @setup()
@@ -27,5 +30,3 @@ entry:
 	ret i32 0
 }
 
-@a = global i32 0
-@b = global i32 0

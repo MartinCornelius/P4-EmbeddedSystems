@@ -235,19 +235,18 @@ void generateLLVMCode(struct ast *node)
 void generateLLVMFile(struct ast *node)
 {
   generateLLVMCode(node);
-  fprintf(file, "define i32 @main() {\n");
-  fprintf(file, "entry:\n");
-  fprintf(file, "\tcall void @setup()\n");
-  fprintf(file, "\tcall void @mainloop()\n");
-  fprintf(file, "\tret i32 0\n");
-  fprintf(file, "}\n\n");
-
   /* Change when symbol table */
   for (int i = 0; i < 25; i++)
   {
     if (strcmp(variables[i], "") != 0)
       fprintf(file, "@%s = global i32 0\n", variables[i]);
   }
+  fprintf(file, "\ndefine i32 @main() {\n");
+  fprintf(file, "entry:\n");
+  fprintf(file, "\tcall void @setup()\n");
+  fprintf(file, "\tcall void @mainloop()\n");
+  fprintf(file, "\tret i32 0\n");
+  fprintf(file, "}\n\n");
 }
 
 #endif
