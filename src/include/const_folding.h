@@ -16,6 +16,7 @@ void constantFolding(struct ast *node)
 
   if (node->type == ASSIGN)
   {
+    printf("%s\n", printType(node->right->type));
     if (node->right->type == PLUS)
     {
       printf("starting optimization\n");
@@ -40,8 +41,9 @@ void constantFolding(struct ast *node)
       printf("changed value of the expression\n");
       printf("%d - %d => %d\n", a, b, result);
     }
-    if (node->right->type == TIMES)
+    if (node->right->type == TERM && node->right->left->type == TIMES)
     {
+      printf("times\n");
       printf("starting optimization\n");
       int a = ((struct astLeafInt *)node->right->left->left->left)->value;
       int b = ((struct astLeafInt *)node->right->left->right)->value;
@@ -52,8 +54,9 @@ void constantFolding(struct ast *node)
       printf("changed value of the expression\n");
       printf("%d * %d => %d\n", a, b, result);
     }
-    if (node->right->type == DIV)
+    if (node->right->type == TERM && node->right->left->type == DIV)
     {
+      printf("times\n");
       printf("starting optimization\n");
       int a = ((struct astLeafInt *)node->right->left->left->left)->value;
       int b = ((struct astLeafInt *)node->right->left->right)->value;
