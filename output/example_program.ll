@@ -5,15 +5,21 @@ entry:
 
 define void @mainloop() {
 entry:
-	%a = add i32 2, 2
-	store i32 %a, i32* @a
-	%b = sub i32 6, 1
-	store i32 %b, i32* @b
+	%tmp1 = alloca i32
+	store i32 4, i32* %tmp1
+	store i32 %tmp1, i32* @a
+	%tmp2 = alloca i32
+	store i32 5, i32* %tmp2
+	store i32 %tmp2, i32* @b
+	%tmp3 = alloca i32
+	store i32 8, i32* %tmp3
+	store i32 %tmp3, i32* @c
 	ret void
 }
 
 @a = global i32 0
 @b = global i32 0
+@c = global i32 0
 
 define i32 @main() {
 entry:
