@@ -50,11 +50,31 @@ void generateCode(struct ast *node)
 
     /* Control structures */
     case WHILE:
-        fprintf(file, "br label %%while%d.cond\n\n", whileCounter);
-        fprintf(file, "\t%%cmp%d = ", cmpCounter);
+        break;
+
+    /* Arithmetic */
+    case PLUS:
+        fprintf(file, "add i32 ");
         generateCode(node->left);
-
-
+        fprintf(file, ", ");
+        generateCode(node->right);
+        break;
+    case MINUS:
+        fprintf(file, "sub i32 ");
+        generateCode(node->left);
+        fprintf(file, ", ");
+        generateCode(node->right);
+        break;
+    case TIMES:
+        fprintf(file, "mul i32 ");
+        generateCode(node->left);
+        fprintf(file, ", ");
+        generateCode(node->right);
+        break;
+    case DIV:
+        fprintf(file, "sdiv i32 "); // using sdiv signed division, alternative is udiv for unsigned
+        generateCode(node->left);
+        fprintf(file, ", ");
         generateCode(node->right);
         break;
 

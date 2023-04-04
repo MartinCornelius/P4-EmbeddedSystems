@@ -5,7 +5,7 @@ entry:
 
 define void @mainloop() {
 entry:
-	%a = 
+	%a = sub i32 mul i32 8, 4, 2
 	store i32 %a, i32* @a
 	ret void
 }
