@@ -10,4 +10,14 @@ mainloop() {
   {
     second = 2 + 2;
   }
+  else if (5 >= 3)
+  {
+    third = 2 * 6;
+  }
+  else 
+  {
+    fourth = 9 / 3;
+  }
+
+  fifth = first * 4;
 }
