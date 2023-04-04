@@ -2,19 +2,22 @@ setup()
 {
 }
 mainloop() {
-  if (2 == 12)
+  while (5)
   {
-    a = 2 + 56;
-  }
-  else if (2 < 8)
+    first = 2 - 1;
+  }  
+  if (5 < 10)
   {
-    bob = 4 - 2;
+    second = 2 + 2;
   }
-  else if (2 <= 8)
+  else if (5 >= 3)
   {
-    carl = 4 - 2;
+    third = 2 * 6;
   }
-  else {
-    y = 2 * 5;
+  else 
+  {
+    fourth = 9 / 3;
   }
+
+  fifth = first * 4;
 }

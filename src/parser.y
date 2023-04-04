@@ -60,14 +60,14 @@ prog          : defines funcs setup mainloop
                 { 
                     root = allocAST(ROOT, $3, $4);
                     printf("\n\n=========== AST ===========\n");
-                    printASTNice(root, 0);
+                    printAST(root, 0);
                     if (optimize)
                     {
                         printf("\n\n=========== OPTIMIZATIONS ===========\n");
                         constantFolding(root);
 
                         printf("\n\n=========== OPTIMIZED AST ===========\n");
-                        printASTNice(root, 0);
+                        printAST(root, 0);
                     }
                     printf("\n\n=========== LLVM CODE GEN ===========\n");
                     generateLLVMFile(root);
@@ -100,7 +100,7 @@ paramindecl   : TYPE ID COMMA paramindecl
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
 lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
-              | control lines       { $$ = allocAST(CONTROL, $1, $2); }                                     
+              | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
 line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
@@ -110,12 +110,11 @@ line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, 
               | vardecl                                                   
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
-              | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocAST(IF, $3, $6); } 
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(IFELSECHAIN, allocAST(IF, $3, $6), $8); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocASTIfNode(IF, $3, $6, NULL); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocASTIfNode(IF, $3, $6, $8); }
               ;
-elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA             { $$ = allocAST(ELSEIF, $4, $7); } 
-              | ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain   { $$ = allocAST(ELSECHAIN, allocAST(ELSEIF, $4, $7), $9); } 
-              | ELSE LBRA lines RBRA                                      { $$ = allocAST(ELSE, $3, NULL); }
+elsechain     : ELSE control                                              { $$ = $2; }
+              | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
 vardecl       : TYPE ID                                                   
               | TYPE ID ASSIGN expr                                      
@@ -135,13 +134,13 @@ paramincall   : ID COMMA paramincall
               ;
 expr          : expr PLUS term      { $$ = allocAST(PLUS, $1, $3); }                                      
               | expr MINUS term     { $$ = allocAST(MINUS, $1, $3); }                                      
-              | term                { $$ = allocAST(TERM, $1, NULL); }                                      
+              | term                { $$ = $1; }
               ;
 term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }                                      
               | term DIV factor     { $$ = allocAST(DIV, $1, $3); }                                      
-              | factor              { $$ = allocAST(FACTOR, $1, NULL); }                                      
+              | factor              { $$ = $1; }                                      
               ;
-factor        : ID                                                        
+factor        : ID                  { $$ = allocASTLeafStr(ID, $1); }                                      
               | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
               | VALF                { $$ = allocASTLeafFloat(VALF, $1); }                                      
               | LPAR expr RPAR                                            

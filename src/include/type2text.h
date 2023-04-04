@@ -24,6 +24,9 @@ char *printType(int type)
     break;
 
   /* Control structures */
+  case WHILE:
+    sprintf(result, "while");
+    break;
   case IF:
     sprintf(result, "if");
     break;
