@@ -5,6 +5,8 @@
     #include <stdbool.h>
     #include <stdint.h>
 
+    #define HTSIZE 10
+
     // String that will become the C file
     char temp[500];
     char programString[3000];
@@ -23,6 +25,8 @@
     Symbol_Struct* handle;
     // Last element in list
     void *listHead;
+
+    HashTable* hTable;
 %}
 
 %union{ int val; float valf; int type; char* id; char str[500]; char* string; }
@@ -92,7 +96,7 @@ elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { sp
               |                                                             { strcpy($$, ""); }
               ;
 vardecl       : TYPE ID                                                     { char type[20]; typeToString(type, $1); printf("vardecl 94 %s %s = %s;\n", type, $2); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
-              | TYPE ID ASSIGN expr                                         { char type[20]; createSymbol($1, $2); typeToString(type, $1);  printf("vardecl 95: %s %s = %s;\n", type, $2, $4); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
+              | TYPE ID ASSIGN expr                                         { char type[20]; createSymbol(hTable, $1, $2); typeToString(type, $1);  printf("vardecl 95: %s %s = %s;\n", type, $2, $4); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
               | TYPE ID ASSIGN STRING                                       { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
               ;
 funccall      : ID LPAR paramincall RPAR                                    { sprintf(temp, "%s(%s);\n", $1, $3); strcpy($$, temp); }
@@ -108,7 +112,7 @@ paramincall   : ID COMMA paramincall                                        { sp
               |                                                             { strcpy($$, ""); }
               ;
 expr          : expr PLUS term                                              { sprintf(temp, "%s + %s", $1, $3); strcpy($$, temp); }                        
-              | expr MINUS term                                             { printf("Expr minus term: %s - %s", $1, $3); sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
+              | expr MINUS term                                             { printf("Expr minus term: %s - %s \n", $1, $3); sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
               | term                                                        { strcpy($$, $1); }
               ;
 term          : term TIMES factor                                           { strcpy($$, temp); }
@@ -137,9 +141,8 @@ boolexpr      : LPAR comparelist RPAR                                       { sp
 void main(int argc, char **argv)
 {
     emit("#include <stdio.h>\n#include <stdint.h>\n", programString);
-    // handle->next = NULL;
-    // listHead = (struct Symbol *)handle;
-    HashTable *hTable = createTable(100);
+
+    hTable = createTable(10);
 
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
@@ -148,6 +151,7 @@ void main(int argc, char **argv)
         sprintf(outputFile, "output/%s", argv[2]);
 
     yyparse();
+    printTable(hTable);
 }
 
 int yyerror(char *s){
