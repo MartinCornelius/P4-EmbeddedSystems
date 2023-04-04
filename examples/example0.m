@@ -2,19 +2,12 @@ setup()
 {
 }
 mainloop() {
-  if (2 == 12)
+  if (2 < 8)
   {
-    a = 2 + 56;
+    assignment = 2 + 5;
   }
-  else if (2 < 8)
+  else
   {
-    bob = 4 - 2;
-  }
-  else if (2 <= 8)
-  {
-    carl = 4 - 2;
-  }
-  else {
-    y = 2 * 5;
+    second = 9 / 3;
   }
 }
