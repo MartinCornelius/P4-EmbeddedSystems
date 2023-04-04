@@ -6,6 +6,7 @@
 #include <string.h>
 
 int ifCounter = 1;
+int tmpIfCounter = 1;
 int cmpCounter = 1;
 int whileCounter = 1;
 int tmpVarCounter = 1;
@@ -146,9 +147,207 @@ void generateLLVMCode(struct ast *node)
 
   /* Conditional */
   case CONTROL:
-    generateLLVMCode(node->left);
-    generateLLVMCode(node->right);
+    // Single if statement
+    if (node->left->type == IF && node->right->type == EMPTY)
+    {
+      printf("single if statement\n");
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, tmpIfCounter);
+
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+      cmpCounter++;
+      ifCounter++;
+      tmpIfCounter++;
+    }
+    else if (node->left->type == IF && node->right->type == LINES)
+    {
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, tmpIfCounter);
+
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+      generateLLVMCode(node->right);
+      cmpCounter++;
+      ifCounter++;
+      tmpIfCounter++;
+    }
+    // If else chain
+    else if (node->left->type == IFELSECHAIN)
+    {
+      printf("if else chain\n");
+      generateLLVMCode(node->left);
+      generateLLVMCode(node->right);
+    }
+    else if (node->left->type == WHILE)
+    {
+      printf("while\n");
+      generateLLVMCode(node->left);
+      generateLLVMCode(node->right);
+    }
     break;
+  case IFELSECHAIN:
+    if (node->right->type == ELSE)
+    {
+      // If && else
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.else\n\n", cmpCounter, ifCounter, ifCounter);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n");
+      fprintf(file, "if%d.else:\n", ifCounter);
+      // Else body
+      generateLLVMCode(node->right->left);
+      fprintf(file, "\tbr label %%if%d.end\n");
+
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+      cmpCounter++;
+      ifCounter++;
+      tmpIfCounter++;
+    }
+    else if (node->right->type == ELSEIF)
+    {
+      // Single else if
+      printf("single else if no else\n");
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.else\n\n", cmpCounter, ifCounter, ifCounter);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n");
+
+      fprintf(file, "if%d.else:\n", ifCounter);
+      cmpCounter++;
+      ifCounter++;
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // Else if compare list
+      generateLLVMCode(node->right->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.else\n\n", cmpCounter, ifCounter, ifCounter);
+
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // Else if body
+      generateLLVMCode(node->right->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      // if else
+      fprintf(file, "if%d.else:\n", ifCounter);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      // if end
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+
+      cmpCounter++;
+      ifCounter++;
+    }
+    else if (node->right->type == ELSECHAIN)
+    {
+      printf("else chain\n");
+      // If
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, ifCounter, ifCounter + 1);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      ifCounter++;
+      cmpCounter++;
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      // Else chain
+      generateLLVMCode(node->right);
+
+      // End
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+    }
+    break;
+  case ELSECHAIN:
+    // Left side is always else if
+    fprintf(file, "if%d.cond:\n", ifCounter);
+    fprintf(file, "\t%%cmp%d = ", cmpCounter);
+    // Elseif comparelist
+    generateLLVMCode(node->left->left);
+    // Ends on else if
+    if (node->right->type == ELSEIF)
+    {
+      printf("ends with else if\n");
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, ifCounter, ifCounter + 1);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      ifCounter++;
+      cmpCounter++;
+      // left else if body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      fprintf(file, "if%d.cond:\n", ifCounter);
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // right else compare list
+      generateLLVMCode(node->right->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, tmpIfCounter);
+
+      fprintf(file, "if%d.then:\n", ifCounter);
+      generateLLVMCode(node->right->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      cmpCounter++;
+      ifCounter++;
+    }
+    // Ends on else
+    else if (node->right->type == ELSE)
+    {
+      printf("ends with else\n");
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.else\n\n", cmpCounter, ifCounter, ifCounter);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // Left else if body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      fprintf(file, "if%d.else:\n", ifCounter);
+      generateLLVMCode(node->right->left);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      cmpCounter++;
+      ifCounter++;
+    }
+    else // Else chain
+    {
+      // If comparelist
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, ifCounter, ifCounter + 1);
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+      cmpCounter++;
+      ifCounter++;
+
+      printf("elsechain igen\n");
+
+      generateLLVMCode(node->right);
+    }
+    break;
+  case IF: // Used only for single if statement
+    break;
+  case ELSEIF:
+    break;
+  case ELSE:
+    break;
+
   case WHILE:
     fprintf(file, "br label %%while%d.cond\n\n", whileCounter);
 
@@ -168,19 +367,6 @@ void generateLLVMCode(struct ast *node)
 
     whileCounter++;
     cmpCounter++;
-    break;
-  case IF:
-    fprintf(file, "\t%%cmp%d = ", cmpCounter);
-    generateLLVMCode(node->left);
-    fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, ifCounter);
-
-    fprintf(file, "if%d.then:\n", ifCounter);
-    generateLLVMCode(node->right);
-    fprintf(file, "\tbr label %%if%d.end\n", ifCounter);
-    fprintf(file, "if%d.end:\n", ifCounter);
-
-    cmpCounter++;
-    ifCounter++;
     break;
 
   /* Logical operators */
