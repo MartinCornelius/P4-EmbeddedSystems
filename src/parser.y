@@ -48,7 +48,7 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL EMPTY TERM FACTOR /* Extra */
+%token LINES LINE CONTROL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
@@ -111,10 +111,10 @@ line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, 
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
               | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocAST(IF, $3, $6); } 
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(CONTROL, allocAST(IF, $3, $6), $8); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocAST(IFELSECHAIN, allocAST(IF, $3, $6), $8); } 
               ;
 elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA             { $$ = allocAST(ELSEIF, $4, $7); } 
-              | ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain   { $$ = allocAST(CONTROL, allocAST(ELSEIF, $4, $7), $9); } 
+              | ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain   { $$ = allocAST(ELSECHAIN, allocAST(ELSEIF, $4, $7), $9); } 
               | ELSE LBRA lines RBRA                                      { $$ = allocAST(ELSE, $3, NULL); }
               ;
 vardecl       : TYPE ID                                                   
