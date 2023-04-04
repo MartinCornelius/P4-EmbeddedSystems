@@ -1,7 +1,7 @@
 #ifndef SYMBOLTYPES_H
 #define SYMBOLTYPES_H
 
-enum types { symbol_enum = -1, input_enum, output_enum, int8_enum, int16_enum, int32_enum, uint8_enum, 
+enum types { not_found_enum = -1, input_enum, output_enum, int8_enum, int16_enum, int32_enum, uint8_enum, 
                  uint16_enum, uint32_enum, float_enum, bool_enum, char_enum, flexint_enum };
 
 struct Symbol{

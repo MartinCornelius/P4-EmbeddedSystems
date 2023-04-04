@@ -4,8 +4,8 @@
 
 #include "symbol_types.h"
 
-// TODO double hashing not working
-// TODO determine size at some point
+// TODO determine size at some point (Prime is ideal)
+// TODO error handling
 typedef struct item
 {
     char* key;
@@ -21,194 +21,119 @@ typedef struct HashTable
 
 HashTable* createTable(int size)
 {
-    HashTable* hTable = (HashTable*) malloc(sizeof(HashTable));
+    HashTable* hTable = (HashTable*)malloc(sizeof(HashTable));
     hTable->size = size;
     hTable->count = 0;
-    hTable->items = (item**) calloc(hTable->size, sizeof(item*));
+    hTable->items = (item**)calloc(hTable->size, sizeof(item* ));
     return hTable;
 }
 
 item* createItem(char* key, enum types value)
 {
-    item* i = (item*) malloc(sizeof(item));
+    item* i = (item* )malloc(sizeof(item));
     i->key = key;
     i->value = value;
     return i;
 }
 
-int hash(HashTable* table, char* key)
+int hashing(HashTable* table, char* key, int i)
 {
     int hash = 537;
-    int i = 0;
-    while(key[i] != '\0')
+    while (key[i] != '\0')
     {
         hash = (hash + key[i] + i) % table->size;
         i++;
     }
 
-
     return hash;
+}
+
+int hash(HashTable* table, char* key)
+{
+    return hashing(table, key, 0);
+}
+
+int doubleHash(HashTable* table, char* key, int i)
+{
+    return hashing(table, key, i);
 }
 
 void insert(HashTable* table, char* key, enum types value)
 {
     item* hItem = createItem(key, value);
     int index = hash(table, key);
+    int i = 0;
+
     item* current = table->items[index];
 
+    // Double hashing if collision
     while (current != NULL)
     {
-        // Double hashing
-        index = hash(table, key);
+        printf("%s: Insert collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        index = doubleHash(table, key, ++i);
         current = table->items[index];
     }
 
-
     table->items[index] = hItem;
-    
-
-    // if(current != NULL)
-    // {
-    //     while(current->next != NULL)
-    //     {
-    //         current = current->next;
-    //     }
-    //     current->next = i;
-    // }
-    // else
-    // {
-    //     table->items[index] = i;
-    // }
     table->count++;
 }
 
-enum types search(HashTable* table, char* key)
+enum types searchSymbol(HashTable* table, char* key)
 {
+    printf("%s: Searching for symbol\n", key);
     int index = hash(table, key);
     item* current = table->items[index];
-    while(current != NULL)
-    {
-        if(current->key == key)
-        {
-            return current->value;
-        }
+    int i = 0;
 
-        // Double hashing if unable to find result
-        index = hash(table, key);
+    if (current == NULL)
+    {
+        printf("%s: Symbol not found\n", key);
+        return not_found_enum;
+    }
+
+    while (current != NULL && strcmp(current->key, key) != 0)
+    {
+        printf("%s: Search collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        index = doubleHash(table, key, ++i);
         current = table->items[index];
     }
-    return -1;
-}
 
-
-Symbol_Struct* findSymbol(HashTable* table, char* name)
-{
-    if(table == NULL) {
-        // TODO error here
-        printf("Hash table does not exist \n");
+    if (current == NULL)
+    {
+        printf("%s: Symbol not found\n", key);
+        return not_found_enum;
     }
 
-    // insert(hTable, "name", "type");
-
-    // Symbol_Struct* temp = handle;
-    // while(temp->next != NULL)
-    // {
-    //     temp = temp->next;
-    //     if(strcmp(temp->name, name) == 0)
-    //     {
-    //         return temp;
-    //     }
-    // }
-    return NULL;
+    printf("%s: Symbol Found! Type: %d\n", current->key, current->value);
+    return current->value;
 }
 
 void createSymbol(HashTable* table, int type, char* name)
 {
-    if(table == NULL) {
+    if (table == NULL)
+    {
         printf("Hash table missing \n");
         // TODO throw an error here
         return;
     }
 
-    if(findSymbol(table, name) == NULL){
-        insert(table, name, (enum types) type);
-
-        // switch(type)
-        // {
-        //     case -1:
-        //         break;
-        //     case input_enum:
-        //         //Not implemented yet
-        //         break;
-        //     case output_enum:`
-        //         //Not implemented
-        //         break;
-        //     case int8_enum:
-        //         ; // is necessary!
-        //         // int8_Struct *newInt8Symbol = calloc(1, sizeof(int8_Struct));
-        //         // strcpy(newInt8Symbol->name, name);
-        //         // newInt8Symbol->type = int8_enum;
-
-        //         insert(table, name, int8_enum);
-        //         // ((int8_Struct *)listHead)->next = newInt8Symbol;
-        //         // listHead = newInt8Symbol;
-        //         break;
-        //     case float_enum:
-        //         ; // is still necessary!!
-        //         // float_Struct *newFloatSymbol = calloc(1, sizeof(float_Struct));
-        //         // strcpy(newFloatSymbol->name, name);
-        //         // newFloatSymbol->type = float_enum;
-        //         // ((float_Struct *)listHead)->next = newFloatSymbol;
-        //         // listHead = newFloatSymbol;
-        //         break;
-        //     default:
-        //         printf("Illegal type (defaulting as flexint)\n");
-        //         flexint_Struct *newFlexIntSymbol = calloc(1, sizeof(flexint_Struct));
-        //         strcpy(newFlexIntSymbol->name, name);
-        //         newFlexIntSymbol->type = flexint_enum;
-        //         // ((flexint_Struct *)listHead)->next = newFlexIntSymbol;
-        //         // listHead = newFlexIntSymbol;    
-        // }
-        
-        printf("Symbol created: %s\n", name);
+    if (searchSymbol(table, name) == not_found_enum)
+    {
+        printf("%s: Symbol created\n", name);
+        insert(table, name, (enum types)type);
     }
     else
     {
-        printf("Declartion of two types of same name is not valid");
+        printf("Declartion of two types of same name is not valid\n");
     }
 }
 
-// void changeSymbolVal(char* name, char* sval, Symbol_Struct* handle)
-// {
-//     int val = atoi(sval);
-//     Symbol_Struct* symbol = findSymbol(name);
-//     if(symbol != NULL)
-//     {
-//         symbol->value = val;
-//     }
-// }
-
-// void printTable(Symbol_Struct* handle)
-// {
-//     Symbol_Struct *temp = handle;
-//     while(temp->next != NULL)
-//     {
-//         temp = temp->next;
-//         printf("___________________\n");
-
-//         printf("Name: %s, Type: %d, Value: %d\n", temp->name, temp->type, temp->value);
-
-//         printf("___________________\n");
-//     }
-// }
-
-
 void printTable(HashTable* table)
 {
-    for(int i = 0; i < table->size; i++)
+    for (int i = 0; i < table->size; i++)
     {
         item* current = table->items[i];
-        if(current != NULL)
+        if (current != NULL)
         {
             printf("___________________\n");
             printf("Index: %d\n", i);
