@@ -5,7 +5,7 @@ entry:
 
 define void @mainloop() {
 entry:
-	%cmp1 = icmp slt i32 2, 12
+	%cmp1 = icmp eq i32 2, 12
 	br i1 %cmp1, label %if1.then, label %if2.cond
 
 if1.then:
@@ -13,33 +13,33 @@ if1.then:
 	store i32 %a, i32* @a
 	br label %if1.end
 if2.cond:
-	%cmp2 = icmp sge i32 12, 3
+	%cmp2 = icmp slt i32 2, 8
 	br i1 %cmp2, label %if2.then, label %if3.cond
 
 if2.then:
-	%b = sub i32 3, 6
-	store i32 %b, i32* @b
+	%bob = sub i32 4, 2
+	store i32 %bob, i32* @bob
 	br label %if1.end
 if3.cond:
-	%cmp3 = icmp sle i32 6, 1
+	%cmp3 = icmp sle i32 2, 8
 	br i1 %cmp3, label %if3.then, label %if3.else
 
 if3.then:
-	%c = mul i32 5, 3
-	store i32 %c, i32* @c
+	%carl = sub i32 4, 2
+	store i32 %carl, i32* @carl
 	br label %if1.end
 if3.else:
-	%d = sdiv i32 9, 3
-	store i32 %d, i32* @d
+	%y = mul i32 2, 5
+	store i32 %y, i32* @y
 	br label %if1.end
 if1.end:
 	ret void
 }
 
 @a = global i32 0
-@b = global i32 0
-@c = global i32 0
-@d = global i32 0
+@bob = global i32 0
+@carl = global i32 0
+@y = global i32 0
 
 define i32 @main() {
 entry:

@@ -2,20 +2,19 @@ setup()
 {
 }
 mainloop() {
-  if (2 < 12)
+  if (2 == 12)
   {
     a = 2 + 56;
   }
-  else if (12 >= 3)
+  else if (2 < 8)
   {
-    b = 3 - 6;
+    bob = 4 - 2;
   }
-  else if (6 <= 1)
+  else if (2 <= 8)
   {
-    c = 5 * 3;
+    carl = 4 - 2;
   }
-  else 
-  {
-    d = 9 / 3;
+  else {
+    y = 2 * 5;
   }
 }
