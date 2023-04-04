@@ -100,7 +100,7 @@ paramindecl   : TYPE ID COMMA paramindecl
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
 lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
-              | control lines       { $$ = $1; }
+              | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
 line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
@@ -140,7 +140,7 @@ term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }
               | term DIV factor     { $$ = allocAST(DIV, $1, $3); }                                      
               | factor              { $$ = $1; }                                      
               ;
-factor        : ID                                                        
+factor        : ID                  { $$ = allocASTLeafStr(ID, $1); }                                      
               | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
               | VALF                { $$ = allocASTLeafFloat(VALF, $1); }                                      
               | LPAR expr RPAR                                            

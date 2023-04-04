@@ -2,12 +2,12 @@ setup()
 {
 }
 mainloop() {
-  if (2 < 8)
+  while (5)
   {
-    assignment = 2 + 5;
-  }
-  else
+    first = 2 - 1;
+  }  
+  if (5 < 10)
   {
-    second = 9 / 3;
+    second = 2 + 2;
   }
 }
