@@ -19,8 +19,57 @@ char *printType(int type)
   case LINES:
     sprintf(result, "lines");
     break;
+  case CONTROL:
+    sprintf(result, "control");
+    break;
+
+  /* Control structures */
+  case IF:
+    sprintf(result, "if");
+    break;
+  case ELSEIF:
+    sprintf(result, "elseif");
+    break;
+  case ELSE:
+    sprintf(result, "else");
+    break;
+  case IFELSECHAIN:
+    sprintf(result, "if chain");
+    break;
+  case ELSECHAIN:
+    sprintf(result, "else chain");
+    break;
+
   case ASSIGN:
     sprintf(result, "assign");
+    break;
+
+  /* Logical operators */
+  case LOGOR:
+    sprintf(result, "lor");
+    break;
+  case LOGAND:
+    sprintf(result, "land");
+    break;
+
+  /* Compare operators */
+  case COPGE:
+    sprintf(result, "greater eq");
+    break;
+  case COPLE:
+    sprintf(result, "less eq");
+    break;
+  case COPEQ:
+    sprintf(result, "eq");
+    break;
+  case COPNEQ:
+    sprintf(result, "not eq");
+    break;
+  case COPL:
+    sprintf(result, "less");
+    break;
+  case COPG:
+    sprintf(result, "greater");
     break;
 
   /* Arithmetic operations */
