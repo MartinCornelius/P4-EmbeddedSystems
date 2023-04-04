@@ -165,6 +165,23 @@ void generateLLVMCode(struct ast *node)
       ifCounter++;
       tmpIfCounter++;
     }
+    else if (node->left->type == IF && node->right->type == LINES)
+    {
+      fprintf(file, "\t%%cmp%d = ", cmpCounter);
+      // If comparelist
+      generateLLVMCode(node->left->left);
+      fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, ifCounter, tmpIfCounter);
+
+      fprintf(file, "if%d.then:\n", ifCounter);
+      // If body
+      generateLLVMCode(node->left->right);
+      fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+      fprintf(file, "if%d.end:\n", tmpIfCounter);
+      generateLLVMCode(node->right);
+      cmpCounter++;
+      ifCounter++;
+      tmpIfCounter++;
+    }
     // If else chain
     else if (node->left->type == IFELSECHAIN)
     {
