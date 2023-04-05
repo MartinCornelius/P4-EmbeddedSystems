@@ -5,22 +5,17 @@ entry:
 
 define void @mainloop() {
 entry:
-br label %while1.cond
+	%__tmp1 = mul i32 5, 5
+	%__tmp2 = sdiv i32 %__tmp1, 5
+	%__tmp3 = mul i32 1, 2
+	%__tmp4 = add i32 %__tmp3, 2
+	%__tmp5 = sub i32 %__tmp4, %__tmp2
 
-while1.cond:
-	%cmp1 = 5	br i1 %cmp1, label %while1.body, label %while1.end
-while1.body:
-	%first = sub i32 , 
-	store i32 %first, i32* @first
-	br label %while1.cond
-while1.end:
-
-
-
+	store i32 %__tmp5, i32* @a
 	ret void
 }
 
-@first = global i32 0
+@a = global i32 0
 
 define i32 @main() {
 entry:

@@ -17,7 +17,7 @@
     #include "include/ast.h"
     #include "include/const_folding.h"
     #include "include/code_gen.h"
-    #include "include/llvm_code_gen.h"
+   // #include "include/llvm_code_gen.h"
 
     extern FILE *yyin; 
 
@@ -59,7 +59,7 @@
 prog          : defines funcs setup mainloop    
                 { 
                     root = allocAST(ROOT, $3, $4);
-                    printf("\n\n=========== AST ===========\n");
+                    printf("\n=========== AST ===========\n");
                     printAST(root, 0);
                     if (optimize)
                     {
@@ -70,7 +70,7 @@ prog          : defines funcs setup mainloop
                         printAST(root, 0);
                     }
                     printf("\n\n=========== LLVM CODE GEN ===========\n");
-                    generateLLVMFile(root);
+                    generateFile(root);
                     printf("Done generating file\n");
                     freeAST(root);
                     printf("\nDone.");

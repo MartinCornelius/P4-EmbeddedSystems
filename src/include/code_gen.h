@@ -5,8 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 
+int ifCounter = 1;
+int cmpCounter = 1;
+int whileCounter = 1;
+int tmpVarCounter = 1;
+char *currentVarName;
+char tmpVarName[30];
+char variables[25][25]; // Remove me when symbol table
+
+void addVariable(char *name)
+{
+  int found = 0;
+  int i = 0;
+  for (i = 0; i < 25; i++)
+  {
+    if (strcmp(name, variables[i]) == 0)
+    {
+      found = 1;
+    }
+  }
+  if (found == 0)
+  {
+    for (i = 0; i < 25; i++)
+    {
+      if (strcmp(variables[i], "") == 0)
+      {
+        strcpy(variables[i], name);
+        break;
+      }
+    }
+  }
+}
+
 void generateCode(struct ast *node)
 {
+    if (node == NULL)
+        return;    
+
     switch (node->type)
     {
     case ROOT:
@@ -14,138 +49,217 @@ void generateCode(struct ast *node)
         generateCode(node->right);
         break;
     case SETUP:
-        printf("setup {\n");
+        fprintf(file, "define void @setup() {\n");
+        fprintf(file, "entry:\n");
         generateCode(node->left);
-        printf("}\n");
+        fprintf(file, "\tret void\n");
+        fprintf(file, "}\n\n");
         break;
     case MAIN:
-        printf("main {\n");
+        fprintf(file, "define void @mainloop() {\n");
+        fprintf(file, "entry:\n");
         generateCode(node->left);
-        printf("}\n");
+        fprintf(file, "\tret void\n");
+        fprintf(file, "}\n\n");
         break;
     case LINES:
         generateCode(node->left);
-        printf(";\n");
+        fprintf(file, "\n");
         generateCode(node->right);
         break;
-    case CONTROL:
-        generateCode(node->left);
-        printf("\n");
-        generateCode(node->right);
-        break;
-    case IF:
-        printf("if(");
-        generateCode(node->left);
-        printf(") {\n");
-        generateCode(node->right);
-        printf("}");
-        break;
-    case ELSEIF:
-        printf("else if(");
-        generateCode(node->left);
-        printf("){\n");
-        generateCode(node->right);
-        printf("}");
-        break;
-    case ELSE:
-        printf("else ");
-        printf("{\n");
-        generateCode(node->left);
-        printf("}");
-        break;
+
+    /* Control structures */
     case WHILE:
-        printf("while(");
-        generateCode(node->left);
-        printf(") {\n");
-        generateCode(node->right);
-        printf("}");
         break;
-    case LOGOR:
-        generateCode(node->left);
-        printf(" || ");
+
+    case ASSIGN:
         generateCode(node->right);
-        break;
-    case LOGAND:
+        fprintf(file, "\n\tstore i32 %%__tmp%d, i32* @", tmpVarCounter-1);
         generateCode(node->left);
-        printf(" && ");
-        generateCode(node->right);
+        tmpVarCounter++;
+        addVariable(currentVarName); // Change me later
         break;
-    case COPGE:
-        generateCode(node->left);
-        printf(" >= ");
-        generateCode(node->right);
-        break;
-    case COPLE:
-        generateCode(node->left);
-        printf(" <= ");
-        generateCode(node->right);
-        break;
-    case COPEQ:
-        generateCode(node->left);
-        printf(" == ");
-        generateCode(node->right);
-        break;
-    case COPNEQ:
-        generateCode(node->left);
-        printf(" != ");
-        generateCode(node->right);
-        break;
-    case COPL:
-        generateCode(node->left);
-        printf(" < ");
-        generateCode(node->right);
-        break;
-    case COPG:
-        generateCode(node->left);
-        printf(" > ");
-        generateCode(node->right);
-        break;
+
+    /* Arithmetic */
     case PLUS:
-        printf("(");
-        generateCode(node->left);
-        printf(" + ");
-        generateCode(node->right);
-        printf(")");
+        if (node->right->type != VAL)
+        {
+            generateCode(node->right);
+            int tmp = tmpVarCounter - 1;
+            if (node->left->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->left);
+                fprintf(file, "\n");
+            }
+            else
+            {
+                generateCode(node->left);
+                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else if (node->left->type != VAL)
+        {
+            generateCode(node->left);
+            int tmp = tmpVarCounter - 1;
+            if (node->right->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->right);
+                fprintf(file, "\n");
+            }
+            else
+            {
+                generateCode(node->right);
+                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else
+        {
+            fprintf(file, "\t%%__tmp%d = add i32 ", tmpVarCounter);
+            generateCode(node->right);
+            fprintf(file, ", ");
+            generateCode(node->left);
+            fprintf(file, "\n");
+        }
+        tmpVarCounter++;
         break;
     case MINUS:
-        printf("(");
-        generateCode(node->left);
-        printf(" - ");
-        generateCode(node->right);
-        printf(")");
-        break;
-    case DIV:
-        printf("(");
-        generateCode(node->left);
-        printf(" / ");
-        generateCode(node->right);
-        printf(")");
+        if (node->right->type != VAL)
+        {
+            generateCode(node->right);
+            int tmp = tmpVarCounter - 1;
+            if (node->left->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+                generateCode(node->left);
+                fprintf(file, ", %%__tmp%d\n", tmpVarCounter - 1);
+            }
+            else 
+            {
+                generateCode(node->left);
+                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else if (node->left->type != VAL)
+        {
+            generateCode(node->left);
+            int tmp = tmpVarCounter - 1;
+            if (node->right->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+                generateCode(node->right);
+                fprintf(file, ", %%__tmp%d\n", tmpVarCounter - 1);
+            }
+            else
+            {
+                generateCode(node->right);
+                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else
+        {
+            fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+            generateCode(node->right);
+            fprintf(file, ", ");
+            generateCode(node->left);
+            fprintf(file, "\n");
+        }
+        tmpVarCounter++;
         break;
     case TIMES:
-        printf("(");
-        generateCode(node->left);
-        printf(" * ");
-        generateCode(node->right);
-        printf(")");
+        if (node->right->type != VAL)
+        {
+            generateCode(node->right);
+            int tmp = tmpVarCounter - 1;
+            if (node->left->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->left);
+                fprintf(file, "\n");
+            }
+            else 
+            {
+                generateCode(node->left);
+                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else if (node->left->type != VAL)
+        {
+            generateCode(node->left);
+            int tmp = tmpVarCounter - 1;
+            if (node->right->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->right);
+                fprintf(file, "\n");
+            }
+            else 
+            {
+                generateCode(node->right);
+                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else
+        {
+            fprintf(file, "\t%%__tmp%d = mul i32 ", tmpVarCounter);
+            generateCode(node->right);
+            fprintf(file, ", ");
+            generateCode(node->left);
+            fprintf(file, "\n");
+        }
+        tmpVarCounter++;
         break;
+    case DIV:
+        if (node->right->type != VAL)
+        {
+            generateCode(node->right);
+            int tmp = tmpVarCounter - 1;
+            if (node->left->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->left);
+                fprintf(file, "\n");
+            }
+            else 
+            {
+                generateCode(node->left);
+                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else if (node->left->type != VAL)
+        {
+            generateCode(node->left);
+            int tmp = tmpVarCounter - 1;
+            if (node->right->type == VAL)
+            {
+                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                generateCode(node->right);
+                fprintf(file, "\n");
+            }
+            else 
+            {
+                generateCode(node->right);
+                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+            }
+        }
+        else
+        {
+            fprintf(file, "\t%%__tmp%d = sdiv i32 ", tmpVarCounter);
+            generateCode(node->left);
+            fprintf(file, ", ");
+            generateCode(node->right);
+            fprintf(file, "\n");
+        }
+        tmpVarCounter++;
+        break;
+
     case VAL:
-        printf("%d", ((struct astLeafInt *)node)->value);
-        break;
-    case VALF:
-        printf("%f", ((struct astLeafFloat *)node)->value);
+        fprintf(file, "%d", ((struct astLeafInt *)node)->value);
         break;
     case ID:
-        printf("%s", ((struct astLeafStr *)node)->string);
-        break;
-    case ASSIGN:
-        generateCode(node->left);
-        printf(" = ");
-        generateCode(node->right);
-        break;
-    case LARROW:
-        generateCode(node->left);
-        printf(" <- ");
-        generateCode(node->right);
+        fprintf(file, "%s", ((struct astLeafStr *)node)->string);
+        currentVarName = ((struct astLeafStr *)node)->string;
         break;
     case EMPTY:
         break;
@@ -155,62 +269,21 @@ void generateCode(struct ast *node)
     }
 }
 
-void printToFile(char *path, char *programString)
+void generateFile(struct ast *node)
 {
-    FILE *fp = fopen(path, "w");
-    fprintf(fp, "%s", programString);
-    fclose(fp);
-}
-
-void emit(const char *input, char *programString)
-{
-    strcat(programString, input);
-}
-
-void typeToString(char *input, int type)
-{
-    switch (type)
-    {
-    case input_enum:
-        strcpy(input, "input");
-        break;
-    case output_enum:
-        strcpy(input, "output");
-        break;
-    case int8_enum:
-        strcpy(input, "int8_t");
-        break;
-    case int16_enum:
-        strcpy(input, "int16_t");
-        break;
-    case int32_enum:
-        strcpy(input, "int");
-        break;
-    case uint8_enum:
-        strcpy(input, "uint8_t");
-        break;
-    case uint16_enum:
-        strcpy(input, "uint16_t");
-        break;
-    case uint32_enum:
-        strcpy(input, "unsigned int");
-        break;
-    case float_enum:
-        strcpy(input, "float");
-        break;
-    case bool_enum:
-        strcpy(input, "bool");
-        break;
-    case char_enum:
-        strcpy(input, "char");
-        break;
-    case flexint_enum:
-        strcpy(input, "flexint");
-        break;
-    default:
-        printf("invalid type given, defaulting to flexint\n");
-        strcpy(input, "flexint");
-    }
+  generateCode(node);
+  /* Change when symbol table */
+  for (int i = 0; i < 25; i++)
+  {
+    if (strcmp(variables[i], "") != 0)
+      fprintf(file, "@%s = global i32 0\n", variables[i]);
+  }
+  fprintf(file, "\ndefine i32 @main() {\n");
+  fprintf(file, "entry:\n");
+  fprintf(file, "\tcall void @setup()\n");
+  fprintf(file, "\tcall void @mainloop()\n");
+  fprintf(file, "\tret i32 0\n");
+  fprintf(file, "}\n\n");
 }
 
 #endif
