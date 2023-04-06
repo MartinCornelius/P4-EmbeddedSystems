@@ -2,7 +2,6 @@ setup()
 {
 }
 mainloop() {
-  uint8 a = 2 - 3;
-  int8 b;
+  int16 a = 2 + 2;
   print(a);
 }

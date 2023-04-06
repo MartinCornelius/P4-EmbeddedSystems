@@ -141,12 +141,43 @@ char *getCustomType(int varType)
     case uint8_enum:
       result = "uint8";
       break;
+    case int16_enum:
+      result = "int16";
+      break;
+    case uint16_enum:
+      result = "uint16";
+      break;
     default:
       result = "type not implemented";
       break;
   }
 
   return result;
+}
+
+/* Converts from enum type to llvm ir type */
+char *typeConverter(int type)
+{
+    char *result;
+    switch(type)
+    {
+      case int8_enum:
+        result = "i8";
+        break;
+      case uint8_enum:
+        result = "i8";
+        break;
+      case int16_enum:
+        result = "i16";
+        break;
+      case uint16_enum:
+        result = "i16";
+        break;
+      default:
+        printf("type convertion failed\n");
+        break;
+      }
+    return result;
 }
 
 #endif
