@@ -13,30 +13,6 @@ char *currentVarName;
 char tmpVarName[30];
 char variables[25][25]; // Remove me when symbol table
 
-void addVariable(char *name)
-{
-  int found = 0;
-  int i = 0;
-  for (i = 0; i < 25; i++)
-  {
-    if (strcmp(name, variables[i]) == 0)
-    {
-      found = 1;
-    }
-  }
-  if (found == 0)
-  {
-    for (i = 0; i < 25; i++)
-    {
-      if (strcmp(variables[i], "") == 0)
-      {
-        strcpy(variables[i], name);
-        break;
-      }
-    }
-  }
-}
-
 void generateCode(struct ast *node)
 {
     if (node == NULL)
@@ -82,6 +58,13 @@ void generateCode(struct ast *node)
     case WHILE:
         break;
 
+    case DECL:
+        if (node->right == NULL)
+          return;
+        else
+          generateCode(node->right);
+        break;
+
     case ASSIGN:
         // Check if constant
         if (node->right->type == VAL)
@@ -100,7 +83,6 @@ void generateCode(struct ast *node)
         fprintf(file, "\n\tstore i32 %%__tmp%d, i32* @", tmpVarCounter-1);
         generateCode(node->left);
         tmpVarCounter++;
-        addVariable(currentVarName); // Change me later
         break;
 
     /* Arithmetic */
@@ -297,13 +279,16 @@ void generateFile(struct ast *node)
 {
   fprintf(file, "@pfmt = constant [4 x i8] c\"%%d\\0A\\00\"\n");
   fprintf(file, "declare i32 @printf(i8*,...)\n\n");
-  generateCode(node);
-  /* Change when symbol table */
-  for (int i = 0; i < 25; i++)
+
+  // Global variables
+  for (int i = 0; i < hTable->size; i++)
   {
-    if (strcmp(variables[i], "") != 0)
-      fprintf(file, "@%s = global i32 0\n", variables[i]);
+    if (hTable->items[i] != NULL)
+      fprintf(file, "@%s = global i32 0\n", hTable->items[i]->key);
   }
+  fprintf(file, "\n");
+
+  generateCode(node);
   fprintf(file, "\ndefine i32 @main() {\n");
   fprintf(file, "entry:\n");
   fprintf(file, "\tcall void @setup()\n");

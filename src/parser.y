@@ -17,6 +17,8 @@
     #include "include/symbol_table.h"
     #include "include/ast.h"
     #include "include/const_folding.h"
+
+    HashTable *hTable;
     #include "include/code_gen.h"
 
     extern FILE *yyin; 
@@ -30,7 +32,6 @@
     // Last element in list
     void *listHead;
 
-    HashTable *hTable;
     struct ast *root;
 %}
 
@@ -123,7 +124,7 @@ vardecl       : TYPE ID
               { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), NULL); }          
               | TYPE ID ASSIGN expr                             
-              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              { createSymbol(hTable, $2, $1); $$ = allocAST(ASSIGN,
               allocASTLeafStr(ID, $2), $4); }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
