@@ -83,7 +83,20 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
-        generateCode(node->right);
+        // Check if constant
+        if (node->right->type == VAL)
+        {
+          fprintf(file, "\t%%__const%d = alloca i32\n", tmpVarCounter);
+          fprintf(file, "\tstore i32 ");
+          generateCode(node->right);
+          fprintf(file, ", i32* %%__const%d\n", tmpVarCounter);
+          fprintf(file, "\t%%__tmp%d = load i32, i32* %%__const%d\n", tmpVarCounter, tmpVarCounter);
+          tmpVarCounter++;
+        }
+        else
+        {
+          generateCode(node->right);
+        }
         fprintf(file, "\n\tstore i32 %%__tmp%d, i32* @", tmpVarCounter-1);
         generateCode(node->left);
         tmpVarCounter++;

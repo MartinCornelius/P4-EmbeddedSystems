@@ -8,10 +8,9 @@ entry:
 
 define void @mainloop() {
 entry:
-	%__tmp1 = mul i32 2, 2
-	%__tmp2 = add i32 %__tmp1, 2
+	%__tmp1 = sub i32 2, 3
 
-	store i32 %__tmp2, i32* @a
+	store i32 %__tmp1, i32* @a
 	%__tmpGlobal_a = load i32, i32* @a
 	call i32(i8*,...) @printf(i8* getelementptr([5 x i8], [5 x i8]* @pfmt, i32 0, i32 0), i32 %__tmpGlobal_a);
 
