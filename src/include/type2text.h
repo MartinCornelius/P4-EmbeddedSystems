@@ -129,6 +129,7 @@ char *printType(int type)
   return result;
 }
 
+/* Converts enum type to c-like type */
 char *getCustomType(int varType)
 {
   char *result;
@@ -138,14 +139,20 @@ char *getCustomType(int varType)
     case int8_enum:
       result = "int8";
       break;
-    case uint8_enum:
-      result = "uint8";
-      break;
     case int16_enum:
       result = "int16";
       break;
+    case int32_enum:
+      result = "int32";
+      break;
+    case uint8_enum:
+      result = "uint8";
+      break;
     case uint16_enum:
       result = "uint16";
+      break;
+    case uint32_enum:
+      result = "uint32";
       break;
     default:
       result = "type not implemented";
@@ -164,14 +171,20 @@ char *typeConverter(int type)
       case int8_enum:
         result = "i8";
         break;
-      case uint8_enum:
-        result = "i8";
-        break;
       case int16_enum:
         result = "i16";
         break;
+      case int32_enum:
+        result = "i32";
+        break;
+      case uint8_enum:
+        result = "i8";
+        break;
       case uint16_enum:
         result = "i16";
+        break;
+      case uint32_enum:
+        result = "i32";
         break;
       default:
         printf("type convertion failed\n");

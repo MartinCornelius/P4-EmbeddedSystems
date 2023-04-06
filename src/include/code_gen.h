@@ -12,7 +12,6 @@ int tmpVarCounter = 1;
 char *currentVarName;
 char *currentType;
 char tmpVarName[30];
-char variables[25][25]; // Remove me when symbol table
 
 void generateCode(struct ast *node)
 {
