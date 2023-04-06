@@ -56,6 +56,7 @@ void generateCode(struct ast *node)
         {
           // Check if signed
           char *checksigned = getCustomType(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+          // Type convertion
           if (checksigned[0] == 'u')
             fprintf(file, "\n\t%%__castGlobal_%s = zext %s %%__tmpGlobal_%s to i32", currentVarName, currentType, currentVarName);
           else
@@ -109,14 +110,14 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->left->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = add %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->left);
                 fprintf(file, "\n");
             }
             else
             {
                 generateCode(node->left);
-                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else if (node->left->type != VAL)
@@ -125,19 +126,19 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->right->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = add %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->right);
                 fprintf(file, "\n");
             }
             else
             {
                 generateCode(node->right);
-                fprintf(file, "\t%%__tmp%d = add i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = add i32 ", tmpVarCounter);
+            fprintf(file, "\t%%__tmp%d = add %s ", tmpVarCounter, currentType);
             generateCode(node->right);
             fprintf(file, ", ");
             generateCode(node->left);
@@ -152,14 +153,14 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->left->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+                fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
                 generateCode(node->left);
                 fprintf(file, ", %%__tmp%d\n", tmpVarCounter - 1);
             }
             else 
             {
                 generateCode(node->left);
-                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else if (node->left->type != VAL)
@@ -168,7 +169,7 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->right->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+                fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
                 fprintf(file, "%%__tmp%d, ", tmpVarCounter - 1);
                 generateCode(node->right);
                 fprintf(file, "\n");
@@ -176,12 +177,12 @@ void generateCode(struct ast *node)
             else
             {
                 generateCode(node->right);
-                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmp, tmpVarCounter-1);
+                fprintf(file, "\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmp, tmpVarCounter-1);
             }
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+            fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
             generateCode(node->left);
             fprintf(file, ", ");
             generateCode(node->right);
@@ -196,14 +197,14 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->left->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = mul %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->left);
                 fprintf(file, "\n");
             }
             else 
             {
                 generateCode(node->left);
-                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else if (node->left->type != VAL)
@@ -212,19 +213,19 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->right->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = mul %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->right);
                 fprintf(file, "\n");
             }
             else 
             {
                 generateCode(node->right);
-                fprintf(file, "\t%%__tmp%d = mul i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = mul i32 ", tmpVarCounter);
+            fprintf(file, "\t%%__tmp%d = mul %s ", tmpVarCounter, currentType);
             generateCode(node->right);
             fprintf(file, ", ");
             generateCode(node->left);
@@ -239,14 +240,14 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->left->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = sdiv %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->left);
                 fprintf(file, "\n");
             }
             else 
             {
                 generateCode(node->left);
-                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else if (node->left->type != VAL)
@@ -255,19 +256,19 @@ void generateCode(struct ast *node)
             int tmp = tmpVarCounter - 1;
             if (node->right->type == VAL)
             {
-                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, ", tmpVarCounter, tmpVarCounter - 1);
+                fprintf(file, "\t%%__tmp%d = sdiv %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter - 1);
                 generateCode(node->right);
                 fprintf(file, "\n");
             }
             else 
             {
                 generateCode(node->right);
-                fprintf(file, "\t%%__tmp%d = sdiv i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmp);
             }
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = sdiv i32 ", tmpVarCounter);
+            fprintf(file, "\t%%__tmp%d = sdiv %s ", tmpVarCounter, currentType);
             generateCode(node->left);
             fprintf(file, ", ");
             generateCode(node->right);
