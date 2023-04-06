@@ -119,7 +119,8 @@ control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ =
 elsechain     : ELSE control                                              { $$ = $2; }
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
-vardecl       : TYPE ID                                         { ; }          
+vardecl       : TYPE ID
+              { createSymbol(hTable, $2, $1); }          
               | TYPE ID ASSIGN expr                             { ; }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;

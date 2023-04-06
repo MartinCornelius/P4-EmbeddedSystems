@@ -1,6 +1,9 @@
 #ifndef TYPE2TEXT_H
 #define TYPE2TEXT_H
 
+#include "symbol_types.h"
+#include "../parser.tab.h"
+
 char *printType(int type)
 {
   static char result[30];
@@ -118,6 +121,27 @@ char *printType(int type)
   default:
     sprintf(result, "not implemented");
     break;
+  }
+
+  return result;
+}
+
+char *getCustomType(int varType)
+{
+  printf("getting custom type %d\n", varType);
+  char *result;
+
+  switch (varType)
+  {
+    case int8_enum:
+      result = "int8";
+      break;
+    case uint8_enum:
+      result = "uint8";
+      break;
+    default:
+      result = "type not implemented";
+      break;
   }
 
   return result;

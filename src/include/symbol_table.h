@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "symbol_types.h"
+#include "type2text.h"
 
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
@@ -145,7 +146,7 @@ void printTable(HashTable* table)
         {
             printf("___________________\n");
             printf("Index: %d\n", i);
-            printf("Name: %s, Type: %d\n", current->key, current->value);
+            printf("Name: %s, Type: %s\n", current->key, getCustomType(current->value));
             printf("___________________\n");
         }
     }
