@@ -22,6 +22,9 @@ char *printType(int type)
   case CONTROL:
     sprintf(result, "control");
     break;
+  case PRINT:
+    sprintf(result, "print");
+    break;
 
   /* Control structures */
   case WHILE:

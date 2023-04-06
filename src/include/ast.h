@@ -157,6 +157,7 @@ void freeAST(struct ast *node)
   case SETUP:
   case MAIN:
   case CONTROL:
+  case PRINT:
   case IF:
   case ELSEIF:
   case WHILE:

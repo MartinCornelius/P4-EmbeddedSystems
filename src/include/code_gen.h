@@ -67,6 +67,16 @@ void generateCode(struct ast *node)
         fprintf(file, "\n");
         generateCode(node->right);
         break;
+    case PRINT:
+        fprintf(file, "\t%%__tmpGlobal_");
+        generateCode(node->left);
+        fprintf(file, " = load i32, i32* @");
+        generateCode(node->left);
+        fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([5 x i8], [5 x i8]* @pfmt, i32 0, i32 0), i32 %%__tmpGlobal_");
+        generateCode(node->left);
+        fprintf(file, ");\n");
+        tmpVarCounter++;
+        break;
 
     /* Control structures */
     case WHILE:
@@ -271,6 +281,8 @@ void generateCode(struct ast *node)
 
 void generateFile(struct ast *node)
 {
+  fprintf(file, "@pfmt = constant [5 x i8] c\"%%ld\\0A\\00\"\n");
+  fprintf(file, "declare i32 @printf(i8*,...)\n\n");
   generateCode(node);
   /* Change when symbol table */
   for (int i = 0; i < 25; i++)
