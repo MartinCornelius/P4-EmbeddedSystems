@@ -9,6 +9,7 @@ int ifCounter = 1;
 int cmpCounter = 1;
 int whileCounter = 1;
 int tmpVarCounter = 1;
+int globalVarCounter = 1;
 char *currentVarName;
 char *currentType;
 char tmpVarName[30];
@@ -46,7 +47,7 @@ void generateCode(struct ast *node)
     case PRINT:
         int casted = 0;
         currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
-        fprintf(file, "\t%%__tmpGlobal_");
+        fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
         generateCode(node->left);
         fprintf(file, " = load %s, %s* @", currentType, currentType);
         generateCode(node->left);
@@ -57,15 +58,16 @@ void generateCode(struct ast *node)
           char *checksigned = getCustomType(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
           // Type convertion
           if (checksigned[0] == 'u')
-            fprintf(file, "\n\t%%__castGlobal_%s = zext %s %%__tmpGlobal_%s to i32", currentVarName, currentType, currentVarName);
+            fprintf(file, "\n\t%%__castGlobal_%d%s = zext %s %%__tmpGlobal_%d%s to i32", globalVarCounter, currentVarName, currentType, globalVarCounter, currentVarName);
           else
-            fprintf(file, "\n\t%%__castGlobal_%s = sext %s %%__tmpGlobal_%s to i32", currentVarName, currentType, currentVarName);
+            fprintf(file, "\n\t%%__castGlobal_%d%s = sext %s %%__tmpGlobal_%d%s to i32", globalVarCounter, currentVarName, currentType, globalVarCounter, currentVarName);
           casted = 1;
         }
 
-        fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %s", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"));
+        fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %s%d", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"), globalVarCounter);
         generateCode(node->left);
         fprintf(file, ");\n");
+        globalVarCounter++;
         tmpVarCounter++;
         break;
 
@@ -103,7 +105,28 @@ void generateCode(struct ast *node)
 
     /* Arithmetic */
     case PLUS:
-        if (node->right->type != VAL)
+        if (node->right->type == ID)
+        {
+          if (node->left->type == ID)
+          {
+            fprintf(file, "\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+          }
+          else if (node->type == VAL)
+          {
+            
+          }
+          else 
+          {
+            generateCode(node->left);
+          }
+        }
+        else if (node->right->type != VAL)
         {
             generateCode(node->right);
             int tmp = tmpVarCounter - 1;
