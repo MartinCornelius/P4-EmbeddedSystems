@@ -2,6 +2,6 @@ setup()
 {
 }
 mainloop() {
-  int8 a;
+  a = 2 - 3;
   print(a);
 }

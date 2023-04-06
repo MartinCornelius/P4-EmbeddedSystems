@@ -110,7 +110,7 @@ line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, 
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
-              | vardecl                               { ; }                    
+              | vardecl                               { $$ = $1; }                    
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
               | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocASTIfNode(IF, $3, $6, NULL); } 
@@ -120,8 +120,11 @@ elsechain     : ELSE control                                              { $$ =
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
 vardecl       : TYPE ID
-              { createSymbol(hTable, $2, $1); }          
-              | TYPE ID ASSIGN expr                             { ; }         
+              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              allocASTLeafStr(ID, $2), NULL); }          
+              | TYPE ID ASSIGN expr                             
+              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              allocASTLeafStr(ID, $2), $4); }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
 funccall      : ID LPAR paramincall RPAR                        { ; }          

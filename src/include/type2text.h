@@ -22,6 +22,9 @@ char *printType(int type)
   case LINES:
     sprintf(result, "lines");
     break;
+  case DECL:
+    sprintf(result, "vardecl");
+    break;
   case CONTROL:
     sprintf(result, "control");
     break;
@@ -128,7 +131,6 @@ char *printType(int type)
 
 char *getCustomType(int varType)
 {
-  printf("getting custom type %d\n", varType);
   char *result;
 
   switch (varType)
