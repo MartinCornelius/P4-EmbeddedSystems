@@ -171,21 +171,22 @@ void generateCode(struct ast *node)
             if (node->right->type == VAL)
             {
                 fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
+                fprintf(file, "%%__tmp%d, ", tmpVarCounter - 1);
                 generateCode(node->right);
-                fprintf(file, ", %%__tmp%d\n", tmpVarCounter - 1);
+                fprintf(file, "\n");
             }
             else
             {
                 generateCode(node->right);
-                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmpVarCounter-1, tmp);
+                fprintf(file, "\t%%__tmp%d = sub i32 %%__tmp%d, %%__tmp%d\n", tmpVarCounter, tmp, tmpVarCounter-1);
             }
         }
         else
         {
             fprintf(file, "\t%%__tmp%d = sub i32 ", tmpVarCounter);
-            generateCode(node->right);
-            fprintf(file, ", ");
             generateCode(node->left);
+            fprintf(file, ", ");
+            generateCode(node->right);
             fprintf(file, "\n");
         }
         tmpVarCounter++;

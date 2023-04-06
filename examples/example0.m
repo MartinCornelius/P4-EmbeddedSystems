@@ -2,6 +2,6 @@ setup()
 {
 }
 mainloop() {
-  a = 3 - 2;
+  a =  2 * 1 - 3 * 4;
   print(a);
 }
