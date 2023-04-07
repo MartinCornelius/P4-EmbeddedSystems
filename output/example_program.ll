@@ -17,15 +17,24 @@ entry:
 
 	store i32 %__tmp1, i32* @a
 	%__const3 = alloca i32
-	store i32 4, i32* %__const3
+	store i32 -1, i32* %__const3
 	%__tmp3 = load i32, i32* %__const3
 
 	store i32 %__tmp3, i32* @b
-	%__tmp5 = load i32, i32* @a
-	%__tmp6 = load i32, i32* @b
-	%__tmp7 = add i32 %__tmp6, %__tmp5
 
-	store i32 %__tmp7, i32* @b
+	%__tmp5 = load i32, i32* @b
+	%__tmp6 = load i32, i32* @a
+	%__tmp7 = sub i32 %__tmp5, %__tmp6
+	%__tmp8 = sub i32 %__tmp7, 3
+	%__tmp9 = add i32 %__tmp8, 2
+
+	%__tmp10 = load i32, i32* @b
+	%__tmp11 = sub i32 %__tmp9, %__tmp10
+
+	%__tmp12 = load i32, i32* @b
+	%__tmp13 = add i32 %__tmp12, %__tmp11
+
+	store i32 %__tmp13, i32* @b
 	%__tmpGlobal_1b = load i32, i32* @b
 	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__tmpGlobal_1b);
 
