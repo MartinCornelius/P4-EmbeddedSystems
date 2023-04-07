@@ -107,6 +107,56 @@ void generateCode(struct ast *node)
           generateCode(node->right);
         break;
 
+    case IF:
+        // Single if statement
+        if (((struct astIfNode *)node)->right == NULL)
+        {
+          int tmpIfCounter = ifCounter++;
+          printf("single if statement\n");
+          // Comparison
+          generateCode(((struct astIfNode *)node)->left);
+          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
+          cmpCounter++;
+
+          // If body
+          fprintf(file, "if%d.then:\n", tmpIfCounter);
+          generateCode(((struct astIfNode *)node)->middle);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+          // If end
+          fprintf(file, "if%d.end:\n", tmpIfCounter);
+
+        }
+        // Else if
+        else if (((struct astIfNode *)node->right)->type == IF)
+        {
+          printf("if chain\n");
+        }
+        // Else
+        else
+        {
+          printf("else\n");
+          int tmpIfCounter = ifCounter++;
+          // Comparison
+          generateCode(((struct astIfNode *)node)->left);
+          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.else\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
+          cmpCounter++;
+
+          // If body
+          fprintf(file, "if%d.then:\n", tmpIfCounter);
+          generateCode(((struct astIfNode *)node)->middle);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+          // Else
+          fprintf(file, "if%d.else:\n", tmpIfCounter);
+          generateCode(((struct astIfNode *)node)->right);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+
+          // If end
+          fprintf(file, "if%d.end:\n", tmpIfCounter);
+        }
+        break;
+
     case ASSIGN:
         currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
         // Check if constant

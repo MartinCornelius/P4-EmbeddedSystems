@@ -2,10 +2,22 @@ setup()
 {
 }
 mainloop() {
-  int16 a = 100;
-  while (a > 0)
+  uint8 a = 6;
+  if (8 < 6)
+  {
+    if (6 < 2)
     {
-      print(a);
-      a = a / 2;
+      uint8 b = 2;
+      print(b);
     }
+    else
+    {
+      b = 1;
+      print(b);
+    }
+  }
+  else 
+  {
+    print(a);
+  }
 }

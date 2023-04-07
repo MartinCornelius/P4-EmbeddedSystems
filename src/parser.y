@@ -110,7 +110,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
 line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
-              | PRINT LPAR ID RPAR                { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
+              | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
               | vardecl                               { $$ = $1; }                    
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
