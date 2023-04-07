@@ -361,7 +361,79 @@ void generateCode(struct ast *node)
         tmpVarCounter++;
         break;
     case TIMES:
-        if (node->right->type != VAL)
+        if (node->right->type == ID)
+        {
+          if (node->left->type == ID)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+          else if (node->left->type == VAL)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = mul %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          }
+          else 
+          {
+            generateCode(node->left);
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+        }
+        else if (node->left->type == ID)
+        {
+          if (node->right->type == ID)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+          else if (node->right->type == VAL)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
+          else 
+          {
+            generateCode(node->right);
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+        }
+        else if (node->right->type != VAL)
         {
             generateCode(node->right);
             int tmp = tmpVarCounter - 1;
@@ -404,7 +476,79 @@ void generateCode(struct ast *node)
         tmpVarCounter++;
         break;
     case DIV:
-        if (node->right->type != VAL)
+        if (node->right->type == ID)
+        {
+          if (node->left->type == ID)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+          else if (node->left->type == VAL)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          }
+          else 
+          {
+            generateCode(node->left);
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+        }
+        else if (node->left->type == ID)
+        {
+          if (node->right->type == ID)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+          else if (node->right->type == VAL)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
+          else 
+          {
+            generateCode(node->right);
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+          }
+        }
+        else if (node->right->type != VAL)
         {
             generateCode(node->right);
             int tmp = tmpVarCounter - 1;

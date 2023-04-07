@@ -2,11 +2,10 @@ setup()
 {
 }
 mainloop() {
-  int8 a = 1;
-  int8 b = 4;
-  while (a != b)
+  int16 a = 100;
+  while (a > 0)
     {
       print(a);
-      a = a + 1;
+      a = a / 2;
     }
 }
