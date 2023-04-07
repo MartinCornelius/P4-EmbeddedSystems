@@ -2,9 +2,11 @@ setup()
 {
 }
 mainloop() {
-  int32 a = 5;
-  int32 b = -1;
-
-  b = b - a - 3 + 2 - b + b;
-  print(b);
+  int8 a = 1;
+  int8 b = 4;
+  while (a != b)
+    {
+      print(a);
+      a = a + 1;
+    }
 }
