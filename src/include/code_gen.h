@@ -6,6 +6,7 @@
 #include <string.h>
 
 int ifCounter = 1;
+int startingIfCounter = 1;
 int cmpCounter = 1;
 int whileCounter = 1;
 int tmpVarCounter = 1;
@@ -40,6 +41,8 @@ void generateCode(struct ast *node)
         fprintf(file, "}\n\n");
         break;
     case LINES:
+        if (node->left->type == IF)
+          startingIfCounter = ifCounter;
         generateCode(node->left);
         fprintf(file, "\n");
         generateCode(node->right);
@@ -112,30 +115,45 @@ void generateCode(struct ast *node)
         if (((struct astIfNode *)node)->right == NULL)
         {
           int tmpIfCounter = ifCounter++;
-          printf("single if statement\n");
           // Comparison
           generateCode(((struct astIfNode *)node)->left);
-          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
+          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.end\n\n", cmpCounter, tmpIfCounter, startingIfCounter);
           cmpCounter++;
 
           // If body
           fprintf(file, "if%d.then:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
 
           // If end
-          fprintf(file, "if%d.end:\n", tmpIfCounter);
+          fprintf(file, "if%d.end:\n", startingIfCounter);
 
         }
         // Else if
-        else if (((struct astIfNode *)node->right)->type == IF)
+        else if (((struct astIfNode *)node)->right->type == IF)
         {
-          printf("if chain\n");
+          printf("if else kæde\n");
+          int tmpIfCounter = ifCounter++;
+          // Comparison
+          generateCode(((struct astIfNode *)node)->left);
+          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
+          cmpCounter++;
+
+          // If body
+          fprintf(file, "if%d.then:\n", tmpIfCounter);
+          generateCode(((struct astIfNode *)node)->middle);
+          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+
+          // Cond for first else if 
+          fprintf(file, "if%d.cond:\n", tmpIfCounter);
+          generateCode(((struct astIfNode *)node)->right);
+
+          // If end
+          //fprintf(file, "if%d.end:\n", tmpIfCounter);
         }
         // Else
         else
         {
-          printf("else\n");
           int tmpIfCounter = ifCounter++;
           // Comparison
           generateCode(((struct astIfNode *)node)->left);
@@ -145,15 +163,15 @@ void generateCode(struct ast *node)
           // If body
           fprintf(file, "if%d.then:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
 
           // Else
           fprintf(file, "if%d.else:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->right);
-          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
 
           // If end
-          fprintf(file, "if%d.end:\n", tmpIfCounter);
+          fprintf(file, "if%d.end:\n", startingIfCounter);
         }
         break;
 

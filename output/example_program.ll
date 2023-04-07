@@ -2,7 +2,6 @@
 declare i32 @printf(i8*,...)
 
 @a = global i8 0
-@b = global i8 0
 
 define void @setup() {
 entry:
@@ -17,40 +16,47 @@ entry:
 
 	store i8 %__tmp1, i8* @a
 
-	%cmp1 = icmp slt i8 8, 6
-	br i1 %cmp1, label %if1.then, label %if1.else
+	%cmp1 = icmp slt i8 3, 6
+	br i1 %cmp1, label %if1.then, label %if1.cond
 
 if1.then:
-
-	%cmp2 = icmp slt i8 6, 2
-	br i1 %cmp2, label %if2.then, label %if2.else
-
-if2.then:
-	%__const3 = alloca i8
-	store i8 2, i8* %__const3
-	%__tmp3 = load i8, i8* %__const3
-
-	store i8 %__tmp3, i8* @b
-	%__tmpGlobal_1b = load i8, i8* @b
-	%__castGlobal_1b = zext i8 %__tmpGlobal_1b to i32
-	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1b);
-
-	br label %if2.end
-if2.else:
-	%__const6 = alloca i8
-	store i8 1, i8* %__const6
-	%__tmp6 = load i8, i8* %__const6
-
-	store i8 %__tmp6, i8* @b
-	%__tmpGlobal_2b = load i8, i8* @b
-	%__castGlobal_2b = zext i8 %__tmpGlobal_2b to i32
-	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_2b);
-
-	br label %if2.end
-if2.end:
+	%__tmpGlobal_1a = load i8, i8* @a
+	%__castGlobal_1a = zext i8 %__tmpGlobal_1a to i32
+	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1a);
 
 	br label %if1.end
-if1.else:
+if1.cond:
+
+	%cmp2 = icmp eq i8 5, 8
+	br i1 %cmp2, label %if2.then, label %if2.cond
+
+if2.then:
+	%__tmpGlobal_2a = load i8, i8* @a
+	%__castGlobal_2a = zext i8 %__tmpGlobal_2a to i32
+	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_2a);
+
+	br label %if1.end
+if2.cond:
+
+	%cmp3 = icmp eq i8 34, 2
+	br i1 %cmp3, label %if3.then, label %if3.cond
+
+if3.then:
+	%__tmp5 = add i8 2, 2
+
+	store i8 %__tmp5, i8* @a
+	br label %if1.end
+if3.cond:
+
+	%cmp4 = icmp eq i8 34, 2
+	br i1 %cmp4, label %if4.then, label %if4.else
+
+if4.then:
+	%__tmp7 = add i8 2, 2
+
+	store i8 %__tmp7, i8* @a
+	br label %if1.end
+if4.else:
 	%__tmpGlobal_3a = load i8, i8* @a
 	%__castGlobal_3a = zext i8 %__tmpGlobal_3a to i32
 	call i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_3a);
