@@ -2,7 +2,6 @@
 declare i32 @printf(i8*,...)
 
 @a = global i8 0
-@b = global i8 0
 
 define void @setup() {
 entry:
@@ -11,18 +10,14 @@ entry:
 
 define void @mainloop() {
 entry:
-	%__tmp1 = add i8 2, 6
+	%__const1 = alloca i8
+	store i8 1, i8* %__const1
+	%__tmp1 = load i8* %__const1
 
 	store i8 %__tmp1, i8* @a
-
-	%__tmp3 = load i8* @a
-	%__tmp4 = add i8 %__tmp3, 1
-	%__tmp5 = sub i8 %__tmp4, 18
-
-	store i8 %__tmp5, i8* @b
-	%__tmpGlobal_1b = load  i8* @b
-	%__castGlobal_1b = sext i8 %__tmpGlobal_1b to i32
-	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1b);
+	%__tmpGlobal_1a = load  i8* @a
+	%__castGlobal_1a = sext i8 %__tmpGlobal_1a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1a);
 
 	ret void
 }

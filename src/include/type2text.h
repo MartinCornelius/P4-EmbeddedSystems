@@ -39,18 +39,6 @@ char *printType(int type)
   case IF:
     sprintf(result, "if");
     break;
-  case ELSEIF:
-    sprintf(result, "elseif");
-    break;
-  case ELSE:
-    sprintf(result, "else");
-    break;
-  case IFELSECHAIN:
-    sprintf(result, "if chain");
-    break;
-  case ELSECHAIN:
-    sprintf(result, "else chain");
-    break;
 
   case ASSIGN:
     sprintf(result, "assign");
