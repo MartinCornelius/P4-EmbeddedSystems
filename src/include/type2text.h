@@ -1,6 +1,9 @@
 #ifndef TYPE2TEXT_H
 #define TYPE2TEXT_H
 
+#include "symbol_types.h"
+#include "../parser.tab.h"
+
 char *printType(int type)
 {
   static char result[30];
@@ -19,8 +22,14 @@ char *printType(int type)
   case LINES:
     sprintf(result, "lines");
     break;
+  case DECL:
+    sprintf(result, "vardecl");
+    break;
   case CONTROL:
     sprintf(result, "control");
+    break;
+  case PRINT:
+    sprintf(result, "print");
     break;
 
   /* Control structures */
@@ -29,18 +38,6 @@ char *printType(int type)
     break;
   case IF:
     sprintf(result, "if");
-    break;
-  case ELSEIF:
-    sprintf(result, "elseif");
-    break;
-  case ELSE:
-    sprintf(result, "else");
-    break;
-  case IFELSECHAIN:
-    sprintf(result, "if chain");
-    break;
-  case ELSECHAIN:
-    sprintf(result, "else chain");
     break;
 
   case ASSIGN:
@@ -118,6 +115,70 @@ char *printType(int type)
   }
 
   return result;
+}
+
+/* Converts enum type to c-like type */
+char *getCustomType(int varType)
+{
+  char *result;
+
+  switch (varType)
+  {
+    case int8_enum:
+      result = "int8";
+      break;
+    case int16_enum:
+      result = "int16";
+      break;
+    case int32_enum:
+      result = "int32";
+      break;
+    case uint8_enum:
+      result = "uint8";
+      break;
+    case uint16_enum:
+      result = "uint16";
+      break;
+    case uint32_enum:
+      result = "uint32";
+      break;
+    default:
+      result = "type not implemented";
+      break;
+  }
+
+  return result;
+}
+
+/* Converts from enum type to llvm ir type */
+char *typeConverter(int type)
+{
+    char *result;
+    switch(type)
+    {
+      case int8_enum:
+        result = "i8";
+        break;
+      case int16_enum:
+        result = "i16";
+        break;
+      case int32_enum:
+        result = "i32";
+        break;
+      case uint8_enum:
+        result = "i8";
+        break;
+      case uint16_enum:
+        result = "i16";
+        break;
+      case uint32_enum:
+        result = "i32";
+        break;
+      default:
+        printf("type convertion failed\n");
+        break;
+      }
+    return result;
 }
 
 #endif

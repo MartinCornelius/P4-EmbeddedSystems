@@ -2,5 +2,6 @@ setup()
 {
 }
 mainloop() {
-  a = 2 + 2 * 1 - 5 * 5 / 5;
+  int16 a = 2 + 2 - 1 * 4;
+  print(a);
 }

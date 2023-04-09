@@ -157,6 +157,7 @@ void freeAST(struct ast *node)
   case SETUP:
   case MAIN:
   case CONTROL:
+  case PRINT:
   case IF:
   case ELSEIF:
   case WHILE:
@@ -186,6 +187,28 @@ void freeAST(struct ast *node)
     break;
   default:
     printf("internal error: free bad node\n");
+  }
+}
+
+int evaluateAST(struct ast *node)
+{
+  if (node == NULL)
+    return 0;
+
+  switch (node->type)
+  {
+    case VAL:
+      return ((struct astLeafInt *)node)->value;
+    case PLUS:
+      return evaluateAST(node->left) + evaluateAST(node->right);
+    case MINUS:
+      return evaluateAST(node->left) - evaluateAST(node->right);
+    case TIMES:
+      return evaluateAST(node->left) * evaluateAST(node->right);
+    case DIV:
+      return evaluateAST(node->left) / evaluateAST(node->right);
+    default:
+      return 0;
   }
 }
 

@@ -1,3 +1,8 @@
+@pfmt = constant [4 x i8] c"%d\0A\00"
+declare i32 @printf(i8*,...)
+
+@a = global i16 0
+
 define void @setup() {
 entry:
 	ret void
@@ -5,17 +10,18 @@ entry:
 
 define void @mainloop() {
 entry:
-	%__tmp1 = mul i32 5, 5
-	%__tmp2 = sdiv i32 %__tmp1, 5
-	%__tmp3 = mul i32 1, 2
-	%__tmp4 = add i32 %__tmp3, 2
-	%__tmp5 = sub i32 %__tmp4, %__tmp2
+	%__const1 = alloca i16
+	store i16 0, i16* %__const1
+	%__tmp1 = load i16* %__const1
 
-	store i32 %__tmp5, i32* @a
+	store i16 %__tmp1, i16* @a
+	%__tmpGlobal_1a = load  i16* @a
+	%__castGlobal_1a = sext i16 %__tmpGlobal_1a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1a);
+
 	ret void
 }
 
-@a = global i32 0
 
 define i32 @main() {
 entry:

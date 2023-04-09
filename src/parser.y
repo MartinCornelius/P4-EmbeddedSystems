@@ -14,10 +14,12 @@
     FILE *file;
 
     #include "include/symbol_types.h"
+    #include "include/symbol_table.h"
     #include "include/ast.h"
     #include "include/const_folding.h"
+
+    HashTable *hTable;
     #include "include/code_gen.h"
-   // #include "include/llvm_code_gen.h"
 
     extern FILE *yyin; 
 
@@ -48,7 +50,7 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN /* Extra */
+%token LINES LINE CONTROL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
@@ -59,6 +61,8 @@
 prog          : defines funcs setup mainloop    
                 { 
                     root = allocAST(ROOT, $3, $4);
+                    printf("\n=========== HASHTABLE ===========\n");
+                    printTable(hTable);
                     printf("\n=========== AST ===========\n");
                     printAST(root, 0);
                     if (optimize)
@@ -76,27 +80,27 @@ prog          : defines funcs setup mainloop
                     printf("\nDone.");
                 }
               ;
-defines       : define defines                                            
+defines       : define defines      { ; }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-define        : DEFINE ID expr                                            
+define        : DEFINE ID expr          { ; }                                  
               ;
 setup         : SETUP LBRA lines RBRA   { $$ = allocAST(SETUP, $3, NULL); }
               ;
 mainloop      : MAIN LBRA lines RBRA    { $$ = allocAST(MAIN, $3, NULL); }
               ;
-funcs         : func funcs                                                
+funcs         : func funcs          { ; }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                 
-              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA 
+func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
+              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
               ;
-paramoutdecl  : TYPE ID COMMA paramoutdecl                                
-              | TYPE ID                                                   
+paramoutdecl  : TYPE ID COMMA paramoutdecl         { ; }                       
+              | TYPE ID                            { ; }                       
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
-paramindecl   : TYPE ID COMMA paramindecl                                 
-              | TYPE ID                                                   
+paramindecl   : TYPE ID COMMA paramindecl          { ; }                       
+              | TYPE ID                            { ; }                       
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
 lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
@@ -105,9 +109,9 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               ;
 line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
-              | funccall                                                  
-              | PRINT LPAR STRING RPAR
-              | vardecl                                                   
+              | funccall                              { ; }                    
+              | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
+              | vardecl                               { $$ = $1; }                    
               ;
 control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
               | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocASTIfNode(IF, $3, $6, NULL); } 
@@ -116,20 +120,24 @@ control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ =
 elsechain     : ELSE control                                              { $$ = $2; }
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
-vardecl       : TYPE ID                                                   
-              | TYPE ID ASSIGN expr                                      
-              | TYPE ID ASSIGN STRING                                     
+vardecl       : TYPE ID
+              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              allocASTLeafStr(ID, $2), NULL); }          
+              | TYPE ID ASSIGN expr                             
+              { createSymbol(hTable, $2, $1); $$ = allocAST(ASSIGN,
+              allocASTLeafStr(ID, $2), $4); }         
+              | TYPE ID ASSIGN STRING                           { ; }          
               ;
-funccall      : ID LPAR paramincall RPAR                                  
-              | ID LPAR paramincall RARROW paramoutcall RPAR              
+funccall      : ID LPAR paramincall RPAR                        { ; }          
+              | ID LPAR paramincall RARROW paramoutcall RPAR    { ; }          
               ; 
-paramoutcall  : ID COMMA paramoutcall                                     
-              | ID                                                        
+paramoutcall  : ID COMMA paramoutcall   { ; }                                  
+              | ID                      { ; }                                  
               ;
-paramincall   : ID COMMA paramincall                                      
-              | expr COMMA paramincall                                    
-              | ID                                                        
-              | expr                                                      
+paramincall   : ID COMMA paramincall    { ; }                                  
+              | expr COMMA paramincall  { ; }                                  
+              | ID                  { ; }                                      
+              | expr                { ; }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
 expr          : expr PLUS term      { $$ = allocAST(PLUS, $1, $3); }                                      
@@ -143,35 +151,36 @@ term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }
 factor        : ID                  { $$ = allocASTLeafStr(ID, $1); }                                      
               | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
               | VALF                { $$ = allocASTLeafFloat(VALF, $1); }                                      
-              | LPAR expr RPAR                                            
+              | LPAR expr RPAR      { ; }                                      
               ;
 comparelist   : compare LOGOR comparelist  { $$ = allocAST(LOGOR, $1, $3); }
               | compare LOGAND comparelist { $$ = allocAST(LOGAND, $1, $3); }                                  
               | compare                    { $$ = $1; }                               
               ;
 compare       : boolexpr COPLE compare          { $$ = allocAST(COPLE, $1, $3);     }                          
-              | NOT boolexpr COPLE compare
+              | NOT boolexpr COPLE compare      { ; }
               | boolexpr COPGE compare          { $$ = allocAST(COPGE, $1, $3);     }                               
-              | NOT boolexpr COPGE compare 
+              | NOT boolexpr COPGE compare      { ; }
               | boolexpr COPEQ compare          { $$ = allocAST(COPEQ, $1, $3);     }                               
-              | NOT boolexpr COPEQ compare 
+              | NOT boolexpr COPEQ compare      { ; }
               | boolexpr COPNEQ compare         { $$ = allocAST(COPNEQ, $1, $3);    }                               
-              | NOT boolexpr COPNEQ compare
+              | NOT boolexpr COPNEQ compare     { ; }
               | boolexpr COPL compare           { $$ = allocAST(COPL, $1, $3);      }                               
-              | NOT boolexpr COPL compare 
+              | NOT boolexpr COPL compare       { ; }
               | boolexpr COPG compare           { $$ = allocAST(COPG, $1, $3);      }                               
-              | NOT boolexpr COPG compare                                    
+              | NOT boolexpr COPG compare       { ; }                             
               | boolexpr                        { $$ = $1; }                               
-              | NOT boolexpr                                              
+              | NOT boolexpr                    { ; }                          
               ;
-boolexpr      : LPAR comparelist RPAR           
-              | ID                  
+boolexpr      : LPAR comparelist RPAR           { ; }
+              | ID                 { $$ = allocASTLeafStr(ID, $1); } 
               | VAL                { $$ = allocASTLeafInt(VAL, $1); }
               ;
 %%
 
 void main(int argc, char **argv)
 { 
+    hTable = createTable(10);
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))

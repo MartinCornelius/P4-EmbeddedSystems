@@ -16,55 +16,11 @@ void constantFolding(struct ast *node)
 
   if (node->type == ASSIGN)
   {
-    printf("%s\n", printType(node->right->type));
-    if (node->right->type == PLUS)
-    {
-      printf("starting optimization\n");
-      int a = ((struct astLeafInt *)node->right->left->left->left)->value;
-      int b = ((struct astLeafInt *)node->right->right->left)->value;
-      int result = a + b;
-      struct ast *constNode = allocASTLeafInt(VAL, result);
-      freeAST(node->right);
-      node->right = constNode;
-      printf("changed value of the expression\n");
-      printf("%d + %d => %d\n", a, b, result);
-    }
-    if (node->right->type == MINUS)
-    {
-      printf("starting optimization\n");
-      int a = ((struct astLeafInt *)node->right->left->left->left)->value;
-      int b = ((struct astLeafInt *)node->right->right->left)->value;
-      int result = a - b;
-      struct ast *constNode = allocASTLeafInt(VAL, result);
-      freeAST(node->right);
-      node->right = constNode;
-      printf("changed value of the expression\n");
-      printf("%d - %d => %d\n", a, b, result);
-    }
-    if (node->right->type == TERM && node->right->left->type == TIMES)
-    {
-      printf("starting optimization\n");
-      int a = ((struct astLeafInt *)node->right->left->left->left)->value;
-      int b = ((struct astLeafInt *)node->right->left->right)->value;
-      int result = a * b;
-      struct ast *constNode = allocASTLeafInt(VAL, result);
-      freeAST(node->right);
-      node->right = constNode;
-      printf("changed value of the expression\n");
-      printf("%d * %d => %d\n", a, b, result);
-    }
-    if (node->right->type == TERM && node->right->left->type == DIV)
-    {
-      printf("starting optimization\n");
-      int a = ((struct astLeafInt *)node->right->left->left->left)->value;
-      int b = ((struct astLeafInt *)node->right->left->right)->value;
-      int result = a / b;
-      struct ast *constNode = allocASTLeafInt(VAL, result);
-      freeAST(node->right);
-      node->right = constNode;
-      printf("changed value of the expression\n");
-      printf("%d / %d => %d\n", a, b, result);
-    }
+    int result = evaluateAST(node->right);
+    struct ast *newNode = allocASTLeafInt(VAL, result);
+    freeAST(node->right);
+    node->right = newNode;
+    printf("changed value of expression\n");
   }
 
   constantFolding(node->left);
