@@ -2,6 +2,6 @@ setup()
 {
 }
 mainloop() {
-  int8 a = 2 - 1;
+  int16 a = 2 + 2 - 1 * 4;
   print(a);
 }
