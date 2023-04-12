@@ -169,10 +169,10 @@ void generateCode(struct ast *node)
           // Else
           fprintf(file, "if%d.else:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->right);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
 
           // If end
-          fprintf(file, "if%d.end:\n", startingIfCounter);
+          fprintf(file, "if%d.end:\n", tmpIfCounter);
         }
         break;
 

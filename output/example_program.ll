@@ -17,34 +17,38 @@ entry:
 	store i8 %__tmp1, i8* @a
 
 	%__tmp3 = load i8* @a
-	%cmp1 = icmp slt i8 %__tmp3, 12
-	br i1 %cmp1, label %if1.then, label %if1.end
+	%cmp1 = icmp sgt i8 %__tmp3, 12
+	br i1 %cmp1, label %if1.then, label %if1.else
 
 if1.then:
-br label %while1.cond
+	%__tmpGlobal_1a = load  i8* @a
+	%__castGlobal_1a = sext i8 %__tmpGlobal_1a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1a);
 
-while1.cond:
-
-	%__tmp4 = load i8* @a
-	%cmp2 = icmp sle i8 %__tmp4, 12
-	br i1 %cmp2, label %while1.body, label %while1.end
-while1.body:
 
 	%__tmp5 = load i8* @a
-	%cmp2 = icmp slt i8 %__tmp5, 12
-	br i1 %cmp2, label %if2.then, label %if2.end
+	%cmp2 = icmp sgt i8 %__tmp5, 12
+	br i1 %cmp2, label %if2.then, label %if2.else
 
 if2.then:
+	%__tmpGlobal_2a = load  i8* @a
+	%__castGlobal_2a = sext i8 %__tmpGlobal_2a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_2a);
 
-	%__tmp6 = load i8* @a
-	%__tmp7 = add i8 %__tmp6, 2
+	br label %if2.end
+if2.else:
+	%__tmpGlobal_3a = load  i8* @a
+	%__castGlobal_3a = sext i8 %__tmpGlobal_3a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_3a);
 
-	store i8 %__tmp7, i8* @a
 	br label %if2.end
 if2.end:
 
-	br label %while1.cond
-while1.end:
+	br label %if2.end
+if1.else:
+	%__tmpGlobal_4a = load  i8* @a
+	%__castGlobal_4a = sext i8 %__tmpGlobal_4a to i32
+	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_4a);
 
 	br label %if1.end
 if1.end:
