@@ -8,6 +8,8 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
+#define DEBUG false
+
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
 typedef struct item
@@ -47,7 +49,8 @@ int hashing(HashTable* table, char* key, int i)
     while (key[i] != '\0')
     {
         hash = (hash + key[i] + i) % table->size;
-        printf("Hash: %d, Key: %c, i: %d\n", hash, key[i], i);
+        if (DEBUG)
+            printf("Hash: %d, Key: %c, i: %d\n", hash, key[i], i);
         i++;
     }
 
@@ -76,7 +79,9 @@ void insertSymbol(HashTable* table, char* key, enum types value)
     // Double hashing if collision
     while (current != NULL)
     {
-        printf("%s: Insert collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        if (DEBUG)
+            printf("%s: Insert collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        
         index = doubleHash(table, key, ++i);
         current = table->items[index];
     }
@@ -87,32 +92,41 @@ void insertSymbol(HashTable* table, char* key, enum types value)
 
 enum types searchSymbol(HashTable* table, char* key)
 {
-    printf("%s: Searching for symbol\n", key);
+    if (DEBUG)
+        printf("%s: Searching for symbol\n", key);
+
     int index = hash(table, key);
     item* current = table->items[index];
     int i = 0;
 
     if (current == NULL)
     {
-        printf("%s: Symbol not found\n", key);
+        if (DEBUG)
+            printf("%s: Symbol not found\n", key);
+
         return not_found_enum;
     }
 
     // Double hashing until symbol is found or empty slot is found
     while (current != NULL && strcmp(current->key, key) != 0)
     {
-        printf("%s: Search collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        if (DEBUG)
+            printf("%s: Search collision at index %d, trying i%d, double hashing\n", key, index, i+1);
         index = doubleHash(table, key, ++i);
         current = table->items[index];
     }
 
     if (current == NULL)
     {
-        printf("%s: Symbol not found\n", key);
+        if (DEBUG)
+            printf("%s: Symbol not found\n", key);
+
         return not_found_enum;
     }
 
-    printf("%s: Symbol Found! Type: %d\n", current->key, current->value);
+    if (DEBUG)
+        printf("%s: Symbol Found! Type: %d\n", current->key, current->value);
+
     return current->value;
 }
 
@@ -127,7 +141,8 @@ void createSymbol(HashTable* table, char* key, int value)
 
     if (searchSymbol(table, key) == not_found_enum)
     {
-        printf("%s: Symbol created\n", key);
+        if (DEBUG)
+            printf("%s: Symbol created\n", key);
         insertSymbol(table, key, (enum types) value);
     }
     else
