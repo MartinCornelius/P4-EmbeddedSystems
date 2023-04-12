@@ -151,3 +151,5 @@ void printTable(HashTable* table)
         }
     }
 }
+
+#endif
