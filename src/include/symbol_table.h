@@ -42,6 +42,22 @@ item* createItem(char* key, enum types value)
     return i;
 }
 
+void printTable(HashTable* table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
+        item* current = table->items[i];
+
+        if (current != NULL)
+        {
+            printf("___________________\n");
+            printf("Index: %d\n", i);
+            printf("Name: %s, Type: %d\n", current->key, current->value);
+            printf("___________________\n");
+        }
+    }
+}
+
 // Hashes each character in the key
 int hashing(HashTable* table, char* key, int i)
 {
@@ -50,7 +66,7 @@ int hashing(HashTable* table, char* key, int i)
     {
         hash = (hash + key[i] + i) % table->size;
         if (DEBUG)
-            printf("Hash: %d, Key: %c, i: %d\n", hash, key[i], i);
+            printf("        Hash: %d, Key: %c, i: %d\n", hash, key[i], i);
         i++;
     }
 
@@ -65,6 +81,8 @@ int hash(HashTable* table, char* key)
 
 int doubleHash(HashTable* table, char* key, int i)
 {
+    printf("    Attempting Double Hashing\n");
+
     return hashing(table, key, i);
 }
 
@@ -92,8 +110,10 @@ void insertSymbol(HashTable* table, char* key, enum types value)
 
 enum types searchSymbol(HashTable* table, char* key)
 {
-    if (DEBUG)
-        printf("%s: Searching for symbol\n", key);
+    if (DEBUG) {
+        printf("    %s: Searching in following table\n", key);
+        printTable(table);
+    }
 
     int index = hash(table, key);
     item* current = table->items[index];
@@ -102,7 +122,7 @@ enum types searchSymbol(HashTable* table, char* key)
     if (current == NULL)
     {
         if (DEBUG)
-            printf("%s: Symbol not found\n", key);
+            printf("    %s: Symbol not found\n", key);
 
         return not_found_enum;
     }
@@ -111,7 +131,8 @@ enum types searchSymbol(HashTable* table, char* key)
     while (current != NULL && strcmp(current->key, key) != 0)
     {
         if (DEBUG)
-            printf("%s: Search collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+            printf("    %s: Search collision at index %d, trying i%d, double hashing\n", key, index, i+1);
+        
         index = doubleHash(table, key, ++i);
         current = table->items[index];
     }
@@ -119,19 +140,22 @@ enum types searchSymbol(HashTable* table, char* key)
     if (current == NULL)
     {
         if (DEBUG)
-            printf("%s: Symbol not found\n", key);
+            printf("    %s: Symbol not found\n", key);
 
         return not_found_enum;
     }
 
     if (DEBUG)
-        printf("%s: Symbol Found! Type: %d\n", current->key, current->value);
+        printf("    %s: Symbol Found! Type: %d\n", current->key, current->value);
 
     return current->value;
 }
 
 void createSymbol(HashTable* table, char* key, int value)
 {
+    if (DEBUG)
+        printf("%s: Attempting to create symbol\n", key);
+
     if (table == NULL)
     {
         printf("Hash table missing \n");
@@ -139,32 +163,18 @@ void createSymbol(HashTable* table, char* key, int value)
         return;
     }
 
-    if (searchSymbol(table, key) == not_found_enum)
+    // Throw error if symbol already exists
+    if (searchSymbol(table, key) != not_found_enum)
     {
-        if (DEBUG)
-            printf("%s: Symbol created\n", key);
-        insertSymbol(table, key, (enum types) value);
+        printf("ERROR: Declartion of two types of same name is not valid Name: %s\n\n", key);
+        // TODO thorw an error here
+        return;
     }
-    else
-    {
-        printf("Declartion of two types of same name is not valid\n");
-    }
-}
 
-void printTable(HashTable* table)
-{
-    for (int i = 0; i < table->size; i++)
-    {
-        item* current = table->items[i];
+    if (DEBUG)
+        printf("%s: Symbol created\n\n", key);
 
-        if (current != NULL)
-        {
-            printf("___________________\n");
-            printf("Index: %d\n", i);
-            printf("Name: %s, Type: %d\n", current->key, current->value);
-            printf("___________________\n");
-        }
-    }
+    insertSymbol(table, key, (enum types) value);
 }
 
 #endif
