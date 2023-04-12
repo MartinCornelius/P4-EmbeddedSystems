@@ -164,7 +164,7 @@ void generateCode(struct ast *node)
           // If body
           fprintf(file, "if%d.then:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
 
           // Else
           fprintf(file, "if%d.else:\n", tmpIfCounter);
