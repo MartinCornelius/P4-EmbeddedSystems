@@ -84,24 +84,26 @@ void generateCode(struct ast *node)
           currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->right)->string));
         else 
           currentType = "i32";
+        
+        int tmpWhileCounter = whileCounter++;
+        int tmpCmpCounter = cmpCounter++;
 
-        fprintf(file, "br label %%while%d.cond\n\n", whileCounter);
+        fprintf(file, "br label %%while%d.cond\n\n", tmpWhileCounter);
 
         // While condition
-        fprintf(file, "while%d.cond:\n", whileCounter);
+        fprintf(file, "while%d.cond:\n", tmpWhileCounter);
         generateCode(node->left);
-        fprintf(file, "\tbr i1 %%cmp%d, label %%while%d.body, label %%while%d.end\n", cmpCounter, whileCounter, whileCounter);
+        fprintf(file, "\tbr i1 %%cmp%d, label %%while%d.body, label %%while%d.end\n", tmpCmpCounter, tmpWhileCounter, tmpWhileCounter);
 
         // While body
-        fprintf(file, "while%d.body:\n", whileCounter);
+        fprintf(file, "while%d.body:\n", tmpWhileCounter);
         generateCode(node->right);
-        fprintf(file, "\tbr label %%while%d.cond\n", whileCounter);
+        fprintf(file, "\tbr label %%while%d.cond\n", tmpWhileCounter);
 
         // While end
-        fprintf(file, "while%d.end:\n", whileCounter);
+        fprintf(file, "while%d.end:\n", tmpWhileCounter);
 
-        whileCounter++;
-        cmpCounter++;
+        
         break;
 
     case DECL:
@@ -650,11 +652,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp sle %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp sle %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp sle %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp sle %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
@@ -689,11 +691,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp sge %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp sge %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp sge %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp sge %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
@@ -728,11 +730,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp slt %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp slt %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp slt %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp slt %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
@@ -767,11 +769,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp sgt %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp sgt %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp sgt %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp sgt %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
@@ -806,11 +808,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
@@ -845,11 +847,11 @@ void generateCode(struct ast *node)
           tmpVarCounter++;
           fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
           generateCode(node->right);
-          fprintf(file, "\n\t%%cmp%d = icmp ne %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter-1, tmpVarCounter);
+          fprintf(file, "\n\t%%cmp%d = icmp ne %s %%__tmp%d, %%__tmp%d", (cmpCounter -1), currentType, tmpVarCounter-1, tmpVarCounter);
         }
         else 
         {
-          fprintf(file, "\n\t%%cmp%d = icmp ne %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter); 
+          fprintf(file, "\n\t%%cmp%d = icmp ne %s %%__tmp%d, ", (cmpCounter -1), currentType, tmpVarCounter); 
           generateCode(node->right);
         }
         tmpVarCounter++;
