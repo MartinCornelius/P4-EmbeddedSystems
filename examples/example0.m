@@ -6,15 +6,15 @@ mainloop(){
   
   if(a > 12){
     print(a);
-
-    if(a > 12){
-      print(a);
-
-      if(a > 12){
-      print(a);
-      } 
-    }else{
-      print(a);
-    } 
+  } else if( a < 12){
+    print(a);
+  }
+  else if (a > 12)
+  {
+    print(a);
+  }
+  else if (a > 12)
+  {
+    print(a);
   }
 }

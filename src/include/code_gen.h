@@ -130,28 +130,6 @@ void generateCode(struct ast *node)
           fprintf(file, "if%d.end:\n", tmpIfCounter);
 
         }
-        // Else if
-        else if (((struct astIfNode *)node)->right->type == IF)
-        {
-          printf("if else kæde\n");
-          int tmpIfCounter = ifCounter++;
-          // Comparison
-          generateCode(((struct astIfNode *)node)->left);
-          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
-          cmpCounter++;
-
-          // If body
-          fprintf(file, "if%d.then:\n", tmpIfCounter);
-          generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
-
-          // Cond for first else if 
-          fprintf(file, "if%d.cond:\n", tmpIfCounter);
-          generateCode(((struct astIfNode *)node)->right);
-
-          // If end
-          //fprintf(file, "if%d.end:\n", tmpIfCounter);
-        }
         // Else
         else
         {
