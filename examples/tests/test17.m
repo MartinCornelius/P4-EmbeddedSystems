@@ -1,14 +1,28 @@
-// test17
+setup()
+{
 
-setup(){
-  input abe = 40;
-  output babe = 30;
-
-  uint16 hexTest = 0x40;
-  uint16 hexTest2 = -0xfF;
 }
 
-mainloop(){
-  uint16 hugin = 12;
-  print("%d\n", hexTest);
+mainloop()
+{
+  t = 2 + 5;
+  h = 6 - 2;
+  g = 3 * 7;
+  y = 5 / 2;
+  v <- 2 + 4;
+
+  if (2 < 8 && 2 > 1)
+  {
+    bo = 4 * 3;
+    thomas = 12 + 1;
+  }
+  else if (2 > 1) {
+    martin = 69;
+  }
+  else if(1 != 2){
+    lucas = 96;
+  }
+  else{
+    a = 20;
+  }
 }

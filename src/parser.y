@@ -11,12 +11,20 @@
     char temp[500];
     char programString[3000];
 
-    #include "include/symbol_table.h"
+    int optimize = 0;
+
+    FILE *file;
+
     #include "include/symbol_types.h"
+    #include "include/symbol_table.h"
+    #include "include/ast.h"
+    #include "include/const_folding.h"
+
+    HashTable *hTable;
     #include "include/code_gen.h"
 
     extern FILE *yyin; 
-    char outputFile[512] = "output/output.c";
+
 
     int yylex();
     int yyerror(char *s);
@@ -26,132 +34,169 @@
     // Last element in list
     void *listHead;
 
-    HashTable* hTable;
+    struct ast *root;
 %}
 
-%union{ int val; float valf; int type; char* id; char str[500]; char* string; }
+%union{ int val; float valf; int type; char* id; char str[500]; char* string; struct ast *node; }
 
 %start prog
 
 %token<val> VAL
 %token<valf> VALF
-%token<string> COP LOGOP NOT
+%token<string> COPLE COPGE COPEQ COPNEQ COPL COPG LOGOR LOGAND NOT
 %token<id> ID
 %token<type> TYPE
 %token<string> STRING
 
-%token DEFINE SETUP MAIN FUNC LARROW
+%token ROOT DEFINE SETUP MAIN FUNC LARROW
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
-        COMMA PRINT
-%token ASSIGN WHILE IF ELSE
+        COMMA PRINT 
+%token LINES LINE CONTROL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
+%token ASSIGN WHILE IF ELSEIF ELSE
 
-
-%type<str> compare comparelist boolexpr funcs func vardecl
-%type<str> term factor expr defines define setup mainloop funccall paramincall paramoutcall
-%type<str> paramoutdecl paramindecl lines line control elsechain
+%type<node> compare comparelist boolexpr funcs func vardecl
+%type<node> term factor expr defines define setup mainloop funccall paramincall paramoutcall
+%type<node> paramoutdecl paramindecl lines line control elsechain 
 
 %%
-prog          : defines funcs setup mainloop                                { emit("}", programString); printToFile(outputFile, programString); }
+prog          : defines funcs setup mainloop    
+                { 
+                    root = allocAST(ROOT, $3, $4);
+                    printf("\n=========== HASHTABLE ===========\n");
+                    printTable(hTable);
+                    printf("\n=========== AST ===========\n");
+                    printAST(root, 0);
+                    if (optimize)
+                    {
+                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                        constantFolding(root);
+
+                        printf("\n\n=========== OPTIMIZED AST ===========\n");
+                        printAST(root, 0);
+                    }
+                    printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    generateFile(root);
+                    printf("Done generating file\n");
+                    freeAST(root);
+                    printf("\nDone.");
+                }
               ;
-defines       : define defines                                              { sprintf(temp, "%s\n%s", $1, $2); strcpy($$, temp); }
-              |                                                             { strcpy($$, ""); }
+defines       : define defines      { ; }                                      
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-define        : DEFINE ID expr                                              { sprintf(temp, "#define %s %s\n", $2, $3); emit(temp, programString); }
+define        : DEFINE ID expr          { ; }                                  
               ;
-setup         : SETUP LBRA lines RBRA                                       { sprintf(temp, "%s\nif(1){\n", $3); emit(temp, programString); }
+setup         : SETUP LBRA lines RBRA   { $$ = allocAST(SETUP, $3, NULL); }
               ;
-mainloop      : MAIN LBRA lines RBRA                                        { sprintf(temp, "%s}\n", $3); emit(temp, programString); }
+mainloop      : MAIN LBRA lines RBRA    { $$ = allocAST(MAIN, $3, NULL); }
               ;
-funcs         : func funcs                                                  { strcpy($$, ""); }
-              |                                                             { emit("void main(){\n", programString); }
+funcs         : func funcs          { ; }                                      
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                       { sprintf(temp, "void %s(%s){\n%s}\n", $2, $4, $7); emit(temp, programString); }
-              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA   { sprintf(temp, "void %s(%s,%s){\n%s}\n", $2, $4, $6, $9); emit(temp, programString); }
+func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
+              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
               ;
-paramoutdecl  : TYPE ID COMMA paramoutdecl                                  { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s, %s", type, $2, $4); strcpy($$, temp); }
-              | TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s *%s", type, $2); strcpy($$, temp); }
-              |                                                             { strcpy($$, ""); }
+paramoutdecl  : TYPE ID COMMA paramoutdecl         { ; }                       
+              | TYPE ID                            { ; }                       
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
-paramindecl   : TYPE ID COMMA paramindecl                                   { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s, %s", type, $2, $4); strcpy($$, temp); }  
-              | TYPE ID                                                     { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s", type, $2); strcpy($$, temp); }         
-              |                                                             { strcpy($$, ""); }
+paramindecl   : TYPE ID COMMA paramindecl          { ; }                       
+              | TYPE ID                            { ; }                       
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
-lines         : line SEMI lines                                             { sprintf(temp, "%s%s", $1, $3); strcpy($$, temp); }
-              | control lines                                               { sprintf(temp, "%s%s", $1, $2); strcpy($$, temp); }
-              |                                                             { strcpy($$, ""); }
+lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
+              | control lines       { $$ = allocAST(LINES, $1, $2); }
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr                                              { sprintf(temp, "%s = %s;\n", $1, $3); strcpy($$, temp); }
-              | ID LARROW expr                                              { sprintf(temp, "*%s = %s;\n", $1, $3); strcpy($$, temp); }
-              | funccall                                                    { strcpy($$, $1); }
-              | PRINT LPAR STRING RPAR                                      { sprintf(temp, "printf(%s);\n", $3); strcpy($$, temp); }
-              | vardecl                                                     { strcpy($$, $1); }
-              |                                                             { strcpy($$, ""); }
+line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+              | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
+              | funccall                              { ; }                    
+              | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
+              | vardecl                               { $$ = $1; }                    
               ;
-control       : WHILE LPAR comparelist RPAR LBRA lines RBRA                 { sprintf(temp, "while(%s){\n%s\n}\n", $3, $6); strcpy($$, temp); }
-              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain          { sprintf(temp, "if(%s){\n%s\n}%s\n", $3, $6, $8); strcpy($$, temp); }
+control       : WHILE LPAR comparelist RPAR LBRA lines RBRA               { $$ = allocAST(WHILE, $3, $6); }
+              | IF LPAR comparelist RPAR LBRA lines RBRA                  { $$ = allocASTIfNode(IF, $3, $6, NULL); } 
+              | IF LPAR comparelist RPAR LBRA lines RBRA elsechain        { $$ = allocASTIfNode(IF, $3, $6, $8); }
               ;
-elsechain     : ELSE IF LPAR comparelist RPAR LBRA lines RBRA elsechain     { sprintf(temp, "else if(%s){\n%s\n}%s", $4, $7, $9); strcpy($$, temp); }
-              | ELSE LBRA lines RBRA                                        { sprintf(temp, "else{\n%s\n}", $3); strcpy($$, temp); }
-              |                                                             { strcpy($$, ""); }
+elsechain     : ELSE control                                              { $$ = $2; }
+              | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
-vardecl       : TYPE ID                                                     { char type[20]; typeToString(type, $1); printf("vardecl 94 %s %s = %s;\n", type, $2); sprintf(temp, "%s %s;\n", type, $2); strcpy($$, temp); }
-              | TYPE ID ASSIGN expr                                         { char type[20]; createSymbol(hTable, $1, $2); typeToString(type, $1);  printf("vardecl 95: %s %s = %s;\n", type, $2, $4); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
-              | TYPE ID ASSIGN STRING                                       { char type[20]; typeToString(type, $1); sprintf(temp, "%s %s = %s;\n", type, $2, $4); strcpy($$, temp); }
+vardecl       : TYPE ID
+              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              allocASTLeafStr(ID, $2), NULL); }          
+              | TYPE ID ASSIGN expr                             
+              { createSymbol(hTable, $2, $1); $$ = allocAST(ASSIGN,
+              allocASTLeafStr(ID, $2), $4); }         
+              | TYPE ID ASSIGN STRING                           { ; }          
               ;
-funccall      : ID LPAR paramincall RPAR                                    { sprintf(temp, "%s(%s);\n", $1, $3); strcpy($$, temp); }
-              | ID LPAR paramincall RARROW paramoutcall RPAR                { sprintf(temp, "%s(%s, %s);\n", $1, $3, $5); strcpy($$, temp); }
+funccall      : ID LPAR paramincall RPAR                        { ; }          
+              | ID LPAR paramincall RARROW paramoutcall RPAR    { ; }          
+              ; 
+paramoutcall  : ID COMMA paramoutcall   { ; }                                  
+              | ID                      { ; }                                  
               ;
-paramoutcall  : ID COMMA paramoutcall                                       { sprintf(temp, "&%s, %s", $1, $3); strcpy($$, temp); }
-              | ID                                                          { sprintf(temp, "&%s", $1); strcpy($$, temp); }
+paramincall   : ID COMMA paramincall    { ; }                                  
+              | expr COMMA paramincall  { ; }                                  
+              | ID                  { ; }                                      
+              | expr                { ; }                                      
+              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-paramincall   : ID COMMA paramincall                                        { sprintf(temp, "%s, %s", $1, $3); strcpy($$, temp); }
-              | expr COMMA paramincall                                      { sprintf(temp, "%s, %s", $1, $3); strcpy($$, temp); }
-              | ID                                                          { strcpy($$, $1); }
-              | expr                                                        { strcpy($$, $1); }
-              |                                                             { strcpy($$, ""); }
+expr          : expr PLUS term      { $$ = allocAST(PLUS, $1, $3); }                                      
+              | expr MINUS term     { $$ = allocAST(MINUS, $1, $3); }                                      
+              | term                { $$ = $1; }
               ;
-expr          : expr PLUS term                                              { sprintf(temp, "%s + %s", $1, $3); strcpy($$, temp); }                        
-              | expr MINUS term                                             { printf("Expr minus term: %s - %s \n", $1, $3); sprintf(temp, "%s - %s", $1, $3); strcpy($$, temp); }
-              | term                                                        { strcpy($$, $1); }
+term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }                                      
+              | term DIV factor     { $$ = allocAST(DIV, $1, $3); }                                      
+              | factor              { $$ = $1; }                                      
               ;
-term          : term TIMES factor                                           { strcpy($$, temp); }
-              | term DIV factor                                             { sprintf(temp, "%s / %s", $1, $3); strcpy($$, temp); }
-              | factor                                                      { strcpy($$, $1);}
+factor        : ID                  { $$ = allocASTLeafStr(ID, $1); }                                      
+              | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
+              | VALF                { $$ = allocASTLeafFloat(VALF, $1); }                                      
+              | LPAR expr RPAR      { ; }                                      
               ;
-factor        : ID                                                          { strcpy($$, $1); }
-              | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp);  }
-              | VALF                                                        { sprintf(temp, "%f", $1); strcpy($$, temp);  }
-              | LPAR expr RPAR                                              { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
+comparelist   : compare LOGOR comparelist  { $$ = allocAST(LOGOR, $1, $3); }
+              | compare LOGAND comparelist { $$ = allocAST(LOGAND, $1, $3); }                                  
+              | compare                    { $$ = $1; }                               
               ;
-comparelist   : compare LOGOP comparelist                                   { sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
-              | compare                                                     { strcpy($$, $1); }
+compare       : boolexpr COPLE compare          { $$ = allocAST(COPLE, $1, $3);     }                          
+              | NOT boolexpr COPLE compare      { ; }
+              | boolexpr COPGE compare          { $$ = allocAST(COPGE, $1, $3);     }                               
+              | NOT boolexpr COPGE compare      { ; }
+              | boolexpr COPEQ compare          { $$ = allocAST(COPEQ, $1, $3);     }                               
+              | NOT boolexpr COPEQ compare      { ; }
+              | boolexpr COPNEQ compare         { $$ = allocAST(COPNEQ, $1, $3);    }                               
+              | NOT boolexpr COPNEQ compare     { ; }
+              | boolexpr COPL compare           { $$ = allocAST(COPL, $1, $3);      }                               
+              | NOT boolexpr COPL compare       { ; }
+              | boolexpr COPG compare           { $$ = allocAST(COPG, $1, $3);      }                               
+              | NOT boolexpr COPG compare       { ; }                             
+              | boolexpr                        { $$ = $1; }                               
+              | NOT boolexpr                    { ; }                          
               ;
-compare       : boolexpr COP compare                                        { sprintf(temp, "%s %s %s", $1, $2, $3); strcpy($$, temp); }
-              | NOT boolexpr COP compare                                    { sprintf(temp, "!%s %s %s", $2, $3, $4); strcpy($$, temp); }
-              | boolexpr                                                    { strcpy($$, $1); }
-              | NOT boolexpr                                                { sprintf(temp, "!%s", $2); strcpy($$, temp); }
-              ;
-boolexpr      : LPAR comparelist RPAR                                       { sprintf(temp, "(%s)", $2); strcpy($$, temp); }
-              | ID                                                          { strcpy($$, $1); }
-              | VAL                                                         { sprintf(temp, "%d", $1); strcpy($$, temp); }
+boolexpr      : LPAR comparelist RPAR           { ; }
+              | ID                 { $$ = allocASTLeafStr(ID, $1); } 
+              | VAL                { $$ = allocASTLeafInt(VAL, $1); }
               ;
 %%
 
 void main(int argc, char **argv)
-{
-    emit("#include <stdio.h>\n#include <stdint.h>\n", programString);
-
+{ 
     hTable = createTable(10);
-
+    file = fopen("output/example_program.ll", "w");
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
         perror("Error loading file\n");
+    /* if (argc > 2)
+        sprintf(outputFile, "output/%s", argv[2]); */
+
     if (argc > 2)
-        sprintf(outputFile, "output/%s", argv[2]);
+        if (strcmp(argv[2], "1") == 0) {
+            optimize = 1;
+        }
 
     yyparse();
-    printTable(hTable);
+    fclose(file);
 }
 
 int yyerror(char *s){

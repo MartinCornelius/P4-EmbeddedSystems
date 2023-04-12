@@ -42,9 +42,6 @@ else
 	rm src/parser.tab.h
 endif
 
-out: output/output.c
-	gcc output/output.c -o output/output
-
 sttest:
 	rm -f run.out
 	make

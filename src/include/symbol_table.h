@@ -1,8 +1,12 @@
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "symbol_types.h"
+#include "type2text.h"
 
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
