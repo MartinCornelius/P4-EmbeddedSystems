@@ -6,7 +6,11 @@ mainloop(){
   
   while (a == a){
     while ( a == a){
-      
+      if (a == a){
+        if (a == a){
+          
+        }
+      }
     }
   }
 }

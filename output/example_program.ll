@@ -33,6 +33,26 @@ while2.cond:
 	%cmp2 = icmp eq i8 %__tmp5, %__tmp6
 	br i1 %cmp2, label %while2.body, label %while2.end
 while2.body:
+
+	%__tmp7 = load i8* @a
+	%__tmp8 = load i8* @a
+	%cmp3 = icmp eq i8 %__tmp7, %__tmp8
+	br i1 %cmp3, label %if1.then, label %if1.end
+
+if1.then:
+
+	%__tmp9 = load i8* @a
+	%__tmp10 = load i8* @a
+	%cmp4 = icmp eq i8 %__tmp9, %__tmp10
+	br i1 %cmp4, label %if2.then, label %if2.end
+
+if2.then:
+	br label %if2.end
+if2.end:
+
+	br label %if1.end
+if1.end:
+
 	br label %while2.cond
 while2.end:
 
