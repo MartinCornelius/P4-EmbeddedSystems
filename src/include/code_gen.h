@@ -84,24 +84,29 @@ void generateCode(struct ast *node)
           currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->right)->string));
         else 
           currentType = "i32";
+        
+        int tmpWhileCounter = whileCounter;
+        int tmpCmpCounter = cmpCounter;
 
-        fprintf(file, "br label %%while%d.cond\n\n", whileCounter);
+        fprintf(file, "br label %%while%d.cond\n\n", tmpWhileCounter);
 
         // While condition
-        fprintf(file, "while%d.cond:\n", whileCounter);
+        fprintf(file, "while%d.cond:\n", tmpWhileCounter);
         generateCode(node->left);
-        fprintf(file, "\tbr i1 %%cmp%d, label %%while%d.body, label %%while%d.end\n", cmpCounter, whileCounter, whileCounter);
-
-        // While body
-        fprintf(file, "while%d.body:\n", whileCounter);
-        generateCode(node->right);
-        fprintf(file, "\tbr label %%while%d.cond\n", whileCounter);
-
-        // While end
-        fprintf(file, "while%d.end:\n", whileCounter);
+        fprintf(file, "\tbr i1 %%cmp%d, label %%while%d.body, label %%while%d.end\n", tmpCmpCounter, tmpWhileCounter, tmpWhileCounter);
 
         whileCounter++;
         cmpCounter++;
+
+        // While body
+        fprintf(file, "while%d.body:\n", tmpWhileCounter);
+        generateCode(node->right);
+        fprintf(file, "\tbr label %%while%d.cond\n", tmpWhileCounter);
+
+        // While end
+        fprintf(file, "while%d.end:\n", tmpWhileCounter);
+
+        
         break;
 
     case DECL:
@@ -124,33 +129,11 @@ void generateCode(struct ast *node)
           // If body
           fprintf(file, "if%d.then:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
 
           // If end
-          fprintf(file, "if%d.end:\n", startingIfCounter);
+          fprintf(file, "if%d.end:\n", tmpIfCounter);
 
-        }
-        // Else if
-        else if (((struct astIfNode *)node)->right->type == IF)
-        {
-          printf("if else kæde\n");
-          int tmpIfCounter = ifCounter++;
-          // Comparison
-          generateCode(((struct astIfNode *)node)->left);
-          fprintf(file, "\tbr i1 %%cmp%d, label %%if%d.then, label %%if%d.cond\n\n", cmpCounter, tmpIfCounter, tmpIfCounter);
-          cmpCounter++;
-
-          // If body
-          fprintf(file, "if%d.then:\n", tmpIfCounter);
-          generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
-
-          // Cond for first else if 
-          fprintf(file, "if%d.cond:\n", tmpIfCounter);
-          generateCode(((struct astIfNode *)node)->right);
-
-          // If end
-          //fprintf(file, "if%d.end:\n", tmpIfCounter);
         }
         // Else
         else
@@ -164,15 +147,15 @@ void generateCode(struct ast *node)
           // If body
           fprintf(file, "if%d.then:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->middle);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
 
           // Else
           fprintf(file, "if%d.else:\n", tmpIfCounter);
           generateCode(((struct astIfNode *)node)->right);
-          fprintf(file, "\tbr label %%if%d.end\n", startingIfCounter);
+          fprintf(file, "\tbr label %%if%d.end\n", tmpIfCounter);
 
           // If end
-          fprintf(file, "if%d.end:\n", startingIfCounter);
+          fprintf(file, "if%d.end:\n", tmpIfCounter);
         }
         break;
 

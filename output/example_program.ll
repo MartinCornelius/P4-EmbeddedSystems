@@ -1,7 +1,7 @@
 @pfmt = constant [4 x i8] c"%d\0A\00"
 declare i32 @printf(i8*,...)
 
-@a = global i16 0
+@a = global i8 0
 
 define void @setup() {
 entry:
@@ -10,14 +10,54 @@ entry:
 
 define void @mainloop() {
 entry:
-	%__const1 = alloca i16
-	store i16 0, i16* %__const1
-	%__tmp1 = load i16* %__const1
+	%__const1 = alloca i8
+	store i8 2, i8* %__const1
+	%__tmp1 = load i8* %__const1
 
-	store i16 %__tmp1, i16* @a
-	%__tmpGlobal_1a = load  i16* @a
-	%__castGlobal_1a = sext i16 %__tmpGlobal_1a to i32
-	call i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %__castGlobal_1a);
+	store i8 %__tmp1, i8* @a
+br label %while1.cond
+
+while1.cond:
+
+	%__tmp3 = load i8* @a
+	%__tmp4 = load i8* @a
+	%cmp1 = icmp eq i8 %__tmp3, %__tmp4
+	br i1 %cmp1, label %while1.body, label %while1.end
+while1.body:
+br label %while2.cond
+
+while2.cond:
+
+	%__tmp5 = load i8* @a
+	%__tmp6 = load i8* @a
+	%cmp2 = icmp eq i8 %__tmp5, %__tmp6
+	br i1 %cmp2, label %while2.body, label %while2.end
+while2.body:
+
+	%__tmp7 = load i8* @a
+	%__tmp8 = load i8* @a
+	%cmp3 = icmp eq i8 %__tmp7, %__tmp8
+	br i1 %cmp3, label %if1.then, label %if1.end
+
+if1.then:
+
+	%__tmp9 = load i8* @a
+	%__tmp10 = load i8* @a
+	%cmp4 = icmp eq i8 %__tmp9, %__tmp10
+	br i1 %cmp4, label %if2.then, label %if2.end
+
+if2.then:
+	br label %if2.end
+if2.end:
+
+	br label %if1.end
+if1.end:
+
+	br label %while2.cond
+while2.end:
+
+	br label %while1.cond
+while1.end:
 
 	ret void
 }

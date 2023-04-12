@@ -1,7 +1,16 @@
 setup()
 {
 }
-mainloop() {
-  int16 a = 2 + 2 - 1 * 4;
-  print(a);
+mainloop(){
+  int8 a = 2;
+  
+  while (a == a){
+    while ( a == a){
+      if (a == a){
+        if (a == a){
+          
+        }
+      }
+    }
+  }
 }
