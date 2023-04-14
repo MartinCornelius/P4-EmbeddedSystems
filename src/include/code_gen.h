@@ -50,7 +50,7 @@ void generateCode(struct ast *node)
         break;
     case PRINT:
         casted = 0;
-        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string).type);
         fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
         generateCode(node->left);
         fprintf(file, " = load  %s* @", currentType);
@@ -59,7 +59,7 @@ void generateCode(struct ast *node)
         if(strcmp(currentType, "i32") != 0)
         {
           // Check if signed
-          char *checksigned = getCustomType(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+          char *checksigned = getCustomType(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string).type);
           // Type convertion
           if (checksigned[0] == 'u')
             fprintf(file, "\n\t%%__castGlobal_%d%s = zext %s %%__tmpGlobal_%d%s to i32", globalVarCounter, currentVarName, currentType, globalVarCounter, currentVarName);
@@ -79,9 +79,9 @@ void generateCode(struct ast *node)
     case WHILE:
         // Get current type
         if (node->left->left->type == ID)
-          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->left)->string));
+          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->left)->string).type);
         else if (node->left->right->type == ID)
-          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->right)->string));
+          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->right)->string).type);
         else 
           currentType = "i32";
         
@@ -160,7 +160,7 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
-        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string).type);
         // Check if constant
         if (node->right->type == VAL)
         {
@@ -904,7 +904,7 @@ void generateFile(struct ast *node)
   {
     if (hTable->items[i] != NULL)
     {
-      int itemType = searchSymbol(hTable, hTable->items[i]->name);
+      int itemType = searchSymbol(hTable, hTable->items[i]->name).type;
       // Needs converter
       fprintf(file, "@%s = global %s 0\n", hTable->items[i]->name, typeConverter(itemType));
     }

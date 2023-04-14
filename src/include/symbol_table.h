@@ -74,14 +74,17 @@ void printTable(HashTable* table)
 }
 
 // Hashes each character in the key
-int hashing(HashTable* table, char* name, int i)
+int hashing(HashTable* table, char* name, int plus)
 {
     int hash = 537;
+    int i = 0;
+
     while (name[i] != '\0')
     {
-        hash = (hash + name[i] + i) % table->size;
+        hash = (hash + name[i] + plus) % table->size;
         if (DEBUG)
-            printf("        Hash: %d, Key: %c, i: %d\n", hash, name[i], i);
+            printf("        Hash: %d, Key: %c, plus: %d\n", hash, name[i], plus);
+
         i++;
     }
 
@@ -101,29 +104,27 @@ int doubleHash(HashTable* table, char* name, int i)
     return hashing(table, name, i);
 }
 
-void insertSymbol(HashTable* table, char* name, enum types value)
+// This should only be called after a search (passing the result from search to index in this funciton)
+// Since no checks are implementet in this function
+void insertSymbol(HashTable* table, int index, char* name, enum types value)
 {
-    item* hItem = createItem(name, value);
-    int index = hash(table, name);
-    int i = 0;
-
     item* current = table->items[index];
-
-    // Double hashing if collision
-    while (current != NULL)
-    {
-        if (DEBUG)
-            printf("%s: Insert collision at index %d, trying i%d, double hashing\n", name, index, i+1);
-        
-        index = doubleHash(table, name, ++i);
-        current = table->items[index];
-    }
+    item* hItem = createItem(name, value);
+    int i = 0;
 
     table->items[index] = hItem;
     table->count++;
 }
 
-enum types searchSymbol(HashTable* table, char* name)
+// Used to return both type and the hash index
+typedef struct searchReturn
+{
+    enum types type;
+    int hashIndex;
+} searchReturn;
+
+
+searchReturn searchSymbol(HashTable* table, char* name)
 {
     if (DEBUG) {
         printf("    %s: Searching in following table\n", name);
@@ -131,6 +132,10 @@ enum types searchSymbol(HashTable* table, char* name)
         // if (table)
         //     printTable(table);
     }
+
+    searchReturn sReturn[1];
+    sReturn->type = not_found_enum;
+    sReturn->hashIndex = 0;
 
 
     int index = hash(table, name);
@@ -142,12 +147,16 @@ enum types searchSymbol(HashTable* table, char* name)
         if (DEBUG)
             printf("    %s: Symbol not found\n", name);
 
-        return not_found_enum;
+        return sReturn[0];
     }
 
     // Double hashing until symbol is found or empty slot is found
-    while (current != NULL && strcmp(current->name, name) != 0)
+    while (current != NULL)
     {
+        if (strcmp(current->name, name) != 0) {
+            break;
+        }
+
         if (DEBUG)
             printf("    %s: Search collision at index %d, trying i%d, double hashing\n", name, index, i+1);
         
@@ -160,16 +169,20 @@ enum types searchSymbol(HashTable* table, char* name)
         if (DEBUG)
             printf("    %s: Symbol not found\n", name);
 
-        return not_found_enum;
+        // return not_found_enum;
+        return sReturn[0];
     }
 
     if (DEBUG)
         printf("    %s: Symbol Found! Type: %d\n", current->name, current->type);
 
-    return current->type;
+    // return current->type;
+    sReturn->type = current->type;
+    sReturn->hashIndex = index;
+    return sReturn[0];
 }
 
-void createSymbol(HashTable* table, char* name, int type)
+void createSymbol(HashTable* table, char* name, enum types type)
 {
     if (DEBUG)
         printf("%s: Attempting to create symbol\n", name);
@@ -181,18 +194,20 @@ void createSymbol(HashTable* table, char* name, int type)
         return;
     }
 
+    searchReturn search = searchSymbol(table, name);
+
     // Throw error if symbol already exists
-    if (searchSymbol(table, name) != not_found_enum)
+    if (search.type != not_found_enum)
     {
         printf("ERROR: Declartion of two types of same name is not valid Name: %s\n\n", name);
         // TODO thorw an error here
         return;
     }
 
+    insertSymbol(table, search.hashIndex, name, type);
+
     if (DEBUG)
         printf("%s: Symbol created\n\n", name);
-
-    insertSymbol(table, name, (enum types) type);
 }
 
 #endif
