@@ -5,6 +5,8 @@
     #include <stdbool.h>
     #include <stdint.h>
 
+    #define HTSIZE 10
+
     // String that will become the C file
     char temp[500];
     char programString[3000];
