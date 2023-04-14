@@ -20,6 +20,7 @@
     #include "include/ast.h"
     #include "include/const_folding.h"
 
+    HashTables *hTables;
     HashTable *hTable;
     #include "include/code_gen.h"
 
@@ -62,23 +63,23 @@
 %%
 prog          : defines funcs setup mainloop    
                 { 
-                    root = allocAST(ROOT, $3, $4);
+                    // root = allocAST(ROOT, $3, $4);
                     printf("\n=========== HASHTABLE ===========\n");
-                    printTable(hTable);
-                    printf("\n=========== AST ===========\n");
-                    printAST(root, 0);
-                    if (optimize)
-                    {
-                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
-                        constantFolding(root);
+                    // printTable(hTable);
+                    // printf("\n=========== AST ===========\n");
+                    // printAST(root, 0);
+                    // if (optimize)
+                    // {
+                    //     printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                    //     constantFolding(root);
 
-                        printf("\n\n=========== OPTIMIZED AST ===========\n");
-                        printAST(root, 0);
-                    }
-                    printf("\n\n=========== LLVM CODE GEN ===========\n");
-                    generateFile(root);
-                    printf("Done generating file\n");
-                    freeAST(root);
+                    //     printf("\n\n=========== OPTIMIZED AST ===========\n");
+                    //     printAST(root, 0);
+                    // }
+                    // printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    // // generateFile(root);
+                    // printf("Done generating file\n");
+                    // freeAST(root);
                     printf("\nDone.");
                 }
               ;
@@ -182,7 +183,13 @@ boolexpr      : LPAR comparelist RPAR           { ; }
 
 void main(int argc, char **argv)
 { 
-    hTable = createTable(10);
+    hTables = createMainTable(10);
+    hTable = createTable(hTables, 0, 100);
+
+    // createSymbol(hTable, "test", 1);
+    // createSymbol(hTable, "test", 1);
+
+
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))

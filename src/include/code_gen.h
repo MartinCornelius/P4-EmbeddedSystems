@@ -904,9 +904,9 @@ void generateFile(struct ast *node)
   {
     if (hTable->items[i] != NULL)
     {
-      int itemType = searchSymbol(hTable, hTable->items[i]->key);
+      int itemType = searchSymbol(hTable, hTable->items[i]->name);
       // Needs converter
-      fprintf(file, "@%s = global %s 0\n", hTable->items[i]->key, typeConverter(itemType));
+      fprintf(file, "@%s = global %s 0\n", hTable->items[i]->name, typeConverter(itemType));
     }
   }
   fprintf(file, "\n");
