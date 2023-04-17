@@ -122,7 +122,7 @@ void printAST(struct ast *node, int level)
   }
   else if (node->type == VALF)
   {
-    printf(" %f", ((struct astLeafFloat *)node)->value);
+    printf(" %.22g", ((struct astLeafFloat *)node)->value);
     leafFound = 1;
   }
   else if (node->type == ID)

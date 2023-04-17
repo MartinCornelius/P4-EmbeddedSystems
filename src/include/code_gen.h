@@ -892,7 +892,7 @@ void generateCode(struct ast *node)
         fprintf(file, "%d", ((struct astLeafInt *)node)->value);
         break;
     case VALF:
-        fprintf(file, "%f", ((struct astLeafFloat *)node)-> value);
+        fprintf(file, "%.22g", ((struct astLeafFloat *)node)-> value);
         break;
     case ID:
         fprintf(file, "%s", ((struct astLeafStr *)node)->string);
@@ -918,7 +918,8 @@ void generateFile(struct ast *node)
     {
       int itemType = searchSymbol(hTable, hTable->items[i]->key);
       // Needs converter
-      fprintf(file, "@%s = global %s 0\n", hTable->items[i]->key, typeConverter(itemType));
+      char* floatOrInt = (typeConverter(itemType) == "float") ? "0.0" : "0";
+      fprintf(file, "@%s = global %s %s\n", hTable->items[i]->key, typeConverter(itemType), floatOrInt);
     }
   }
   fprintf(file, "\n");
