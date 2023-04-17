@@ -171,6 +171,15 @@ void generateCode(struct ast *node)
           fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
           tmpVarCounter++;
         }
+        else if (node->right->type == VALF)
+        {
+          fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+          fprintf(file, "\tstore %s ", currentType);
+          generateCode(node->right);
+          fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+          fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+          tmpVarCounter++;
+        }
         else
         {
           generateCode(node->right);
@@ -881,6 +890,9 @@ void generateCode(struct ast *node)
 
     case VAL:
         fprintf(file, "%d", ((struct astLeafInt *)node)->value);
+        break;
+    case VALF:
+        fprintf(file, "%f", ((struct astLeafFloat *)node)-> value);
         break;
     case ID:
         fprintf(file, "%s", ((struct astLeafStr *)node)->string);

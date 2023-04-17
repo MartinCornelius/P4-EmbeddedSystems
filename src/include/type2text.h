@@ -174,6 +174,9 @@ char *typeConverter(int type)
       case uint32_enum:
         result = "i32";
         break;
+      case float_enum:
+        result = "float";
+        break;
       default:
         printf("type convertion failed\n");
         break;
