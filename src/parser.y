@@ -177,6 +177,7 @@ compare       : boolexpr COPLE compare          { $$ = allocAST(COPLE, $1, $3); 
 boolexpr      : LPAR comparelist RPAR           { ; }
               | ID                 { $$ = allocASTLeafStr(ID, $1); } 
               | VAL                { $$ = allocASTLeafInt(VAL, $1); }
+              | VALF               { $$ = allocASTLeafFloat(VALF, $1); }
               ;
 %%
 
