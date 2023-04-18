@@ -21,7 +21,6 @@
     #include "include/const_folding.h"
 
     HashTables *hTables;
-    HashTable *hTable;
     #include "include/code_gen.h"
 
     extern FILE *yyin; 
@@ -80,7 +79,7 @@ prog          : defines funcs setup mainloop
                     // // generateFile(root);
                     // printf("Done generating file\n");
                     // freeAST(root);
-                    printf("\nDone.");
+                    printf("Done.\n");
                 }
               ;
 defines       : define defines      { ; }                                      
@@ -88,12 +87,12 @@ defines       : define defines      { ; }
               ;
 define        : DEFINE ID expr          { ; }                                  
               ;
-setup         : SETUP LBRA lines RBRA   { $$ = allocAST(SETUP, $3, NULL); }
+setup         : SETUP LBRA lines RBRA   { changeScope(hTables); $$ = allocAST(SETUP, $3, NULL); }
               ;
-mainloop      : MAIN LBRA lines RBRA    { $$ = allocAST(MAIN, $3, NULL); }
+mainloop      : MAIN LBRA lines RBRA    { changeScope(hTables); $$ = allocAST(MAIN, $3, NULL); }
               ;
 funcs         : func funcs          { ; }                                      
-              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
+              |                     { changeScope(hTables); $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
 func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
               | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
@@ -124,10 +123,10 @@ elsechain     : ELSE control                                              { $$ =
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
 vardecl       : TYPE ID
-              { /* createSymbol(hTable, $2, $1); */ $$ = allocAST(DECL,
+              { createSymbol(hTables, $2, $1); $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), NULL); }          
               | TYPE ID ASSIGN expr                             
-              { /* createSymbol(hTable, $2, $1); */ $$ = allocAST(ASSIGN,
+              { createSymbol(hTables, $2, $1); $$ = allocAST(ASSIGN,
               allocASTLeafStr(ID, $2), $4); }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
@@ -182,14 +181,12 @@ boolexpr      : LPAR comparelist RPAR           { ; }
 %%
 
 void main(int argc, char **argv)
-{ 
+{
+    // TODO remove htable from this file
     hTables = createMainTable(10);
-    hTable = createTable(hTables, 0, 100);
 
-    createSymbol(hTable, "test", 1);
-    createSymbol(hTable, "Test", 1);
-    printTable(hTable);
-
+    // createSymbol(hTable, "test", 1);
+    // createSymbol(hTable, "Test", 1);
 
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
@@ -205,6 +202,8 @@ void main(int argc, char **argv)
 
     yyparse();
     fclose(file);
+
+    // printTable(hTable);
 }
 
 int yyerror(char *s){

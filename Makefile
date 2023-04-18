@@ -43,6 +43,7 @@ else
 endif
 
 sttest:
+	clear
 	rm -f run.out
 	make
 	./run.out examples/tests/test10.m

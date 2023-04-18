@@ -23,31 +23,46 @@ typedef struct HashTable
     item** items;
     int size;
     int count;
-    int scope;
 } HashTable;
 
 typedef struct HashTables
 {
-    HashTable* hTable;
+    HashTable** hTable;
+    int scope;
 } HashTables;
 
 // TODO size might be different fix tihs also in function below
 HashTables* createMainTable(int size)
 {
-    HashTables* symTable = (HashTables*)malloc(sizeof(HashTables));
-    symTable->hTable = (HashTable*)malloc(size * sizeof(HashTable* ));
+    HashTables* symTable = (HashTables*)malloc(size * sizeof(HashTables));
+    symTable->scope = 0;
+
+    // printf("ay1\n");
+    // (*symTable)->hTable = (HashTable**)malloc(size * sizeof(HashTable* ));
+    // printf("ay\n");
     return symTable;
 }
 
-HashTable* createTable(HashTables* symTable, int scope, int size)
+HashTable* createTable(HashTables* symTable, int size)
 {
     // hTables
-    symTable->hTable = (HashTable*)malloc(sizeof(HashTable));
-    symTable->hTable->items = (item**)malloc(size * sizeof(item* ));
-    symTable->hTable->size = size;
-    symTable->hTable->count = 0;
-    symTable->hTable->scope = scope;
-    return symTable->hTable;
+    // (*symTable).hTable = (HashTable**)malloc(sizeof(HashTable*));
+    // (*(*symTable).hTable)->items = (item**)malloc(size * sizeof(item* ));
+    // (*(*symTable).hTable)->size = size; 
+    // (*(*symTable).hTable)->count = 0;
+    // return (*(*symTable).hTable);
+
+    HashTable* hTable = (HashTable*)malloc(sizeof(HashTable));
+    hTable->items = (item**)malloc(size * sizeof(item* ));
+    hTable->size = size;
+    hTable->count = 0;
+    return hTable;
+
+    // hTable = (HashTable*)malloc(sizeof(HashTable*));
+    // hTable->items = (item**)malloc(size * sizeof(item* ));
+    // hTable->size = size; 
+    // hTable->count = 0;
+    // return (* symTable->hTable);
 }
 
 item* createItem(char* name, enum types type)
@@ -126,6 +141,7 @@ typedef struct searchReturn
 
 searchReturn searchSymbol(HashTable* table, char* name)
 {
+    printf("ay\n");
     if (DEBUG) {
         printf("    %s: Searching in following table\n", name);
 
@@ -174,8 +190,12 @@ searchReturn searchSymbol(HashTable* table, char* name)
     return sReturn;
 }
 
-void createSymbol(HashTable* table, char* name, enum types type)
+// void createSymbol(HashTable* table, char* name, enum types type)
+void createSymbol(HashTables* symTable, char* name, enum types type)
 {
+    printf("dasfds");
+    HashTable* table = symTable->hTable[symTable->scope];
+
     if (DEBUG)
         printf("%s: Attempting to create symbol\n", name);
 
@@ -204,6 +224,38 @@ void createSymbol(HashTable* table, char* name, enum types type)
 
     if (DEBUG)
         printf("%s: Symbol created\n\n", name);
+}
+
+void changeScope(HashTables* symTable)
+{
+    printf("Changing scope\n");
+
+    if (symTable->scope) {
+        symTable->scope++;
+    } else {
+        symTable->scope = 0;
+    }
+
+    createTable(symTable, 100);
+
+    printf("ay\n");
+    symTable->hTable = (HashTable**)malloc(100 * sizeof(HashTable*));
+    symTable->hTable[0] = createTable(symTable, 100);
+
+    // if (symTable->hTable != NULL) {
+    //     printf("Scope: %d\n", symTable->hTable->scope);
+
+    // }
+    // int scope = 0;
+    // symTable->hTable->scope = scope;
+}
+
+
+void exitScope(HashTables** symTable)
+{
+    printf("ay\n");
+    printf("Exiting scope\n");
+    (*symTable)->scope--;
 }
 
 #endif
