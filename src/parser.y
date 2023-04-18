@@ -124,10 +124,10 @@ elsechain     : ELSE control                                              { $$ =
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
 vardecl       : TYPE ID
-              { createSymbol(hTable, $2, $1); $$ = allocAST(DECL,
+              { /* createSymbol(hTable, $2, $1); */ $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), NULL); }          
               | TYPE ID ASSIGN expr                             
-              { createSymbol(hTable, $2, $1); $$ = allocAST(ASSIGN,
+              { /* createSymbol(hTable, $2, $1); */ $$ = allocAST(ASSIGN,
               allocASTLeafStr(ID, $2), $4); }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
@@ -186,8 +186,9 @@ void main(int argc, char **argv)
     hTables = createMainTable(10);
     hTable = createTable(hTables, 0, 100);
 
-    // createSymbol(hTable, "test", 1);
-    // createSymbol(hTable, "test", 1);
+    createSymbol(hTable, "test", 1);
+    createSymbol(hTable, "Test", 1);
+    printTable(hTable);
 
 
     file = fopen("output/example_program.ll", "w");

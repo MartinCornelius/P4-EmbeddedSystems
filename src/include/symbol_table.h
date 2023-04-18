@@ -31,10 +31,11 @@ typedef struct HashTables
     HashTable* hTable;
 } HashTables;
 
+// TODO size might be different fix tihs also in function below
 HashTables* createMainTable(int size)
 {
     HashTables* symTable = (HashTables*)malloc(sizeof(HashTables));
-    symTable->hTable = (HashTable*)malloc(sizeof(HashTable* ));
+    symTable->hTable = (HashTable*)malloc(size * sizeof(HashTable* ));
     return symTable;
 }
 
@@ -42,7 +43,7 @@ HashTable* createTable(HashTables* symTable, int scope, int size)
 {
     // hTables
     symTable->hTable = (HashTable*)malloc(sizeof(HashTable));
-    symTable->hTable->items = (item**)malloc(sizeof(item* ));
+    symTable->hTable->items = (item**)malloc(size * sizeof(item* ));
     symTable->hTable->size = size;
     symTable->hTable->count = 0;
     symTable->hTable->scope = scope;
@@ -59,18 +60,17 @@ item* createItem(char* name, enum types type)
 
 void printTable(HashTable* table)
 {
+    printf("___________________\n");
     for (int i = 0; i < table->size; i++)
     {
         item* current = table->items[i];
 
         if (current != NULL)
         {
-            printf("___________________\n");
-            printf("Index: %d\n", i);
-            printf("Name: %s, Type: %d\n", current->name, current->type);
-            printf("___________________\n");
+            printf("Index: %d Name: %s, Type: %d\n", i, current->name, current->type);
         }
     }
+    printf("___________________\n");
 }
 
 // Hashes each character in the key
@@ -129,31 +129,30 @@ searchReturn searchSymbol(HashTable* table, char* name)
     if (DEBUG) {
         printf("    %s: Searching in following table\n", name);
 
-        // if (table)
-        //     printTable(table);
+        if (table)
+            printTable(table);
     }
-
-    searchReturn sReturn[1];
-    sReturn->type = not_found_enum;
-    sReturn->hashIndex = 0;
 
 
     int index = hash(table, name);
     item* current = table->items[index];
     int i = 0;
 
-    if (current == NULL || current->name == NULL)
+    searchReturn sReturn = {not_found_enum, index};
+
+    // check if current is null
+    if (current == NULL)
     {
         if (DEBUG)
-            printf("    %s: Symbol not found\n", name);
+            printf("    %s: ay Symbol not found\n", name);
 
-        return sReturn[0];
+        return sReturn;
     }
 
     // Double hashing until symbol is found or empty slot is found
     while (current != NULL)
     {
-        if (strcmp(current->name, name) != 0) {
+        if (current->name != NULL || current->name == name) {
             break;
         }
 
@@ -164,22 +163,15 @@ searchReturn searchSymbol(HashTable* table, char* name)
         current = table->items[index];
     }
 
-    if (current == NULL)
-    {
-        if (DEBUG)
-            printf("    %s: Symbol not found\n", name);
-
-        // return not_found_enum;
-        return sReturn[0];
-    }
-
     if (DEBUG)
         printf("    %s: Symbol Found! Type: %d\n", current->name, current->type);
 
-    // return current->type;
-    sReturn->type = current->type;
-    sReturn->hashIndex = index;
-    return sReturn[0];
+    sReturn.type = current->type;
+    sReturn.hashIndex = index;
+
+    printf("index: %d\n", index);
+    
+    return sReturn;
 }
 
 void createSymbol(HashTable* table, char* name, enum types type)
@@ -195,6 +187,10 @@ void createSymbol(HashTable* table, char* name, enum types type)
     }
 
     searchReturn search = searchSymbol(table, name);
+
+
+    if (DEBUG)
+        printf("    %i: Search returned type: %d\n", search.hashIndex, search.type);
 
     // Throw error if symbol already exists
     if (search.type != not_found_enum)
