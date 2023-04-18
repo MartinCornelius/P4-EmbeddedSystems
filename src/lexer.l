@@ -37,7 +37,9 @@ digit                   [0-9]
 "uint8"                   { yylval.type = uint8_enum; return TYPE; }
 "uint16"                  { yylval.type = uint16_enum; return TYPE; }
 "uint32"                  { yylval.type = uint32_enum; return TYPE; }
-"float"                   { yylval.type = float_enum; return TYPE; }
+"float16"                 { yylval.type = float16_enum; return TYPE; }
+"float32"                 { yylval.type = float32_enum; return TYPE; }
+"float64"                 { yylval.type = float64_enum; return TYPE; }
 "bool"                    { yylval.type = bool_enum; return TYPE; }
 "char"                    { yylval.type = char_enum; return TYPE; }
 "int"                     { yylval.type = flexint_enum; return TYPE;}

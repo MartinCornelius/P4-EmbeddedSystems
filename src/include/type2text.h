@@ -142,6 +142,15 @@ char *getCustomType(int varType)
     case uint32_enum:
       result = "uint32";
       break;
+    case float16_enum:
+      result = "float16";
+      break;
+    case float32_enum:
+      result = "float32";
+      break;
+    case float64_enum:
+      result = "float64";
+      break;
     default:
       result = "type not implemented";
       break;
@@ -174,8 +183,14 @@ char *typeConverter(int type)
       case uint32_enum:
         result = "i32";
         break;
-      case float_enum:
+      case float16_enum:
+        result = "half";
+        break;
+      case float32_enum:
         result = "float";
+        break;
+      case float64_enum:
+        result = "double";
         break;
       default:
         printf("type convertion failed\n");
