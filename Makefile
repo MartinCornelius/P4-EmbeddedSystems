@@ -46,4 +46,4 @@ sttest:
 	clear
 	rm -f run.out
 	make
-	./run.out examples/tests/test10.m
+	./run.out examples/tests/testscope.m
