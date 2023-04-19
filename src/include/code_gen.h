@@ -171,6 +171,15 @@ void generateCode(struct ast *node)
           fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
           tmpVarCounter++;
         }
+        else if (node->right->type == VALF)
+        {
+          fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+          fprintf(file, "\tstore %s ", currentType);
+          generateCode(node->right);
+          fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+          fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+          tmpVarCounter++;
+        }
         else
         {
           generateCode(node->right);
@@ -195,7 +204,13 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            }
+            else{
+              fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            }
+            
           }
           else if (node->left->type == VAL)
           {
@@ -208,6 +223,17 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
           }
+          else if (node->left->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fadd %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          }
           else 
           {
             generateCode(node->left);
@@ -215,7 +241,12 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->right);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            }
+            else{
+              fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-1, tmpVarCounter-2);
+            }
           }
         }
         else if (node->left->type == ID)
@@ -231,7 +262,11 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else{
+              fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->right->type == VAL)
           {
@@ -244,6 +279,17 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             fprintf(file, "\n");
           }
+          else if (node->right->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
           else 
           {
             generateCode(node->right);
@@ -251,7 +297,12 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->left);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
+
           }
         }
         else if (node->right->type != VAL)
@@ -288,7 +339,11 @@ void generateCode(struct ast *node)
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = add %s ", tmpVarCounter, currentType);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\t%%__tmp%d = fadd %s ", tmpVarCounter, currentType);
+            } else{
+              fprintf(file, "\t%%__tmp%d = add %s ", tmpVarCounter, currentType);
+            }
             generateCode(node->right);
             fprintf(file, ", ");
             generateCode(node->left);
@@ -310,7 +365,11 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else{
+              fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->left->type == VAL)
           {
@@ -322,6 +381,16 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
             generateCode(node->left);
             fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          } else if (node->left->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fsub %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
           }
           else 
           {
@@ -330,6 +399,9 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->right);
             tmpVarCounter++;
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
             fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
           }
         }
@@ -346,7 +418,11 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] = 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);  
+            } else{
+              fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->right->type == VAL)
           {
@@ -359,6 +435,17 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             fprintf(file, "\n");
           }
+          else if (node->right->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
           else 
           {
             generateCode(node->right);
@@ -366,7 +453,11 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->left);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else{
+              fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
         }
         else if (node->right->type != VAL)
@@ -426,7 +517,11 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fmul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->left->type == VAL)
           {
@@ -439,6 +534,17 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
           }
+          else if (node->left->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fmul %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          }
           else 
           {
             generateCode(node->left);
@@ -446,7 +552,11 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->right);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fmul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
         }
         else if (node->left->type == ID)
@@ -462,7 +572,11 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fmul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->right->type == VAL)
           {
@@ -472,6 +586,17 @@ void generateCode(struct ast *node)
             tmpVarCounter++;
             // Make addition operation
             fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
+          else if (node->right->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fmul %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
             generateCode(node->right);
             fprintf(file, "\n");
           }
@@ -541,7 +666,11 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if(currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->left->type == VAL)
           {
@@ -554,6 +683,17 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
           }
+          else if (node->left->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->right);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fdiv %s ", tmpVarCounter, currentType);
+            generateCode(node->left);
+            fprintf(file, ", %%__tmp%d\n", tmpVarCounter-1);
+          }
           else 
           {
             generateCode(node->left);
@@ -561,7 +701,11 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->right);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if (currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
         }
         else if (node->left->type == ID)
@@ -577,7 +721,11 @@ void generateCode(struct ast *node)
             generateCode(node->left);
             tmpVarCounter++;
             // Make addition operation
-            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if (currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
           else if (node->right->type == VAL)
           {
@@ -590,6 +738,17 @@ void generateCode(struct ast *node)
             generateCode(node->right);
             fprintf(file, "\n");
           }
+          else if (node->right->type == VALF)
+          {
+            // Load variable
+            fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+            generateCode(node->left);
+            tmpVarCounter++;
+            // Make addition operation
+            fprintf(file, "\n\t%%__tmp%d = fdiv %s %%__tmp%d, ", tmpVarCounter, currentType, tmpVarCounter-1);
+            generateCode(node->right);
+            fprintf(file, "\n");
+          }
           else 
           {
             generateCode(node->right);
@@ -597,7 +756,11 @@ void generateCode(struct ast *node)
             fprintf(file, "\n\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
             generateCode(node->left);
             tmpVarCounter++;
-            fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            if (currentType[0] == 'f'){
+              fprintf(file, "\n\t%%__tmp%d = fdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            } else {
+              fprintf(file, "\n\t%%__tmp%d = sdiv %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter-2, tmpVarCounter-1);
+            }
           }
         }
         else if (node->right->type != VAL)
@@ -634,7 +797,11 @@ void generateCode(struct ast *node)
         }
         else
         {
-            fprintf(file, "\t%%__tmp%d = sdiv %s ", tmpVarCounter, currentType);
+            if (currentType[0] == 'f'){
+              fprintf(file, "\t%%__tmp%d = fdiv %s ", tmpVarCounter, currentType);
+            } else{
+              fprintf(file, "\t%%__tmp%d = sdiv %s ", tmpVarCounter, currentType);
+            }
             generateCode(node->left);
             fprintf(file, ", ");
             generateCode(node->right);
@@ -882,6 +1049,9 @@ void generateCode(struct ast *node)
     case VAL:
         fprintf(file, "%d", ((struct astLeafInt *)node)->value);
         break;
+    case VALF:
+        fprintf(file, "%.22g", ((struct astLeafFloat *)node)-> value);
+        break;
     case ID:
         fprintf(file, "%s", ((struct astLeafStr *)node)->string);
         currentVarName = ((struct astLeafStr *)node)->string;
@@ -906,7 +1076,8 @@ void generateFile(struct ast *node)
     {
       int itemType = searchSymbol(hTable, hTable->items[i]->name).type;
       // Needs converter
-      fprintf(file, "@%s = global %s 0\n", hTable->items[i]->name, typeConverter(itemType));
+      char* floatOrInt = ((typeConverter(itemType) == "half") || (typeConverter(itemType) == "float") || (typeConverter(itemType) == "double")) ? "0.0" : "0";
+      fprintf(file, "@%s = global %s %s\n", hTable->items[i]->key, typeConverter(itemType), floatOrInt);
     }
   }
   fprintf(file, "\n");
