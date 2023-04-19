@@ -8,7 +8,7 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
-#define DEBUG true
+#define DEBUG false
 
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
@@ -41,6 +41,9 @@ HashTables* createMainTable(int size)
 
 HashTable* createTable(int size)
 {
+    if (DEBUG)
+        printf("Creating a new table\n");
+
     HashTable* hTable = (HashTable*)malloc(sizeof(HashTable));
     hTable->items = (item**)malloc(size * sizeof(item* ));
     hTable->size = size;
@@ -58,17 +61,17 @@ item* createItem(char* name, enum types type)
 
 void printTable(HashTable* table)
 {
-    printf("___________________\n");
+    printf("%*s--------------------------\n", 8, "");
     for (int i = 0; i < table->size; i++)
     {
         item* current = table->items[i];
 
         if (current != NULL)
         {
-            printf("Index: %d Name: %s, Type: %d\n", i, current->name, current->type);
+            printf("%*sIndex: %d Name: %s, Type: %d\n", 8, "", i, current->name, current->type);
         }
     }
-    printf("___________________\n");
+    printf("%*s--------------------------\n", 8, "");
 }
 
 // Hashes each character in the key
@@ -81,7 +84,7 @@ int hashing(HashTable* table, char* name, int plus)
     {
         hash = (hash + name[i] + plus) % table->size;
         if (DEBUG)
-            printf("        Hash: %d, Key: %c, plus: %d\n", hash, name[i], plus);
+            printf("        Hash: %2d, Key: %c, plus: %d\n", hash, name[i], plus);
 
         i++;
     }
@@ -207,9 +210,13 @@ void createSymbol(HashTables* symTable, char* name, enum types type)
         printf("%s: Symbol created\n\n", name);
 }
 
+
+// TODO This creates a table too much
+// TODO determine size of table at some time
 void changeScope(HashTables* symTable, char* call)
 {
-    printf("Exiting scope %s\n\n\n", call);
+    if (DEBUG)
+        printf("Exiting scope %s\n", call);
 
     if (symTable->scope) {
         symTable->scope++;
@@ -218,7 +225,7 @@ void changeScope(HashTables* symTable, char* call)
     }
 
     symTable->hTable = (HashTable**)malloc(100 * sizeof(HashTable*));
-    symTable->hTable[0] = createTable(100);
+    symTable->hTable[symTable->scope] = createTable(100);
 
     // if (symTable->hTable != NULL) {
     //     printf("Scope: %d\n", symTable->hTable->scope);
@@ -233,6 +240,11 @@ void exitScope(HashTables** symTable)
 {
     printf("Exiting scope\n");
     (*symTable)->scope--;
+}
+
+
+void checkExpression() {
+    
 }
 
 #endif

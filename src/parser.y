@@ -85,7 +85,7 @@ prog          : defines funcs setup mainloop
 defines       : define defines      { ; }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-define        : DEFINE ID expr          { printf("ay\n %s", $2); createSymbol(hTables, $2, ); }                                  
+define        : DEFINE ID expr          { ; }                                  
               ;
 setup         : SETUP LBRA lines RBRA   { changeScope(hTables, "setup"); $$ = allocAST(SETUP, $3, NULL); }
               ;
@@ -109,7 +109,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr      { printf("ay"); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
