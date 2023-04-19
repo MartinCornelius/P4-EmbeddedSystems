@@ -85,14 +85,14 @@ prog          : defines funcs setup mainloop
 defines       : define defines      { ; }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
-define        : DEFINE ID expr          { ; }                                  
+define        : DEFINE ID expr          { printf("ay\n %s", $2); createSymbol(hTables, $2, ); }                                  
               ;
-setup         : SETUP LBRA lines RBRA   { changeScope(hTables); $$ = allocAST(SETUP, $3, NULL); }
+setup         : SETUP LBRA lines RBRA   { changeScope(hTables, "setup"); $$ = allocAST(SETUP, $3, NULL); }
               ;
-mainloop      : MAIN LBRA lines RBRA    { changeScope(hTables); $$ = allocAST(MAIN, $3, NULL); }
+mainloop      : MAIN LBRA lines RBRA    { changeScope(hTables, "mainloop"); $$ = allocAST(MAIN, $3, NULL); }
               ;
 funcs         : func funcs          { ; }                                      
-              |                     { changeScope(hTables); $$ = allocAST(EMPTY, NULL, NULL); }                                     
+              |                     { changeScope(hTables, "funcs"); $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
 func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
               | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
@@ -109,7 +109,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+line          : ID ASSIGN expr      { printf("ay"); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
@@ -184,9 +184,6 @@ void main(int argc, char **argv)
 {
     // TODO remove htable from this file
     hTables = createMainTable(10);
-
-    // createSymbol(hTable, "test", 1);
-    // createSymbol(hTable, "Test", 1);
 
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
