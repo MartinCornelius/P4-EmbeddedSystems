@@ -8,11 +8,14 @@
 #include "ast.h"
 #include "type2text.h"
 
+int optimizationDone = 5;
+
 void loopInvariant(struct ast *node);
 struct ast* loopInvariantFinder(struct ast *node);
 bool varListContainsName(char *name);
 bool isLoopVariant(struct ast *node);
 bool containsVarByName(struct ast *node);
+void printAssignedVarNameList();
 
 struct assignedVarName
 {
@@ -21,6 +24,29 @@ struct assignedVarName
 };
 
 struct assignedVarName *assignedVarHandle;
+
+void printAssignedVarNameList(){
+    struct assignedVarName *tmp = malloc(sizeof(struct assignedVarName));
+    tmp = assignedVarHandle;
+
+    while(tmp != NULL){
+        printf("assignedvar: %s\n", tmp->name);
+        tmp = tmp->next;
+    }
+}
+
+void optimization(struct ast *root){
+    while(optimizationDone > 0 ){
+        loopInvariant(root);
+        printf("WE ARE GOING AGAIN\n");
+        printAssignedVarNameList();
+        assignedVarHandle->next = NULL;
+        printAssignedVarNameList();
+        optimizationDone--;
+    }
+    loopInvariant(root);
+    assignedVarHandle->next = NULL;
+}
 
 void loopInvariant(struct ast *node)
 {
@@ -33,19 +59,18 @@ void loopInvariant(struct ast *node)
     if (node->left->type == WHILE){
         assignmentNode = loopInvariantFinder(node->left->right);
 
-        if(assignmentNode == NULL)
-            return;
+        if(assignmentNode != NULL){
+            printf("assignmentNode result: %s\n", printType(assignmentNode->type));
+            // Lav lines : left->assigmentNode : right->lines(while)    
+            struct ast *whileLinesNode = allocAST(LINES, node->left, NULL);
+            struct ast *rootLinesNode = allocAST(LINES, assignmentNode, whileLinesNode); 
 
-        printf("assignmentNode result: %s\n", printType(assignmentNode->type));
-        // Lav lines : left->assigmentNode : right->lines(while)    
-        struct ast *whileLinesNode = allocAST(LINES, node->left, NULL);
-        struct ast *rootLinesNode = allocAST(LINES, assignmentNode, whileLinesNode); 
-        
-        node->left = rootLinesNode;
+            printAssignedVarNameList();
+            
+            node->left = rootLinesNode;
 
-        //lav lines : left-> while : right -> empty
-        assignedVarHandle->next = NULL;
-        return;
+            printf("%d\n", optimizationDone);
+        }
     }
     
     printf("going left\n");
@@ -58,9 +83,10 @@ void loopInvariant(struct ast *node)
 struct ast* loopInvariantFinder(struct ast *node)
 {
     printf("loopInvariantFinder is called\n");
-    if (node == NULL || node->left->type == WHILE || node->left->type == IF ||
-        node->type == VAL || node->type == ID || node->type == EMPTY || node->type == PRINT){
-            printf("returning Null\n");
+    printf("loopInv type : %s\n", printType(node->type));
+    if (node == NULL || node->type == EMPTY || node->left->type == WHILE || node->left->type == IF ||
+        node->left == NULL){
+            printf("returning null : %s\n", printType(node->type));
             return NULL;
         }
         
@@ -94,6 +120,7 @@ struct ast* loopInvariantFinder(struct ast *node)
 
         //Check if node->left->right contains any saved node
         bool result = containsVarByName(node->left->right);
+        printAssignedVarNameList();
         printf("contains result: %d\n", result);
         if (!result)
         {
@@ -103,6 +130,8 @@ struct ast* loopInvariantFinder(struct ast *node)
             return astNode; 
         }
     }
+    if(node->left->type == LINES)
+        return loopInvariantFinder(node->left);
 
     return loopInvariantFinder(node->right);
 }

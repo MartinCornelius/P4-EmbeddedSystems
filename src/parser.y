@@ -72,8 +72,7 @@ prog          : defines funcs setup mainloop
                     {
                         printf("\n\n=========== OPTIMIZATIONS ===========\n");
                         //constantFolding(root);
-                        loopInvariant(root);
-                        loopInvariant(root);
+                        optimization(root);
                         
                         printf("\n\n=========== OPTIMIZED AST ===========\n");
                         printAST(root, 0);

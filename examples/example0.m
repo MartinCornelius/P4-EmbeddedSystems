@@ -3,13 +3,15 @@ setup()
 }
 mainloop(){
   uint16 a = 2;
-  uint16 n = 3;
 
-  while(a == a){
-    uint16 i = 4 + n;
+  while (a == a){
+    uint16 b = a;
 
-    uint16 j = i - n;
-    print(a);
+    while (a == a){
+
+      uint16 c = b;
+    }
+
   }
 }
 
