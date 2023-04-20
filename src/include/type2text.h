@@ -192,15 +192,6 @@ char *typeConverter(int type)
         case float64_enum:
             result = "double";
             break;
-        case bool_enum:
-            result = "bool";
-            break;
-        case char_enum:
-            result = "char";
-            break;
-        case flexint_enum:
-            result = "flexint";
-            break;
         default:
             printf("type convertion failed\n");
             break;
