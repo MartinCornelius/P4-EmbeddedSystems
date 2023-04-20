@@ -41,9 +41,3 @@ else
 	rm src/parser.tab.c
 	rm src/parser.tab.h
 endif
-
-sttest:
-	clear
-	rm -f run.out
-	make
-	./run.out examples/tests/testscope.m
