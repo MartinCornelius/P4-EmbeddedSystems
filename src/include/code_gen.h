@@ -59,7 +59,7 @@ void generateCode(struct ast *node)
         break;
     case PRINT:
         casted = 0;
-        currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 1);
+        currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
         fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
         generateCode(node->left);
         fprintf(file, " = load  %s* @", currentType);
@@ -88,9 +88,9 @@ void generateCode(struct ast *node)
     case WHILE:
         // Get current type
         if (node->left->left->type == ID)
-          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type, 2);
+          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type);
         else if (node->left->right->type == ID)
-          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type, 3);
+          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type);
         else 
           currentType = "i32";
         
@@ -169,7 +169,7 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
-        currentType = typeConverter(searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string).type, 4);
+        currentType = typeConverter(searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string).type);
         // Check if constant
         if (node->right->type == VAL)
         {
@@ -1089,8 +1089,8 @@ void generateFile(struct ast *node)
       int itemType = searchSymbol(symTable->hTable[0], symTable->hTable[0]->items[i]->name).type;
       // Needs converter
       printf("itemType: %i\n", itemType);
-      char* floatOrInt = ((typeConverter(itemType, 5) == "half") || (typeConverter(itemType, 6) == "float") || (typeConverter(itemType, 7) == "double")) ? "0.0" : "0";
-      fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType, 8), floatOrInt);
+      char* floatOrInt = ((typeConverter(itemType) == "half") || (typeConverter(itemType) == "float") || (typeConverter(itemType) == "double")) ? "0.0" : "0";
+      fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType), floatOrInt);
     }
   }
   fprintf(file, "\n");

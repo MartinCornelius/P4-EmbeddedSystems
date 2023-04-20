@@ -160,10 +160,8 @@ char *getCustomType(int varType)
 }
 
 /* Converts from enum type to llvm ir type */
-char *typeConverter(int type, int loc)
+char *typeConverter(int type)
 {
-    printf("loc: %i\n", loc);
-
     char *result;
     switch(type)
     {

@@ -185,8 +185,6 @@ searchReturn searchSymbol(HashTable* table, char* name)
     sReturn.type = current->type;
     sReturn.hashIndex = index;
 
-    printf("index: %d\n", index);
-    
     return sReturn;
 }
 
