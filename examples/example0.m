@@ -9,7 +9,6 @@ mainloop(){
     while (a == a){
       uint16 c = b;
     }
-
   }
 }
 

@@ -4,6 +4,6 @@ setup()
 
 mainloop()
 {
-    uint8 a = 2 + 3;
+    uint8 a = 8 + 4;
     print(a);
 }
