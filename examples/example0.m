@@ -6,9 +6,7 @@ mainloop(){
 
   while (a == a){
     uint16 b = a;
-
     while (a == a){
-
       uint16 c = b;
     }
 
