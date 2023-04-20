@@ -153,7 +153,7 @@ term          : term TIMES factor   { $$ = allocAST(TIMES, $1, $3); }
 factor        : ID                  { $$ = allocASTLeafStr(ID, $1); }                                      
               | VAL                 { $$ = allocASTLeafInt(VAL, $1); }                                      
               | VALF                { $$ = allocASTLeafFloat(VALF, $1); }                                      
-              | LPAR expr RPAR      { ; }                                      
+              | LPAR expr RPAR      { $$ = $2; }                                      
               ;
 comparelist   : compare LOGOR comparelist  { $$ = allocAST(LOGOR, $1, $3); }
               | compare LOGAND comparelist { $$ = allocAST(LOGAND, $1, $3); }                                  
@@ -174,7 +174,7 @@ compare       : boolexpr COPLE compare          { $$ = allocAST(COPLE, $1, $3); 
               | boolexpr                        { $$ = $1; }                               
               | NOT boolexpr                    { ; }                          
               ;
-boolexpr      : LPAR comparelist RPAR           { ; }
+boolexpr      : LPAR comparelist RPAR           { $$ = $2; }
               | ID                 { $$ = allocASTLeafStr(ID, $1); } 
               | VAL                { $$ = allocASTLeafInt(VAL, $1); }
               ;
