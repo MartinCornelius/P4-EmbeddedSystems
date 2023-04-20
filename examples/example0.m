@@ -2,14 +2,14 @@ setup()
 {
 }
 mainloop(){
-  uint16 a = (2 + 3) * 2 + 2;
+  uint16 a = 2;
+  uint16 n = 3;
 
   while(a == a){
-    uint16 j = a + 1 * j;
-    
-    uint16 i = 1 + 2;
+    uint16 i = 4 + n;
 
-    print(j);
+    uint16 j = i - n;
+    print(a);
   }
 }
 

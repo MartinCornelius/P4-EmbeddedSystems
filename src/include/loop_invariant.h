@@ -44,6 +44,7 @@ void loopInvariant(struct ast *node)
         node->left = rootLinesNode;
 
         //lav lines : left-> while : right -> empty
+        assignedVarHandle->next = NULL;
         return;
     }
     
@@ -96,7 +97,10 @@ struct ast* loopInvariantFinder(struct ast *node)
         printf("contains result: %d\n", result);
         if (!result)
         {
-            return node->left;
+            struct ast *astNode = node->left; 
+            node->left = allocAST(EMPTY, NULL, NULL);
+            printf("removed node before returning\n");
+            return astNode; 
         }
     }
 
