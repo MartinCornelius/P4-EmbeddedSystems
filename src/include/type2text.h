@@ -160,41 +160,52 @@ char *getCustomType(int varType)
 }
 
 /* Converts from enum type to llvm ir type */
-char *typeConverter(int type)
+char *typeConverter(int type, int loc)
 {
+    printf("loc: %i\n", loc);
+
     char *result;
     switch(type)
     {
-      case int8_enum:
-        result = "i8";
-        break;
-      case int16_enum:
-        result = "i16";
-        break;
-      case int32_enum:
-        result = "i32";
-        break;
-      case uint8_enum:
-        result = "i8";
-        break;
-      case uint16_enum:
-        result = "i16";
-        break;
-      case uint32_enum:
-        result = "i32";
-        break;
-      case float16_enum:
-        result = "half";
-        break;
-      case float32_enum:
-        result = "float";
-        break;
-      case float64_enum:
-        result = "double";
-        break;
-      default:
-        printf("type convertion failed\n");
-        break;
+        case int8_enum:
+            result = "i8";
+            break;
+        case int16_enum:
+            result = "i16";
+            break;
+        case int32_enum:
+            result = "i32";
+            break;
+        case uint8_enum:
+            result = "i8";
+            break;
+        case uint16_enum:
+            result = "i16";
+            break;
+        case uint32_enum:
+            result = "i32";
+            break;
+        case float16_enum:
+            result = "half";
+            break;
+        case float32_enum:
+            result = "float";
+            break;
+        case float64_enum:
+            result = "double";
+            break;
+        case bool_enum:
+            result = "bool";
+            break;
+        case char_enum:
+            result = "char";
+            break;
+        case flexint_enum:
+            result = "flexint";
+            break;
+        default:
+            printf("type convertion failed\n");
+            break;
       }
     return result;
 }

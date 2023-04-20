@@ -19,8 +19,6 @@
     #include "include/symbol_table.h"
     #include "include/ast.h"
     #include "include/const_folding.h"
-
-    HashTables *hTables;
     #include "include/code_gen.h"
 
     extern FILE *yyin; 
@@ -35,6 +33,7 @@
     void *listHead;
 
     struct ast *root;
+    HashTables* symTable;
 %}
 
 %union{ int val; float valf; int type; char* id; char str[500]; char* string; struct ast *node; }
@@ -52,7 +51,7 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
+%token LINES LINE CONTROL FUNCS EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
@@ -62,23 +61,24 @@
 %%
 prog          : defines funcs setup mainloop    
                 { 
-                    // root = allocAST(ROOT, $3, $4);
+                    root = allocAST(ROOT, $3, $4);
                     printf("\n=========== HASHTABLE ===========\n");
-                    // printTable(hTable);
-                    // printf("\n=========== AST ===========\n");
-                    // printAST(root, 0);
-                    // if (optimize)
-                    // {
-                    //     printf("\n\n=========== OPTIMIZATIONS ===========\n");
-                    //     constantFolding(root);
+                    symTable = fetchSymbolTable();
+                    printTables(symTable);
+                    printf("\n=========== AST ===========\n");
+                    printAST(root, 0);
+                    if (optimize)
+                    {
+                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                        constantFolding(root);
 
-                    //     printf("\n\n=========== OPTIMIZED AST ===========\n");
-                    //     printAST(root, 0);
-                    // }
-                    // printf("\n\n=========== LLVM CODE GEN ===========\n");
-                    // // generateFile(root);
-                    // printf("Done generating file\n");
-                    // freeAST(root);
+                        printf("\n\n=========== OPTIMIZED AST ===========\n");
+                        printAST(root, 0);
+                    }
+                    printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    generateFile(root);
+                    printf("Done generating file\n");
+                    freeAST(root);
                     printf("Done.\n");
                 }
               ;
@@ -87,12 +87,12 @@ defines       : define defines      { ; }
               ;
 define        : DEFINE ID expr          { ; }                                  
               ;
-setup         : SETUP LBRA lines RBRA   { changeScope(hTables, "setup"); $$ = allocAST(SETUP, $3, NULL); }
+setup         : SETUP LBRA lines RBRA   { changeScope("setup"); $$ = allocAST(SETUP, $3, NULL); }
               ;
-mainloop      : MAIN LBRA lines RBRA    { changeScope(hTables, "mainloop"); $$ = allocAST(MAIN, $3, NULL); }
+mainloop      : MAIN LBRA lines RBRA    {  changeScope("mainloop"); $$ = allocAST(MAIN, $3, NULL); }
               ;
 funcs         : func funcs          { ; }                                      
-              |                     { changeScope(hTables, "funcs"); $$ = allocAST(EMPTY, NULL, NULL); }                                     
+              |                     {  changeScope("funcs"); $$ = allocAST(FUNCS, NULL, NULL); }                                     
               ;
 func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
               | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
@@ -123,10 +123,10 @@ elsechain     : ELSE control                                              { $$ =
               | ELSE LBRA lines RBRA                                      { $$ = $3; }
               ;
 vardecl       : TYPE ID
-              { createSymbol(hTables, $2, $1); $$ = allocAST(DECL,
+              { createSymbol($2, $1); $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), NULL); }          
               | TYPE ID ASSIGN expr                             
-              { createSymbol(hTables, $2, $1); $$ = allocAST(ASSIGN,
+              { createSymbol($2, $1); $$ = allocAST(ASSIGN,
               allocASTLeafStr(ID, $2), $4); }         
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
@@ -182,8 +182,8 @@ boolexpr      : LPAR comparelist RPAR           { ; }
 
 void main(int argc, char **argv)
 {
-    // TODO remove htable from this file
-    hTables = createMainTable(10);
+    // TODO Determine size at some point
+    createMainTable(10);
 
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
@@ -199,8 +199,6 @@ void main(int argc, char **argv)
 
     yyparse();
     fclose(file);
-
-    // printTable(hTable);
 }
 
 int yyerror(char *s){

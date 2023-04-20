@@ -8,7 +8,8 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
-#define DEBUG false
+#define DEBUG true
+
 
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
@@ -31,11 +32,13 @@ typedef struct HashTables
     int scope;
 } HashTables;
 
-// TODO size might be different fix tihs also in function below
+HashTables* symTable;
+
 HashTables* createMainTable(int size)
 {
-    HashTables* symTable = (HashTables*)malloc(size * sizeof(HashTables));
-    symTable->scope = 0;
+    symTable = (HashTables*)malloc(sizeof(HashTables));
+    symTable->hTable = (HashTable**)malloc(size * sizeof(HashTable*));
+    symTable->scope = -1;
     return symTable;
 }
 
@@ -59,19 +62,28 @@ item* createItem(char* name, enum types type)
     return i;
 }
 
-void printTable(HashTable* table)
+void printTable(HashTable* table, int indent)
 {
-    printf("%*s--------------------------\n", 8, "");
+    printf("%*s--------------------------\n", indent, "");
     for (int i = 0; i < table->size; i++)
     {
         item* current = table->items[i];
 
         if (current != NULL)
         {
-            printf("%*sIndex: %d Name: %s, Type: %d\n", 8, "", i, current->name, current->type);
+            printf("%*sIndex: %d Name: %s, Type: %d\n", indent, "", i, current->name, current->type);
         }
     }
-    printf("%*s--------------------------\n", 8, "");
+    printf("%*s--------------------------\n", indent, "");
+}
+
+void printTables(HashTables* symTable)
+{
+    for (int i = 0; i < symTable->scope; i++)
+    {
+        printf("Scope: %d\n", i);
+        printTable(symTable->hTable[i], 0);
+    }
 }
 
 // Hashes each character in the key
@@ -100,7 +112,8 @@ int hash(HashTable* table, char* name)
 
 int doubleHash(HashTable* table, char* name, int i)
 {
-    printf("    Attempting Double Hashing\n");
+    if (DEBUG)
+        printf("    Attempting Double Hashing\n");
 
     return hashing(table, name, i);
 }
@@ -115,6 +128,8 @@ void insertSymbol(HashTable* table, int index, char* name, enum types value)
 
     table->items[index] = hItem;
     table->count++;
+
+    printTable(table, 8);
 }
 
 // Used to return both type and the hash index
@@ -131,7 +146,7 @@ searchReturn searchSymbol(HashTable* table, char* name)
         printf("    %s: Searching in following table\n", name);
 
         if (table)
-            printTable(table);
+            printTable(table, 8);
     }
 
 
@@ -176,7 +191,7 @@ searchReturn searchSymbol(HashTable* table, char* name)
 }
 
 // void createSymbol(HashTable* table, char* name, enum types type)
-void createSymbol(HashTables* symTable, char* name, enum types type)
+HashTables* createSymbol(char* name, enum types type)
 {
     HashTable* table = symTable->hTable[symTable->scope];
 
@@ -187,7 +202,7 @@ void createSymbol(HashTables* symTable, char* name, enum types type)
     {
         printf("Hash table missing \n");
         // TODO throw an error here
-        return;
+        return symTable;
     }
 
     searchReturn search = searchSymbol(table, name);
@@ -201,50 +216,33 @@ void createSymbol(HashTables* symTable, char* name, enum types type)
     {
         printf("ERROR: Declartion of two types of same name is not valid Name: %s\n\n", name);
         // TODO thorw an error here
-        return;
+        return symTable;
     }
 
     insertSymbol(table, search.hashIndex, name, type);
 
     if (DEBUG)
-        printf("%s: Symbol created\n\n", name);
+        printf("%s: Symbol created in scope %i\n\n", name, symTable->scope);
+
+    return symTable;
 }
 
 
 // TODO This creates a table too much
 // TODO determine size of table at some time
-void changeScope(HashTables* symTable, char* call)
+HashTables* changeScope(char* call)
 {
     if (DEBUG)
         printf("Exiting scope %s\n", call);
 
-    if (symTable->scope) {
-        symTable->scope++;
-    } else {
-        symTable->scope = 0;
-    }
-
-    symTable->hTable = (HashTable**)malloc(100 * sizeof(HashTable*));
+    symTable->scope++;
     symTable->hTable[symTable->scope] = createTable(100);
 
-    // if (symTable->hTable != NULL) {
-    //     printf("Scope: %d\n", symTable->hTable->scope);
-
-    // }
-    // int scope = 0;
-    // symTable->hTable->scope = scope;
+    return symTable;
 }
 
-
-void exitScope(HashTables** symTable)
-{
-    printf("Exiting scope\n");
-    (*symTable)->scope--;
-}
-
-
-void checkExpression() {
-    
+HashTables* fetchSymbolTable() {
+    return symTable;
 }
 
 #endif
