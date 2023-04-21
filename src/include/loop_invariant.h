@@ -37,7 +37,7 @@ void vacuumCleaner(struct ast *node) {
         return;
 
     // Clean double lines
-    if (node->type == LINES && node->left->type == LINES)
+    if (node->type == LINES && node->left->type == LINES && (node->right == NULL || node->right->type == EMPTY))
     {
         node->right = node->left->right;
         node->left = node->left->left;

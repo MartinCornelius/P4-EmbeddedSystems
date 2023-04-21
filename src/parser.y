@@ -185,7 +185,7 @@ boolexpr      : LPAR comparelist RPAR           { $$ = $2; }
 
 void main(int argc, char **argv)
 { 
-    hTable = createTable(10);
+    hTable = createTable(100);
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
       if (!(yyin = fopen(argv[1], "r")))
