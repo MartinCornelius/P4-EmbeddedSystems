@@ -20,6 +20,8 @@
     #include "include/ast.h"
     #include "include/const_folding.h"
 
+    #include "include/loop_invariant.h"
+
     HashTable *hTable;
     #include "include/code_gen.h"
 
@@ -70,7 +72,8 @@ prog          : defines funcs setup mainloop
                     if (optimize)
                     {
                         printf("\n\n=========== OPTIMIZATIONS ===========\n");
-                        constantFolding(root);
+                        //constantFolding(root);
+                        optimization(root);
 
                         printf("\n\n=========== OPTIMIZED AST ===========\n");
                         printAST(root, 0);
