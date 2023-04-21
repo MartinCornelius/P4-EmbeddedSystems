@@ -180,6 +180,12 @@ void generateCode(struct ast *node)
           fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
           tmpVarCounter++;
         }
+        else if(node->right->type == ID)
+        {
+          fprintf(file, "\t%%__tmp%d = load %s* @", tmpVarCounter, currentType);
+          generateCode(node->right);
+          tmpVarCounter++;
+        }
         else
         {
           generateCode(node->right);
