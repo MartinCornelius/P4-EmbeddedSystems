@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "symbol_table.h"
+
 int casted = 0;
 int ifCounter = 1;
 int startingIfCounter = 1;
@@ -12,12 +14,17 @@ int cmpCounter = 1;
 int whileCounter = 1;
 int tmpVarCounter = 1;
 int globalVarCounter = 1;
+int currentScope = -1;
 char *currentVarName;
 char *currentType;
 char tmpVarName[30];
 
+HashTables* symTable;
+
 void generateCode(struct ast *node)
 {
+    symTable = fetchSymbolTable();
+
     if (node == NULL)
         return;    
 
@@ -28,6 +35,7 @@ void generateCode(struct ast *node)
         generateCode(node->right);
         break;
     case SETUP:
+        currentScope++;
         fprintf(file, "define void @setup() {\n");
         fprintf(file, "entry:\n");
         generateCode(node->left);
@@ -35,6 +43,7 @@ void generateCode(struct ast *node)
         fprintf(file, "}\n\n");
         break;
     case MAIN:
+        currentScope++;
         fprintf(file, "define void @mainloop() {\n");
         fprintf(file, "entry:\n");
         generateCode(node->left);
@@ -50,7 +59,7 @@ void generateCode(struct ast *node)
         break;
     case PRINT:
         casted = 0;
-        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+        currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
         fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
         generateCode(node->left);
         fprintf(file, " = load  %s* @", currentType);
@@ -59,7 +68,7 @@ void generateCode(struct ast *node)
         if(strcmp(currentType, "i32") != 0)
         {
           // Check if signed
-          char *checksigned = getCustomType(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+          char *checksigned = getCustomType(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
           // Type convertion
           if (checksigned[0] == 'u')
             fprintf(file, "\n\t%%__castGlobal_%d%s = zext %s %%__tmpGlobal_%d%s to i32", globalVarCounter, currentVarName, currentType, globalVarCounter, currentVarName);
@@ -79,9 +88,9 @@ void generateCode(struct ast *node)
     case WHILE:
         // Get current type
         if (node->left->left->type == ID)
-          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->left)->string));
+          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type);
         else if (node->left->right->type == ID)
-          currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left->right)->string));
+          currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type);
         else 
           currentType = "i32";
         
@@ -160,7 +169,7 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
-        currentType = typeConverter(searchSymbol(hTable, ((struct astLeafStr *)node->left)->string));
+        currentType = typeConverter(searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string).type);
         // Check if constant
         if (node->right->type == VAL)
         {
@@ -1062,6 +1071,9 @@ void generateCode(struct ast *node)
         fprintf(file, "%s", ((struct astLeafStr *)node)->string);
         currentVarName = ((struct astLeafStr *)node)->string;
         break;
+    case FUNCS:
+        currentScope++;
+        break;
     case EMPTY:
         break;
     default:
@@ -1076,14 +1088,15 @@ void generateFile(struct ast *node)
   fprintf(file, "declare i32 @printf(i8*,...)\n\n");
 
   // Global variables
-  for (int i = 0; i < hTable->size; i++)
+  for (int i = 0; i < symTable->hTable[0]->size; i++)
   {
-    if (hTable->items[i] != NULL)
+    if (symTable->hTable[0]->items[i] != NULL)
     {
-      int itemType = searchSymbol(hTable, hTable->items[i]->key);
+      int itemType = searchSymbol(symTable->hTable[0], symTable->hTable[0]->items[i]->name).type;
       // Needs converter
+      printf("itemType: %i\n", itemType);
       char* floatOrInt = ((typeConverter(itemType) == "half") || (typeConverter(itemType) == "float") || (typeConverter(itemType) == "double")) ? "0.0" : "0";
-      fprintf(file, "@%s = global %s %s\n", hTable->items[i]->key, typeConverter(itemType), floatOrInt);
+      fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType), floatOrInt);
     }
   }
   fprintf(file, "\n");
