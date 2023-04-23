@@ -7,6 +7,7 @@
 
 #include "symbol_types.h"
 #include "type2text.h"
+#include "type_check.h"
 
 #define DEBUG false
 
@@ -129,7 +130,8 @@ void insertSymbol(HashTable* table, int index, char* name, enum types value)
     table->items[index] = hItem;
     table->count++;
 
-    printTable(table, 8);
+    if (DEBUG)
+        printTable(table, 8);
 }
 
 // Used to return both type and the hash index
@@ -174,7 +176,7 @@ searchReturn searchSymbol(HashTable* table, char* name)
 
         if (DEBUG)
             printf("    %s: Search collision at index %d, trying i%d, double hashing\n", name, index, i+1);
-        
+
         index = doubleHash(table, name, ++i);
         current = table->items[index];
     }
@@ -235,6 +237,8 @@ HashTables* changeScope(char* call)
 
     symTable->scope++;
     symTable->hTable[symTable->scope] = createTable(100);
+
+    scopeChange(symTable->scope);
 
     return symTable;
 }
