@@ -7,7 +7,6 @@
 
 #include "symbol_types.h"
 #include "type2text.h"
-#include "type_check.h"
 
 #define DEBUG false
 
@@ -237,8 +236,6 @@ HashTables* changeScope(char* call)
 
     symTable->scope++;
     symTable->hTable[symTable->scope] = createTable(100);
-
-    scopeChange(symTable->scope);
 
     return symTable;
 }

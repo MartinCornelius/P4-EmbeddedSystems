@@ -1,58 +1,62 @@
 #include "ast.h"
 
-int scope;
-
 typedef struct identifersStruct {
     char *name;
     struct identifersStruct *next;
 } identifersStruct;
 
+
 void typeCheck(char* name, struct ast* node, int level) {
     level++;
-    printf("%s scope:%i level:%i\n", name, scope, level);
+    if (DEBUG)
+        printf("%s scope:%i level:%i\n", name, symTable->scope, level);
 
     // printAST(node->left->left, 5);
 
     struct ast *left = node->left;    
     struct ast *right = node->right;
+    struct ast *dirNode[2] = {left, right};
 
-    // if (left == NULL || right == NULL)
-    //     level--;
+    if (left == NULL || right == NULL) {
+        if (DEBUG)
+            printf("Both left and right are NULL %i\n", level);
 
-    if (left == NULL && right == NULL) {
-        level--;
-        printf("Both left and right are NULL %i\n\n", level);
+        if (level == 0) {
+            if (DEBUG)
+                printf("DONE!!\n\n");
+
+            HashTables* symTable = fetchSymbolTable();
+        }
 
         return;
     }
 
-    if (left) {
-        printf("left\n");
+    for (int i = 0; i < 2; i++)
+    {
+        if (dirNode[i]) {
+            if (DEBUG)
+                if (i == 0) {
+                    printf("left\n");
+                } else {
+                    printf("right\n");
+                }
 
-        if (left->type == ID)
-        {
-            printf(" Found left: %s\n", ((struct astLeafStr *)left)->string);
+            if (dirNode[i]->type == ID)
+            {
+                searchReturn searchAssign = searchSymbol(symTable->hTable[symTable->scope], name);
+                searchReturn searchFound = searchSymbol(symTable->hTable[symTable->scope], ((struct astLeafStr *)dirNode[i])->string);
+                
+                if (DEBUG)
+                    printf("Found: %s\n", ((struct astLeafStr *)dirNode[i])->string);
+
+                if (searchAssign.type != searchFound.type) {
+                    printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
+                }
+
+                level--;
+            }
+
+            typeCheck(name, dirNode[i], level);
         }
-
-        typeCheck(name, left, level++);
-    } else {
-        level--;
     }
-
-    if (right) {
-        printf("right\n");
-
-        if (right->type == ID)
-        {
-            printf(" Found right: %s\n", ((struct astLeafStr *)right)->string);
-        }
-
-        typeCheck(name, right, level++);
-    } else {
-        level--;
-    }
-}
-
-void scopeChange(int newScope) {
-    scope = newScope;
 }

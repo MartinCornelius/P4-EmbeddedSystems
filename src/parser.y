@@ -11,6 +11,7 @@
 
     #include "include/symbol_types.h"
     #include "include/symbol_table.h"
+    #include "include/type_check.h"
     #include "include/ast.h"
     #include "include/const_folding.h"
     #include "include/code_gen.h"
@@ -97,7 +98,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+line          : ID ASSIGN expr      { typeCheck($1, $3, 0); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
