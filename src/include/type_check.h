@@ -50,7 +50,10 @@ void typeCheck(char* name, struct ast* node, int level) {
                     printf("Found: %s\n", ((struct astLeafStr *)dirNode[i])->string);
 
                 if (searchAssign.type != searchFound.type) {
-                    printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
+                    if (DEBUG)
+                        printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
+                        
+                    yyerror("Non matching types");
                 }
 
                 level--;

@@ -17,6 +17,7 @@
     #include "include/code_gen.h"
 
     extern FILE *yyin; 
+    extern int yylineno;
 
     int yylex();
     int yyerror(char *s);
@@ -48,25 +49,27 @@
 %type<node> paramoutdecl paramindecl lines line control elsechain 
 
 %%
-prog          : defines funcs setup mainloop    
-                { 
+prog          : defines funcs setup mainloop
+                {
                     root = allocAST(ROOT, $3, $4);
-                    printf("\n=========== HASHTABLE ===========\n");
-                    symTable = fetchSymbolTable();
-                    printTables(symTable);
-                    printf("\n=========== AST ===========\n");
-                    printAST(root, 0);
+                    // printf("\n=========== HASHTABLE ===========\n");
+                    // symTable = fetchSymbolTable();
+                    // printTables(symTable);
+                    // printf("\n=========== TYPE CHECKING ===========\n");
+
+                    // printf("\n=========== AST ===========\n");
+                    // printAST(root, 0);
                     if (optimize)
                     {
-                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                        // printf("\n\n=========== OPTIMIZATIONS ===========\n");
                         constantFolding(root);
 
-                        printf("\n\n=========== OPTIMIZED AST ===========\n");
-                        printAST(root, 0);
+                        // printf("\n\n=========== OPTIMIZED AST ===========\n");
+                        // printAST(root, 0);
                     }
-                    printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    // printf("\n\n=========== LLVM CODE GEN ===========\n");
                     generateFile(root);
-                    printf("Done generating file\n");
+                    // printf("Done generating file\n");
                     freeAST(root);
                     printf("Done.\n");
                 }
@@ -191,6 +194,6 @@ void main(int argc, char **argv)
 }
 
 int yyerror(char *s){
-    printf("The error: %s", s);
+    printf("ERROR @ Line %d: %s\n", yylineno, s);
     return 0;
 }
