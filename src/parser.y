@@ -18,6 +18,7 @@
 
     extern FILE *yyin; 
     extern int yylineno;
+    char* inputFile = "unknown";
 
     int yylex();
     int yyerror(char *s);
@@ -178,9 +179,12 @@ void main(int argc, char **argv)
     createMainTable(100);
 
     file = fopen("output/example_program.ll", "w");
-    if (argc > 1)
-      if (!(yyin = fopen(argv[1], "r")))
-        perror("Error loading file\n");
+    if (argc > 1) {
+        inputFile = argv[1];
+
+        if (!(yyin = fopen(argv[1], "r")))
+            perror("Error loading file\n");
+    }
     /* if (argc > 2)
         sprintf(outputFile, "output/%s", argv[2]); */
 
@@ -189,11 +193,15 @@ void main(int argc, char **argv)
             optimize = 1;
         }
 
+    
+
+    printf("fdgdfg %s\n\n\n", argv[1]);
+
     yyparse();
     fclose(file);
 }
 
 int yyerror(char *s){
-    printf("ERROR @ Line %d: %s\n", yylineno, s);
+    printf("%s:%d: ERROR: %s\n", argv[1], yylineno, s);
     return 0;
 }

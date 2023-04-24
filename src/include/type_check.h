@@ -53,7 +53,11 @@ void typeCheck(char* name, struct ast* node, int level) {
                     if (DEBUG)
                         printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
                         
-                    yyerror("Non matching types");
+                    char* errorStr;
+                    sprintf(errorStr, "Non matching types %s != %s", getCustomType(searchAssign.type), getCustomType(searchFound.type));
+                    yyerror(errorStr);
+                    // yyerror the above correctly
+                    
                 }
 
                 level--;
