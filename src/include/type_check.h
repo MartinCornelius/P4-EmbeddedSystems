@@ -1,40 +1,33 @@
 #include "ast.h"
 
+#define DEBUG_TYPE false
+
 typedef struct identifersStruct {
     char *name;
     struct identifersStruct *next;
 } identifersStruct;
 
 
-void typeCheck(char* name, struct ast* node, int level) {
-    level++;
-    if (DEBUG)
-        printf("%s scope:%i level:%i\n", name, symTable->scope, level);
-
-    // printAST(node->left->left, 5);
+void typeCheck(char* name, struct ast* node) {
+    if (DEBUG_TYPE)
+        printf("%s scope:%i\n", name, symTable->scope);
 
     struct ast *left = node->left;    
     struct ast *right = node->right;
     struct ast *dirNode[2] = {left, right};
 
     if (left == NULL || right == NULL) {
-        if (DEBUG)
-            printf("Both left and right are NULL %i\n", level);
-
-        if (level == 0) {
-            if (DEBUG)
-                printf("DONE!!\n\n");
-
-            HashTables* symTable = fetchSymbolTable();
-        }
+        if (DEBUG_TYPE)
+            printf("Both left and right are NULL\n");
 
         return;
     }
 
+    // Search both left and right
     for (int i = 0; i < 2; i++)
     {
         if (dirNode[i]) {
-            if (DEBUG)
+            if (DEBUG_TYPE)
                 if (i == 0) {
                     printf("left\n");
                 } else {
@@ -45,25 +38,25 @@ void typeCheck(char* name, struct ast* node, int level) {
             {
                 searchReturn searchAssign = searchSymbol(symTable->hTable[symTable->scope], name);
                 searchReturn searchFound = searchSymbol(symTable->hTable[symTable->scope], ((struct astLeafStr *)dirNode[i])->string);
+
+                // If variable on right side is not found in scope search in global scope
+                if (searchFound.type == not_found_enum)
+                    searchFound = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)dirNode[i])->string);
                 
-                if (DEBUG)
+                if (DEBUG_TYPE)
                     printf("Found: %s\n", ((struct astLeafStr *)dirNode[i])->string);
 
                 if (searchAssign.type != searchFound.type) {
-                    if (DEBUG)
+                    if (DEBUG_TYPE)
                         printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
                         
-                    char* errorStr;
+                    char errorStr[100]; 
                     sprintf(errorStr, "Non matching types %s != %s", getCustomType(searchAssign.type), getCustomType(searchFound.type));
                     yyerror(errorStr);
-                    // yyerror the above correctly
-                    
                 }
-
-                level--;
             }
 
-            typeCheck(name, dirNode[i], level);
+            typeCheck(name, dirNode[i]);
         }
     }
 }

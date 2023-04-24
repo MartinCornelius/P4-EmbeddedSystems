@@ -8,6 +8,11 @@
     int optimize = 0;
 
     FILE *file;
+    int yyerror(char *s);
+    int yylex();
+
+    extern FILE *yyin; 
+    extern int yylineno;
 
     #include "include/symbol_types.h"
     #include "include/symbol_table.h"
@@ -16,12 +21,7 @@
     #include "include/const_folding.h"
     #include "include/code_gen.h"
 
-    extern FILE *yyin; 
-    extern int yylineno;
-    char* inputFile = "unknown";
-
-    int yylex();
-    int yyerror(char *s);
+    char* inputFile;
 
     struct ast *root;
     HashTables* symTable;
@@ -53,24 +53,24 @@
 prog          : defines funcs setup mainloop
                 {
                     root = allocAST(ROOT, $3, $4);
-                    // printf("\n=========== HASHTABLE ===========\n");
-                    // symTable = fetchSymbolTable();
-                    // printTables(symTable);
-                    // printf("\n=========== TYPE CHECKING ===========\n");
+                    printf("\n=========== HASHTABLE ===========\n");
+                    symTable = fetchSymbolTable();
+                    printTables(symTable);
+                    printf("\n=========== TYPE CHECKING ===========\n");
 
-                    // printf("\n=========== AST ===========\n");
-                    // printAST(root, 0);
+                    printf("\n=========== AST ===========\n");
+                    printAST(root, 0);
                     if (optimize)
                     {
-                        // printf("\n\n=========== OPTIMIZATIONS ===========\n");
+                        printf("\n\n=========== OPTIMIZATIONS ===========\n");
                         constantFolding(root);
 
-                        // printf("\n\n=========== OPTIMIZED AST ===========\n");
-                        // printAST(root, 0);
+                        printf("\n\n=========== OPTIMIZED AST ===========\n");
+                        printAST(root, 0);
                     }
-                    // printf("\n\n=========== LLVM CODE GEN ===========\n");
+                    printf("\n\n=========== LLVM CODE GEN ===========\n");
                     generateFile(root);
-                    // printf("Done generating file\n");
+                    printf("Done generating file\n");
                     freeAST(root);
                     printf("Done.\n");
                 }
@@ -102,7 +102,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr      { typeCheck($1, $3, 0); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+line          : ID ASSIGN expr      { typeCheck($1, $3); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
@@ -193,15 +193,11 @@ void main(int argc, char **argv)
             optimize = 1;
         }
 
-    
-
-    printf("fdgdfg %s\n\n\n", argv[1]);
-
     yyparse();
     fclose(file);
 }
 
 int yyerror(char *s){
-    printf("%s:%d: ERROR: %s\n", argv[1], yylineno, s);
+    printf("%s:%d: ERROR: %s\n", inputFile, yylineno, s);
     return 0;
 }
