@@ -43,6 +43,6 @@ else
 endif
 
 sttest:
-	rm -f run.out
+	make clean
 	make
-	./run.out examples/tests/test10.m
+	./run.exe examples/tests/test10.m

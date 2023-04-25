@@ -8,76 +8,85 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
-#define DEBUG false
+#define DEBUG true
 
 
 // TODO determine size at some point (Prime is ideal)
 // TODO error handling
-typedef struct item
+struct item
 {
     char* name;
     enum types type;
-} item;
+};
 
-typedef struct HashTable
+struct HashTable
 {
-    item** items;
+    struct item** items;
     int size;
     int count;
-} HashTable;
+};
 
-typedef struct HashTables
+struct HashTables
 {
-    HashTable** hTable;
+    struct HashTable** hTable;
     int scope;
-} HashTables;
+};
 
-HashTables* symTable;
 
-HashTables* createMainTable(int size)
+struct HashTables *symTable;
+
+void printTable(struct HashTable* table, int indent);
+
+struct HashTables* createMainTable(int size)
 {
-    symTable = (HashTables*)malloc(sizeof(HashTables));
-    symTable->hTable = (HashTable**)malloc(size * sizeof(HashTable*));
+    symTable = calloc(1, sizeof(struct HashTables));
+    symTable->hTable = calloc(size, sizeof(struct HashTable*));
     symTable->scope = -1;
     return symTable;
 }
 
-HashTable* createTable(int size)
+struct HashTable* createTable(int size)
 {
     if (DEBUG)
         printf("Creating a new table\n");
 
-    HashTable* hTable = (HashTable*)malloc(sizeof(HashTable));
-    hTable->items = (item**)malloc(size * sizeof(item* ));
+    struct HashTable* hTable = calloc(size, sizeof(struct HashTable*));
+    hTable->items = calloc(size, sizeof(struct item*));
     hTable->size = size;
     hTable->count = 0;
+
+
     return hTable;
 }
 
-item* createItem(char* name, enum types type)
+struct item* createItem(char* name, enum types type)
 {
-    item* i = (item* )malloc(sizeof(item));
+    struct item* i = calloc(1 ,sizeof(struct item));
     i->name = name;
     i->type = type;
     return i;
 }
 
-void printTable(HashTable* table, int indent)
+void printTable(struct HashTable* table, int indent)
 {
     printf("%*s--------------------------\n", indent, "");
+    printf("The Table size is %d\n", table->size);
     for (int i = 0; i < table->size; i++)
     {
-        item* current = table->items[i];
+        struct item* current = table->items[i];
 
-        if (current != NULL)
+        if (current != NULL && current->name != NULL)
         {
-            printf("%*sIndex: %d Name: %s, Type: %d\n", indent, "", i, current->name, current->type);
+            printf("%*sIndex: %d ", indent, "", i);
+            printf("Name: %s ", current->name);
+            printf("Type: %d\n",  current->type);
+            
         }
     }
     printf("%*s--------------------------\n", indent, "");
 }
 
-void printTables(HashTables* symTable)
+void printTables(struct HashTables* symTable)
 {
     for (int i = 0; i < symTable->scope; i++)
     {
@@ -87,7 +96,7 @@ void printTables(HashTables* symTable)
 }
 
 // Hashes each character in the key
-int hashing(HashTable* table, char* name, int plus)
+int hashing(struct HashTable* table, char* name, int plus)
 {
     int hash = 537;
     int i = 0;
@@ -105,12 +114,12 @@ int hashing(HashTable* table, char* name, int plus)
 }
 
 // These function make double hashing easier to implement
-int hash(HashTable* table, char* name)
+int hash(struct HashTable* table, char* name)
 {
     return hashing(table, name, 0);
 }
 
-int doubleHash(HashTable* table, char* name, int i)
+int doubleHash(struct HashTable* table, char* name, int i)
 {
     if (DEBUG)
         printf("    Attempting Double Hashing\n");
@@ -120,27 +129,25 @@ int doubleHash(HashTable* table, char* name, int i)
 
 // This should only be called after a search (passing the result from search to index in this funciton)
 // Since no checks are implementet in this function
-void insertSymbol(HashTable* table, int index, char* name, enum types value)
+void insertSymbol(struct HashTable* table, int index, char* name, enum types value)
 {
-    item* current = table->items[index];
-    item* hItem = createItem(name, value);
+    struct item* current = table->items[index];
+    struct item* hItem = createItem(name, value);
     int i = 0;
 
     table->items[index] = hItem;
     table->count++;
-
-    printTable(table, 8);
 }
 
 // Used to return both type and the hash index
-typedef struct searchReturn
+struct searchReturn
 {
     enum types type;
     int hashIndex;
-} searchReturn;
+};
 
 
-searchReturn searchSymbol(HashTable* table, char* name)
+struct searchReturn searchSymbol(struct HashTable* table, char* name)
 {
     if (DEBUG) {
         printf("    %s: Searching in following table\n", name);
@@ -151,10 +158,10 @@ searchReturn searchSymbol(HashTable* table, char* name)
 
 
     int index = hash(table, name);
-    item* current = table->items[index];
+    struct item* current = table->items[index];
     int i = 0;
 
-    searchReturn sReturn = {not_found_enum, index};
+    struct searchReturn sReturn = {not_found_enum, index};
 
     // check if current is null
     if (current == NULL)
@@ -189,9 +196,9 @@ searchReturn searchSymbol(HashTable* table, char* name)
 }
 
 // void createSymbol(HashTable* table, char* name, enum types type)
-HashTables* createSymbol(char* name, enum types type)
+struct HashTables* createSymbol(char* name, enum types type)
 {
-    HashTable* table = symTable->hTable[symTable->scope];
+    struct HashTable* table = symTable->hTable[symTable->scope];
 
     if (DEBUG)
         printf("%s: Attempting to create symbol\n", name);
@@ -203,7 +210,7 @@ HashTables* createSymbol(char* name, enum types type)
         return symTable;
     }
 
-    searchReturn search = searchSymbol(table, name);
+    struct searchReturn search = searchSymbol(table, name);
 
 
     if (DEBUG)
@@ -228,18 +235,23 @@ HashTables* createSymbol(char* name, enum types type)
 
 // TODO This creates a table too much
 // TODO determine size of table at some time
-HashTables* changeScope(char* call)
+struct HashTables* changeScope(char* call)
 {
     if (DEBUG)
         printf("Exiting scope %s\n", call);
+    
 
     symTable->scope++;
-    symTable->hTable[symTable->scope] = createTable(100);
+    
+    symTable->hTable[symTable->scope] = createTable(5000);
+
+    printf("Current scope %d\n", symTable->scope);
+    printTable(symTable->hTable[symTable->scope], 8);
 
     return symTable;
 }
 
-HashTables* fetchSymbolTable() {
+struct HashTables* fetchSymbolTable() {
     return symTable;
 }
 
