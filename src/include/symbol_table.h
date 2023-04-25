@@ -8,7 +8,7 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
-#define DEBUG true
+#define DEBUG false
 
 
 // TODO determine size at some point (Prime is ideal)
@@ -70,7 +70,7 @@ struct item* createItem(char* name, enum types type)
 void printTable(struct HashTable* table, int indent)
 {
     printf("%*s--------------------------\n", indent, "");
-    printf("The Table size is %d\n", table->size);
+    // printf("The Table size is %d\n", table->size);
     for (int i = 0; i < table->size; i++)
     {
         struct item* current = table->items[i];
@@ -244,9 +244,6 @@ struct HashTables* changeScope(char* call)
     symTable->scope++;
     
     symTable->hTable[symTable->scope] = createTable(5000);
-
-    printf("Current scope %d\n", symTable->scope);
-    printTable(symTable->hTable[symTable->scope], 8);
 
     return symTable;
 }

@@ -46,3 +46,8 @@ sttest:
 	make clean
 	make
 	./run.exe examples/tests/test10.m
+
+runtest:
+	make clean
+	make
+	./run.out examples/tests/test10.m
