@@ -19,7 +19,7 @@ char *currentVarName;
 char *currentType;
 char tmpVarName[30];
 
-HashTables* symTable;
+struct HashTables* symTable;
 
 void generateCode(struct ast *node)
 {

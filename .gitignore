@@ -10,3 +10,4 @@ output/*.exe
 output/*.S
 output/*.s
 output/*
+.vscode/*

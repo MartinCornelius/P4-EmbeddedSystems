@@ -36,8 +36,8 @@ void typeCheck(char* name, struct ast* node) {
 
             if (dirNode[i]->type == ID)
             {
-                searchReturn searchAssign = searchSymbol(symTable->hTable[symTable->scope], name);
-                searchReturn searchFound = searchSymbol(symTable->hTable[symTable->scope], ((struct astLeafStr *)dirNode[i])->string);
+                struct searchReturn searchAssign = searchSymbol(symTable->hTable[symTable->scope], name);
+                struct searchReturn searchFound = searchSymbol(symTable->hTable[symTable->scope], ((struct astLeafStr *)dirNode[i])->string);
 
                 // If variable on right side is not found in scope search in global scope
                 if (searchFound.type == not_found_enum)
@@ -51,7 +51,7 @@ void typeCheck(char* name, struct ast* node) {
                         printf("ERROR: Non matching types %s type != %s type!\n", name, ((struct astLeafStr *)dirNode[i])->string);
                         
                     char errorStr[100]; 
-                    sprintf(errorStr, "Non matching types %s != %s", getCustomType(searchAssign.type), getCustomType(searchFound.type));
+                    sprintf(errorStr, "Non matching types %d != %d", searchAssign.type, searchFound.type);
                     yyerror(errorStr);
                 }
             }

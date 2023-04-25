@@ -24,7 +24,7 @@
     char* inputFile;
 
     struct ast *root;
-    HashTables* symTable;
+    struct HashTables* symTable;
 %}
 
 %union{ int val; float valf; int type; char* id; char str[500]; char* string; struct ast *node; }
@@ -176,7 +176,7 @@ boolexpr      : LPAR comparelist RPAR           { $$ = $2; }
 void main(int argc, char **argv)
 {
     // TODO Determine size at some point
-    createMainTable(100);
+    createMainTable(1000);
 
     file = fopen("output/example_program.ll", "w");
     if (argc > 1) {
