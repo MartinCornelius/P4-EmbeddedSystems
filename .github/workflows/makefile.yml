@@ -19,8 +19,8 @@ jobs:
 
       - name: Make compiler
         run: |
-          make
-          make check
+          mingw32-make
+          mingw32-make check
 
   Ubuntu-latest:
     runs-on: ubuntu-latest
