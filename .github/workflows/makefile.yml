@@ -9,13 +9,21 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os.host }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
 
     steps:
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
 
-    - name: Compile compiler
-      run: make
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
-    - name: Check 
-      run: make check
+      - name: Check 
+        run: |
+          make
+          make check
