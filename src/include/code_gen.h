@@ -169,7 +169,8 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
-        struct searchReturn search = searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string);
+        struct searchReturn search;
+        search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
 
         // If variable without type declartion check global scope for variable
         if (search.type == not_found_enum){
