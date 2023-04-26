@@ -168,9 +168,8 @@ void generateCode(struct ast *node)
         }
         break;
 
-    case ASSIGN:
-        struct searchReturn search;
-        search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+    case ASSIGN: {
+        struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
 
         // If variable without type declartion check global scope for variable
         if (search.type == not_found_enum){
@@ -218,7 +217,7 @@ void generateCode(struct ast *node)
         generateCode(node->left);
         tmpVarCounter++;
         break;
-
+    }
     /* Arithmetic */
     case PLUS:
         if (node->right->type == ID)
