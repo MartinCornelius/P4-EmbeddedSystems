@@ -7,29 +7,28 @@ on:
     branches: [ "main" ]
 
 jobs:
-  run-on-windows:
+  Windows-latest:
     runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
-
-      - name: Check 
+      - name: Make compiler
         run: |
           make
           make check
 
-  run-on-ubuntu:
+  Ubuntu-latest:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Compile compiler
+    - name: Make compiler
       run: | 
         make
         make check
