@@ -10,12 +10,14 @@ jobs:
   Windows-latest:
     runs-on: windows-latest
 
-    defaults:
-      run:
-        shell: bash
-
+    
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
       - name: Make compiler
         run: |
