@@ -7,12 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    runs-on: ${{ matrix.os.host }}
+  run-on-windows:
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -26,3 +22,14 @@ jobs:
         run: |
           make
           make check
+
+  run-on-ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Compile compiler
+      run: | 
+        make
+        make check
