@@ -47,12 +47,6 @@ void vacuumCleaner(struct ast *node) {
         node->left = node->left->left;
     }
 
-    // Clean empty && lines
-    if (node->type == LINES && node->left->type == EMPTY)
-    {
-        node->left = node->right;
-    }
-
     // If both children are null
     if (node->type == WHILE && node->right->type == LINES && node->right->left->type == EMPTY && node->right->right->type == EMPTY)
     {
@@ -76,9 +70,9 @@ void optimization(struct ast *root){
     loopInvariant(root);
     assignedVarHandle->next = NULL;
 
-    //printf("---- Cleaning after loop invariant optimization ----\n");
-    //vacuumCleaner(root);
-    //vacuumCleaner(root);
+    printf("---- Cleaning after loop invariant optimization ----\n");
+    vacuumCleaner(root);
+    vacuumCleaner(root);
 }
 
 void loopInvariant(struct ast *node)
@@ -166,7 +160,7 @@ struct ast* loopInvariantFinder(struct ast *node)
             return NULL;
     }
 
-    if (node->left->type == ASSIGN && node->left->right->type != ID) {
+    if (node->left->type == ASSIGN && node->left->right->type != ID && node->left->right->type != VAL && node->left->right->type != VALF) {
         //Check if node->left->right contains any saved node
         printf("Priting list\n");
         printAssignedVarNameList();

@@ -6,8 +6,8 @@ mainloop(){
   uint16 b = 2;
   uint16 c = 2;
   while(a == a){
-    a = b + 2;
-    c = b + 3;
+    a = c + 2;
+    c = b + 3 + 2 + 2 + 2;
   }
 }
 
