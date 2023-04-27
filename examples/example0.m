@@ -4,19 +4,16 @@ setup()
 
 mainloop()
 {
+  int8 a = 12;
+  int16 b = 55;
+  pepsiMax(a -> b);
 }
 
-func redbull(int8 a, uint16 c -> int16 b, int32 d)
+func redbull(int8 a, int8 b)
 {
-  print(b);
-
-  while (d < 10)
-  {
-    print(d);
-  }
 }
 
-func pepsiMax(uint16 a)
+func pepsiMax(int8 a -> int16 b)
 {
-  print(a);
+  redbull(10, 5);
 }

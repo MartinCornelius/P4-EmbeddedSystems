@@ -68,8 +68,20 @@ void generateCode(struct ast *node)
 
     fprintf(file, "\tret void\n}\n");
     break;
+  case FUNCCALL:
+    fprintf(file, "\tcall void @");
+    generateCode(node->left);
+    fprintf(file, "(");
+    generateCode(node->right);
+    fprintf(file, ")\n");
+    break;
   case PARAMS:
-    if (node->left->type != PARAMS)
+    if (node->left->type == VAL)
+    {
+      fprintf(file, "i32 ");
+      generateCode(node->left);
+    }
+    else if (node->left->type == ID)
     {
       currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
       fprintf(file, "%s %%", currentType);

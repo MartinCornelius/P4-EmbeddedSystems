@@ -39,7 +39,7 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL FUNCS PARAM PARAMS EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
+%token LINES LINE CONTROL FUNCS PARAM PARAMS FUNCCALL EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
@@ -121,16 +121,16 @@ vardecl       : TYPE ID
               allocASTLeafStr(ID, $2), $4); }
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
-funccall      : ID LPAR paramincall RPAR                        { ; }          
-              | ID LPAR paramincall RARROW paramoutcall RPAR    { ; }          
+funccall      : ID LPAR paramincall RPAR                        { $$ = allocAST(FUNCCALL, allocASTLeafStr(ID, $1), $3); }          
+              | ID LPAR paramincall RARROW paramoutcall RPAR    { $$ = allocAST(FUNCCALL, allocASTLeafStr(ID, $1), allocAST(PARAMS, $3, $5)); }          
               ; 
-paramoutcall  : ID COMMA paramoutcall   { ; }                                  
-              | ID                      { ; }                                  
+paramoutcall  : ID COMMA paramoutcall   { $$ = allocAST(PARAMS, allocASTLeafStr(ID, $1), $3); }                                  
+              | ID                      { $$ = allocAST(PARAMS, allocASTLeafStr(ID, $1), NULL); }
               ;
-paramincall   : ID COMMA paramincall    { ; }                                  
-              | expr COMMA paramincall  { ; }                                  
-              | ID                  { ; }                                      
-              | expr                { ; }                                      
+paramincall   : ID COMMA paramincall    { $$ = allocAST(PARAMS, allocASTLeafStr(ID, $1), $3); }
+              | expr COMMA paramincall  { $$ = allocAST(PARAMS, $1, $3); }                                  
+              | ID                  { $$ = allocAST(PARAMS, allocASTLeafStr(ID, $1), NULL); }                                      
+              | expr                { $$ = allocAST(PARAMS, $1, NULL); }                                      
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
               ;
 expr          : expr PLUS term      { $$ = allocAST(PLUS, $1, $3); }                                      
