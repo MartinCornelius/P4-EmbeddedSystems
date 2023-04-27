@@ -199,5 +199,5 @@ void main(int argc, char **argv)
 
 int yyerror(char *s){
     printf("%s:%d: ERROR: %s\n", inputFile, yylineno, s);
-    return 0;
+    exit(0);
 }
