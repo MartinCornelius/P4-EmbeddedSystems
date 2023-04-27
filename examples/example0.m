@@ -1,17 +1,19 @@
 setup()
 {
 }
-mainloop(){
-  uint16 a = 2;
-  uint16 c = 3;
-  while (a > 10)
-  {
-    uint16 b = 5 + a;
-    while (a < 5)
-    {
-      c = b;
-    }
-  }
-  print(c);
+
+mainloop()
+{
+  int8 a = 12;
+  int16 b = 55;
+  pepsiMax(a -> b);
 }
 
+func redbull(int8 a, int8 b)
+{
+}
+
+func pepsiMax(int8 a -> int16 b)
+{
+  redbull(10, 5);
+}
