@@ -9,7 +9,7 @@ mainloop(){
     uint16 b = 5 + a;
     while (a < 5)
     {
-      c = b;
+      c = b + b;
     }
   }
   print(c);
