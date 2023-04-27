@@ -74,15 +74,17 @@ setup         : SETUP LBRA lines RBRA   { changeScope("setup"); $$ = allocAST(SE
               ;
 mainloop      : MAIN LBRA lines RBRA    {  changeScope("mainloop"); $$ = allocAST(MAIN, $3, NULL); }
               ;
-funcs         : func funcs          { changeScope("funcs"); $$ = allocAST(FUNCS, $1, $2); }
-              |                     { $$ = allocAST(FUNCS, NULL, NULL); }                                     
+funcs         : func funcs          { $$ = allocAST(FUNCS, $1, $2); }
+              |                     { changeScope("func"); $$ = allocAST(FUNCS, NULL, NULL); }                                     
               ;
 func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     
                 { 
+                    changeScope("func");
                     $$ = allocASTFuncNode(FUNC, allocASTLeafStr(ID, $2), $4, $7); 
                 }
               | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA 
                 { 
+                    changeScope("func");
                     $$ = allocASTFuncNode(FUNC, allocASTLeafStr(ID, $2), allocAST(PARAMS, $4, $6), $9); 
                 }
               ;
@@ -113,10 +115,10 @@ elsechain     : ELSE control                                              { $$ =
               ;
 vardecl       : TYPE ID
               { createSymbol($2, $1); $$ = allocAST(DECL,
-              allocASTLeafStr(ID, $2), NULL); }          
+              allocASTLeafStr(ID, $2), NULL); }
               | TYPE ID ASSIGN expr                             
               { createSymbol($2, $1); $$ = allocAST(ASSIGN,
-              allocASTLeafStr(ID, $2), $4); }         
+              allocASTLeafStr(ID, $2), $4); }
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
 funccall      : ID LPAR paramincall RPAR                        { ; }          
@@ -173,6 +175,7 @@ void main(int argc, char **argv)
 {
     // TODO Determine size at some point
     createMainTable(1000);
+    changeScope("globals");
 
     file = fopen("output/example_program.ll", "w");
     if (argc > 1)
