@@ -19,6 +19,18 @@ char *printType(int type)
   case MAIN:
     sprintf(result, "mainloop");
     break;
+  case FUNCS:
+    sprintf(result, "funcs");
+    break;
+  case FUNC:
+    sprintf(result, "func");
+    break;
+  case PARAMS:
+    sprintf(result, "params");
+    break;
+  case PARAM:
+    sprintf(result, "param");
+    break;
   case LINES:
     sprintf(result, "lines");
     break;

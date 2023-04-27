@@ -31,8 +31,9 @@ void generateCode(struct ast *node)
     switch (node->type)
     {
     case ROOT:
-        generateCode(node->left);
-        generateCode(node->right);
+        generateCode(((struct astRootNode *)node)->setup);
+        generateCode(((struct astRootNode *)node)->mainloop);
+        generateCode(((struct astRootNode *)node)->funcs);
         break;
     case SETUP:
         currentScope++;
@@ -49,6 +50,35 @@ void generateCode(struct ast *node)
         generateCode(node->left);
         fprintf(file, "\tret void\n");
         fprintf(file, "}\n\n");
+        break;
+    case FUNCS:
+        currentScope++;
+        generateCode(node->left);
+        fprintf(file, "\n");
+        generateCode(node->right);
+        break;
+    case FUNC:
+        fprintf(file, "define void @");
+        generateCode(((struct astFuncNode *)node)->id);
+        fprintf(file, "(");
+        generateCode(((struct astFuncNode *)node)->parameters);
+        // fprintf(file, ") {\n entry:\n");
+
+        // generateCode(((struct astFuncNode *)node)->body);
+
+        // fprintf(file, "ret void\n}");
+        break;
+    case PARAMS:
+        //currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+        printf("scope: %d\n", currentScope);
+        printf("%d\n", searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+        //fprintf(file, "%s ", currentType);
+        generateCode(node->left);
+        if (node->right != NULL)
+        {
+          fprintf(file, ", ");
+          generateCode(node->right);
+        }
         break;
     case LINES:
         if (node->left->type == IF)
@@ -1070,9 +1100,6 @@ void generateCode(struct ast *node)
     case ID:
         fprintf(file, "%s", ((struct astLeafStr *)node)->string);
         currentVarName = ((struct astLeafStr *)node)->string;
-        break;
-    case FUNCS:
-        currentScope++;
         break;
     case EMPTY:
         break;

@@ -39,17 +39,17 @@
         RARROW LBRA RBRA RPAR LPAR
         PLUS MINUS TIMES DIV SEMI 
         COMMA PRINT 
-%token LINES LINE CONTROL FUNCS EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
+%token LINES LINE CONTROL FUNCS PARAM PARAMS EMPTY TERM FACTOR IFELSECHAIN ELSECHAIN DECL /* Extra */
 %token ASSIGN WHILE IF ELSEIF ELSE
 
 %type<node> compare comparelist boolexpr funcs func vardecl
-%type<node> term factor expr defines define setup mainloop funccall paramincall paramoutcall
+%type<node> term factor expr setup mainloop funccall paramincall paramoutcall
 %type<node> paramoutdecl paramindecl lines line control elsechain 
 
 %%
-prog          : defines funcs setup mainloop    
+prog          : setup mainloop funcs
                 { 
-                    root = allocAST(ROOT, $3, $4);
+                    root = allocASTRootNode(ROOT, $1, $2, $3);
                     printf("\n=========== HASHTABLE ===========\n");
                     symTable = fetchSymbolTable();
                     printTables(symTable);
@@ -70,27 +70,28 @@ prog          : defines funcs setup mainloop
                     printf("Done.\n");
                 }
               ;
-defines       : define defines      { ; }                                      
-              |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                     
-              ;
-define        : DEFINE ID expr          { ; }                                  
-              ;
 setup         : SETUP LBRA lines RBRA   { changeScope("setup"); $$ = allocAST(SETUP, $3, NULL); }
               ;
 mainloop      : MAIN LBRA lines RBRA    {  changeScope("mainloop"); $$ = allocAST(MAIN, $3, NULL); }
               ;
-funcs         : func funcs          { ; }                                      
-              |                     {  changeScope("funcs"); $$ = allocAST(FUNCS, NULL, NULL); }                                     
+funcs         : func funcs          { changeScope("funcs"); $$ = allocAST(FUNCS, $1, $2); }
+              |                     { $$ = allocAST(FUNCS, NULL, NULL); }                                     
               ;
-func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     { ; }
-              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA { ; }
+func          : FUNC ID LPAR paramindecl RPAR LBRA lines RBRA                     
+                { 
+                    $$ = allocASTFuncNode(FUNC, allocASTLeafStr(ID, $2), $4, $7); 
+                }
+              | FUNC ID LPAR paramindecl RARROW paramoutdecl RPAR LBRA lines RBRA 
+                { 
+                    $$ = allocASTFuncNode(FUNC, allocASTLeafStr(ID, $2), allocAST(PARAMS, $4, $6), $9); 
+                }
               ;
-paramoutdecl  : TYPE ID COMMA paramoutdecl         { ; }                       
-              | TYPE ID                            { ; }                       
+paramoutdecl  : TYPE ID COMMA paramoutdecl         { createSymbol($2, $1); $$ = allocAST(PARAMS, allocASTLeafStr(ID, $2), $4); }                       
+              | TYPE ID                            { createSymbol($2, $1); $$ = allocASTLeafStr(ID, $2); }                       
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
-paramindecl   : TYPE ID COMMA paramindecl          { ; }                       
-              | TYPE ID                            { ; }                       
+paramindecl   : TYPE ID COMMA paramindecl          { createSymbol($2, $1); $$ = allocAST(PARAMS, allocASTLeafStr(ID, $2), $4); }                       
+              | TYPE ID                            { createSymbol($2, $1); $$ = allocAST(PARAMS, allocASTLeafStr(ID, $2), NULL); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }                                      
               ;
 lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
