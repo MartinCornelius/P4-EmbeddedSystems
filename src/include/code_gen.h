@@ -219,8 +219,22 @@ void generateCode(struct ast *node)
     }
     break;
 
-  case ASSIGN:
-    currentType = typeConverter(searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string).type);
+  case ASSIGN: {
+    struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+
+        // If variable without type declartion check global scope for variable
+        if (search.type == not_found_enum){
+          search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+        }
+
+        if (search.type == not_found_enum)
+        {
+          printf("Error: Variable %s not declared\n", ((struct astLeafStr *)node->left)->string);
+          exit(1);
+        }
+
+        currentType = typeConverter(search.type);
+
     // Check if constant
     if (node->right->type == VAL)
     {
@@ -254,7 +268,7 @@ void generateCode(struct ast *node)
     generateCode(node->left);
     tmpVarCounter++;
     break;
-
+    }
   /* Arithmetic */
   case PLUS:
     if (node->right->type == ID)

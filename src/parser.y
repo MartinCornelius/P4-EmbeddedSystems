@@ -8,17 +8,20 @@
     int optimize = 0;
 
     FILE *file;
+    int yyerror(char *s);
+    int yylex();
+
+    extern FILE *yyin; 
+    extern int yylineno;
 
     #include "include/symbol_types.h"
     #include "include/symbol_table.h"
+    #include "include/type_check.h"
     #include "include/ast.h"
     #include "include/const_folding.h"
     #include "include/code_gen.h"
 
-    extern FILE *yyin; 
-
-    int yylex();
-    int yyerror(char *s);
+    char* inputFile;
 
     struct ast *root;
     struct HashTables* symTable;
@@ -53,6 +56,8 @@ prog          : setup mainloop funcs
                     printf("\n=========== HASHTABLE ===========\n");
                     symTable = fetchSymbolTable();
                     printTables(symTable);
+                    printf("\n=========== TYPE CHECKING ===========\n");
+
                     printf("\n=========== AST ===========\n");
                     printAST(root, 0);
                     if (optimize)
@@ -100,7 +105,7 @@ lines         : line SEMI lines     { $$ = allocAST(LINES, $1, $3); }
               | control lines       { $$ = allocAST(LINES, $1, $2); }
               |                     { $$ = allocAST(EMPTY, NULL, NULL); }
               ;
-line          : ID ASSIGN expr      { $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
+line          : ID ASSIGN expr      { typeCheck($1, $3); $$ = allocAST(ASSIGN, allocASTLeafStr(ID, $1), $3); }
               | ID LARROW expr      { $$ = allocAST(LARROW, allocASTLeafStr(ID, $1), $3); }                                      
               | funccall                              { ; }                    
               | PRINT LPAR ID RPAR                    { $$ = allocAST(PRINT, allocASTLeafStr(ID, $3), NULL); }
@@ -178,9 +183,12 @@ void main(int argc, char **argv)
     changeScope("globals");
 
     file = fopen("output/example_program.ll", "w");
-    if (argc > 1)
-      if (!(yyin = fopen(argv[1], "r")))
-        perror("Error loading file\n");
+    if (argc > 1) {
+        inputFile = argv[1];
+
+        if (!(yyin = fopen(argv[1], "r")))
+            perror("Error loading file\n");
+    }
     /* if (argc > 2)
         sprintf(outputFile, "output/%s", argv[2]); */
 
@@ -194,6 +202,6 @@ void main(int argc, char **argv)
 }
 
 int yyerror(char *s){
-    printf("The error: %s", s);
-    return 0;
+    printf("%s:%d: ERROR: %s\n", inputFile, yylineno, s);
+    exit(0);
 }

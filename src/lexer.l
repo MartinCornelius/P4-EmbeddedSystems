@@ -1,4 +1,4 @@
-%option noyywrap
+%option noyywrap yylineno
 %{
 
 #include "parser.tab.h"
@@ -95,4 +95,3 @@ digit                   [0-9]
 [ \t\n]                   { /*Ignore whitespace*/; }
 .                         { printf("%s", yytext); }
 %%
-

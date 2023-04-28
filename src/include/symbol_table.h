@@ -181,7 +181,7 @@ struct searchReturn searchSymbol(struct HashTable* table, char* name)
 
         if (DEBUG)
             printf("    %s: Search collision at index %d, trying i%d, double hashing\n", name, index, i+1);
-        
+
         index = doubleHash(table, name, ++i);
         current = table->items[index];
     }
