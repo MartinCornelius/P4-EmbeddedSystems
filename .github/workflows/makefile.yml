@@ -8,14 +8,23 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
 
-    - name: Compile compiler
-      run: make
+    - name: GCC Compile Compiler
+      run: |
+        make clean
+        make
+        make check
 
-    - name: Check 
-      run: make check
+    - name: Install MinGW
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-mingw-w64
+
+    - name: MinGW Compile Compiler
+      run: |
+        make clean
+        make compiler=x86_64-w64-mingw32-gcc
+        make check
