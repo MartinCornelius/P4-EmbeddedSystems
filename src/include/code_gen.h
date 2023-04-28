@@ -169,6 +169,7 @@ void generateCode(struct ast *node)
         break;
 
     case ASSIGN:
+        printf("Found an assign, the name of the left node is: %s\n", ((struct astLeafStr *)node->left)->string);
         currentType = typeConverter(searchSymbol((symTable->hTable[currentScope]), ((struct astLeafStr *)node->left)->string).type);
         // Check if constant
         if (node->right->type == VAL)

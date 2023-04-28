@@ -62,6 +62,9 @@ prog          : defines funcs setup mainloop
                         //constantFolding(root);
                         optimization(root);
 
+                        printf("\n\n=====HASHTABLE POST OPTIMIZATION=====\n");
+                        printTables(symTable);
+
                         printf("\n\n=========== OPTIMIZED AST ===========\n");
                         printAST(root, 0);
                     }

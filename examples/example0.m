@@ -1,5 +1,6 @@
 setup()
 {
+  uint16 c = 2;
 }
 mainloop(){
   uint16 a = 2;
@@ -7,7 +8,9 @@ mainloop(){
   uint16 c = 2;
   while(a == a){
     a = c + 2;
-    c = b + 3 + 2 + 2 + 2;
+    while(a == a){
+      c = b + 2;
+    }
   }
 }
 

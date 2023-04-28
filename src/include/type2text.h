@@ -199,4 +199,31 @@ char *typeConverter(int type)
     return result;
 }
 
+/* Added for experimental purposes, never used */
+/* int stringToEnum(char *type)
+{
+    int result;
+    if(!strcmp(type, "i8")){
+
+    } else if (!strcmp(type, "i16")){
+      result = int16_enum;
+    } else if (!strcmp(type, "i32")){
+      result = int32_enum;
+    } else if (!strcmp(type, "i8")){
+      result = uint8_enum;
+    } else if (!strcmp(type, "i16")){
+      result = uint16_enum;
+    } else if (!strcmp(type, "i32")){
+      result = uint32_enum;
+    } else if (!strcmp(type, "half")){
+      result = float16_enum;
+    } else if (!strcmp(type, "float")){
+      result = float32_enum;
+    } else if (!strcmp(type, "double")){
+      result = float64_enum;
+    } else printf("string to enum failed\n");
+    return result;
+}
+*/
+
 #endif
