@@ -11,6 +11,22 @@ struct ast
   struct ast *right;
 };
 
+struct astRootNode
+{
+  int type;
+  struct ast *setup;
+  struct ast *mainloop;
+  struct ast *funcs;
+};
+
+struct astFuncNode
+{
+  int type;
+  struct ast *id;
+  struct ast *parameters;
+  struct ast *body;
+};
+
 struct astIfNode
 {
   int type;
@@ -50,6 +66,36 @@ struct ast *allocAST(int type, struct ast *left, struct ast *right)
   node->left = left;
   node->right = right;
   return node;
+}
+
+struct ast *allocASTRootNode(int type, struct ast *setup, struct ast *mainloop, struct ast *funcs)
+{
+  struct astRootNode *node = malloc(sizeof(struct astRootNode));
+  if (!node)
+  {
+    printf("Ast if node failed to allocate. Out of space\n");
+    exit(0);
+  }
+  node->type = type;
+  node->setup = setup;
+  node->mainloop = mainloop;
+  node->funcs = funcs;
+  return (struct ast *)node;
+}
+
+struct ast *allocASTFuncNode(int type, struct ast *id, struct ast *parameters, struct ast *body)
+{
+  struct astFuncNode *node = malloc(sizeof(struct astFuncNode));
+  if (!node)
+  {
+    printf("Ast if node failed to allocate. Out of space\n");
+    exit(0);
+  }
+  node->type = type;
+  node->id = id;
+  node->parameters = parameters;
+  node->body = body;
+  return (struct ast *)node;
 }
 
 struct ast *allocASTIfNode(int type, struct ast *left, struct ast *middle, struct ast *right)
@@ -141,6 +187,20 @@ void printAST(struct ast *node, int level)
     printAST(ifNode->left, level + 1);
     printAST(ifNode->middle, level + 1);
     printAST(ifNode->right, level + 1);
+  }
+  else if (node->type == ROOT)
+  {
+    struct astRootNode *rootNode = (struct astRootNode *)node;
+    printAST(rootNode->setup, level + 1);
+    printAST(rootNode->mainloop, level + 1);
+    printAST(rootNode->funcs, level + 1);
+  }
+  else if (node->type == FUNC)
+  {
+    struct astFuncNode *funcNode = (struct astFuncNode *)node;
+    printAST(funcNode->id, level + 1);
+    printAST(funcNode->parameters, level + 1);
+    printAST(funcNode->body, level + 1);
   }
   else
   {
