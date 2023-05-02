@@ -10,7 +10,7 @@
 #include "type2text.h"
 
 struct HashTables* symTable;
-int optimizationDone = 1;
+int optimizationDone = 5;
 int loopInvariantVariableName = 0;
 int dublecallpreventer = 0;
 int scope = -1;
@@ -22,7 +22,7 @@ bool containsVarByName(struct ast *node);
 void printAssignedVarNameList();
 void findAllAssignedVariables(struct ast *node);
 struct ast* replaceWithLoopInvariantVariable();
-void createLoopInvariantSymbol(char* name, enum types type, int scope);
+struct HashTables*  createLoopInvariantSymbol(char* name, enum types type, int scope);
 
 struct assignedVarName
 {
@@ -172,7 +172,6 @@ struct ast* loopInvariantFinder(struct ast *node)
         printf("The result: %d\n", result);
         if (!result)
         {
-            //struct ast *astNode = node->left; 
             struct ast *astNode = allocAST(ASSIGN, replaceWithLoopInvariantVariable(node->left), node->left->right);
             node->left->right = replaceWithLoopInvariantVariable(node->left);
             printf("Replace complete\n");
@@ -235,7 +234,7 @@ struct ast* replaceWithLoopInvariantVariable(struct ast *node){
         }
         
         
-        createLoopInvariantSymbol(name, currentType, scope);
+        symTable = createLoopInvariantSymbol(name, currentType, scope);
 
         printTables(symTable);
             
@@ -243,10 +242,9 @@ struct ast* replaceWithLoopInvariantVariable(struct ast *node){
     
     dublecallpreventer++;
     return allocASTLeafStr(ID, name);
-
 }
 
-void createLoopInvariantSymbol(char* name, enum types type, int scope)
+struct HashTables* createLoopInvariantSymbol(char* name, enum types type, int scope)
 {
     struct HashTable* table = symTable->hTable[scope];
 
@@ -257,7 +255,7 @@ void createLoopInvariantSymbol(char* name, enum types type, int scope)
     {
         printf("Hash table missing \n");
         // TODO throw an error here
-        return;
+        return symTable;
     }
 
     struct searchReturn search = searchSymbol(table, name);
@@ -271,7 +269,7 @@ void createLoopInvariantSymbol(char* name, enum types type, int scope)
     {
         printf("ERROR: Declartion of two types of same name is not valid Name: %s\n\n", name);
         // TODO thorw an error here
-        return;
+        return symTable;
     }
 
     insertSymbol(table, search.hashIndex, name, type);
@@ -279,7 +277,7 @@ void createLoopInvariantSymbol(char* name, enum types type, int scope)
     if (DEBUG)
         printf("%s: Symbol created in scope %i\n\n", name, scope);
 
-    return;
+    return symTable;
 }
 
 
