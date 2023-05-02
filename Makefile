@@ -1,16 +1,20 @@
-execname = run
+compilerName = run
+programName = program
 lexer = src/lexer.l
 parser = src/parser.y
-compiler = gcc
+gccCompiler = gcc
 
 ifeq ($(OS), Windows_NT)
-	exec = $(execname).exe
+	ext = .exe
 else
-	exec = $(execname).out
+	ext = .out
 endif
 
-$(exec): src/lex.yy.c src/parser.tab.c
-	$(compiler) src/lex.yy.c src/parser.tab.c -o $(exec)
+compiler = $(compilerName)$(ext)
+program = $(programName)$(ext)
+
+$(compiler): src/lex.yy.c src/parser.tab.c
+	$(gccCompiler) src/lex.yy.c src/parser.tab.c -o $(compiler)
 	
 src/parser.tab.c: $(parser)
 	bison -d $(parser) -o src/parser.tab.c
@@ -19,31 +23,42 @@ src/lex.yy.c: $(lexer)
 	flex -osrc/lex.yy.c $(lexer)
 
 check:
-ifeq (,$(wildcard $(exec)))
+ifeq (,$(wildcard $(compiler)))
 	exit 1
 endif
 
 # TESTS
-testexec = tests/RunTests
+testcompiler = tests/RunTests
 testsources = $(wildcard tests/*.c)
 
 test: $(testsources)
-	$(compiler) $(testsources) -o $(testexec)
+	$(gccCompiler) $(testsources) -o $(testcompiler)
 
 clean:
 ifeq ($(OS),Windows_NT)
-	del $(exec)
+	del $(compiler)
 	del src\lex.yy.c
 	del src\parser.tab.c
 	del src\parser.tab.h
+	del output\example_program.ll
+	del $(program)
 else
-	rm -f $(exec)
+	rm -f $(compiler)
 	rm -f src/lex.yy.c
 	rm -f src/parser.tab.c
 	rm -f src/parser.tab.h
+	rm -f output/example_program.ll
+	rm -f $(program)
 endif
 
+compiletest:
+	./$(compiler) examples/example0.m
+
 runtest:
+	clang output/example_program.ll -o $(program)
+
+run:
 	make clean
 	make
-	./run.out examples/tests/test10.m
+	make compiletest
+	make runtest
