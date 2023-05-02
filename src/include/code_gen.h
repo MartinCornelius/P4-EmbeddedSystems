@@ -125,7 +125,7 @@ void generateCode(struct ast *node)
 		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
 		fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
 		generateCode(node->left);
-		fprintf(file, " = load %s* %%sc%d_", currentType, currentScope);
+		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
 		generateCode(node->left);
 
 		if (strcmp(currentType, "i32") != 0)
@@ -140,7 +140,7 @@ void generateCode(struct ast *node)
 			casted = 1;
 		}
 
-		fprintf(file, "\n\tcall i32(i8*,...)* @printf(i8* getelementptr([4 x i8]* @pfmt, i32 0, i32 0), i32 %s%d", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"), globalVarCounter);
+		fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([5 x i8], [5 x i8]* @pfmt, i32 0, i32 0), i32 %s%d", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"), globalVarCounter);
 		generateCode(node->left);
 		fprintf(file, ");\n");
 		globalVarCounter++;
@@ -190,7 +190,7 @@ void generateCode(struct ast *node)
 			fprintf(file, "\tstore %s ", currentType);
 			generateCode(node->right);
 			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
 			tmpVarCounter++;
 		}
 		else if (node->right->type == VALF)
@@ -199,12 +199,12 @@ void generateCode(struct ast *node)
 			fprintf(file, "\tstore %s ", currentType);
 			generateCode(node->right);
 			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
 			tmpVarCounter++;
 		}
 		else if (node->right->type == ID)
 		{
-			fprintf(file, "\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			tmpVarCounter++;
 		}
@@ -291,7 +291,7 @@ void generateCode(struct ast *node)
 			fprintf(file, "\tstore %s ", currentType);
 			generateCode(node->right);
 			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
 			tmpVarCounter++;
 		}
 		else if (node->right->type == VALF)
@@ -300,12 +300,12 @@ void generateCode(struct ast *node)
 			fprintf(file, "\tstore %s ", currentType);
 			generateCode(node->right);
 			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s* %%__const%d\n", tmpVarCounter, currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
 			tmpVarCounter++;
 		}
 		else if (node->right->type == ID)
 		{
-			fprintf(file, "\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			tmpVarCounter++;
 		}
@@ -325,11 +325,11 @@ void generateCode(struct ast *node)
 			if (node->left->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -345,7 +345,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -356,7 +356,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -368,7 +368,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->left);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -386,11 +386,11 @@ void generateCode(struct ast *node)
 			if (node->right->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -406,7 +406,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -417,7 +417,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -429,7 +429,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->right);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -497,11 +497,11 @@ void generateCode(struct ast *node)
 			if (node->left->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -517,7 +517,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -528,7 +528,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -540,7 +540,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->left);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -555,11 +555,11 @@ void generateCode(struct ast *node)
 			if (node->right->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -575,7 +575,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -586,7 +586,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -598,7 +598,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->right);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -660,11 +660,11 @@ void generateCode(struct ast *node)
 			if (node->left->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -680,7 +680,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -691,7 +691,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -703,7 +703,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->left);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -721,11 +721,11 @@ void generateCode(struct ast *node)
 			if (node->right->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -741,7 +741,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -752,7 +752,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -764,7 +764,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->right);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				fprintf(file, "\n\t%%__tmp%d = mul %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
@@ -818,11 +818,11 @@ void generateCode(struct ast *node)
 			if (node->left->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -838,7 +838,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -849,7 +849,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -861,7 +861,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->left);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -879,11 +879,11 @@ void generateCode(struct ast *node)
 			if (node->right->type == ID)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -899,7 +899,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -910,7 +910,7 @@ void generateCode(struct ast *node)
 			else if (node->right->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Make addition operation
@@ -922,7 +922,7 @@ void generateCode(struct ast *node)
 			{
 				generateCode(node->right);
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
 				if (currentType[0] == 'f')
@@ -990,12 +990,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp sle %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1009,7 +1009,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp sle %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1029,12 +1029,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp sge %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1048,7 +1048,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp sge %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1068,12 +1068,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp slt %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1087,7 +1087,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp slt %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1107,12 +1107,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp sgt %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1126,7 +1126,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp sgt %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1146,12 +1146,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1165,7 +1165,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp eq %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1185,12 +1185,12 @@ void generateCode(struct ast *node)
 		if (node->left->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->left);
 			if (node->right->type == ID)
 			{
 				tmpVarCounter++;
-				fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				fprintf(file, "\n\t%%cmp%d = icmp ne %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
 			}
@@ -1204,7 +1204,7 @@ void generateCode(struct ast *node)
 		else if (node->right->type == ID)
 		{
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n\t%%cmp%d = icmp ne %s ", cmpCounter, currentType);
 			generateCode(node->left);
@@ -1241,7 +1241,7 @@ void generateCode(struct ast *node)
 
 void generateFile(struct ast *node)
 {
-	fprintf(file, "@pfmt = constant [4 x i8] c\"%%d\\0A\\00\"\n");
+	fprintf(file, "@pfmt = constant [5 x i8] c\"%%ld\\0A\\00\"\n");
 	fprintf(file, "declare i32 @printf(i8*,...)\n\n");
 
 	// Global variables
@@ -1278,7 +1278,7 @@ void loadParams(struct ast *node)
 		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
 		fprintf(file, "\t%%");
 		generateCode(node->left);
-		fprintf(file, " = load %s* %%sc%d_", currentType, currentScope);
+		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
 		generateCode(node->left);
 		fprintf(file, "\n");
 	}
@@ -1294,7 +1294,7 @@ void loadParams(struct ast *node)
 			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
 			fprintf(file, "\t%%", currentScope);
 			generateCode(node->right);
-			fprintf(file, " = load %s* %%sc%d_", currentType);
+			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType);
 			generateCode(node->right);
 			fprintf(file, "\n");
 		}
