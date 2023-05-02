@@ -122,7 +122,7 @@ vardecl       : TYPE ID
               { createSymbol($2, $1); $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), NULL); }
               | TYPE ID ASSIGN expr                             
-              { createSymbol($2, $1); $$ = allocAST(ASSIGN,
+              { createSymbol($2, $1); $$ = allocAST(DECL,
               allocASTLeafStr(ID, $2), $4); }
               | TYPE ID ASSIGN STRING                           { ; }          
               ;
