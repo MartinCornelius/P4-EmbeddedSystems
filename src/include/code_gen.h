@@ -122,7 +122,13 @@ void generateCode(struct ast *node)
     break;
   case PRINT:
     casted = 0;
-    currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+    struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+    // If variable without type declartion check global scope for variable
+    if (search.type == not_found_enum){
+      search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+    }
+    currentType = typeConverter(search.type);
+
     fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
     generateCode(node->left);
     fprintf(file, " = load %s* %%sc%d_", currentType, currentScope);

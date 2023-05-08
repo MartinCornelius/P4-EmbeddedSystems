@@ -1,6 +1,9 @@
 // test7 checks plus, test should be 8
 
 setup(){
-  int8 test = 5 + 3;
+  float32 a = 8.3;
+  int32 test = 5 + (3 - 2) * a;
 }
-mainloop(){}
+mainloop(){
+  print(a);
+}
