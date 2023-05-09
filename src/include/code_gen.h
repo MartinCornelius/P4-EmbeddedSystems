@@ -23,6 +23,8 @@ struct HashTables *symTable;
 
 void loadParams(struct ast *node);
 void loadLocalParams(struct ast *node);
+char* getLLVMType(struct ast *node);
+char* getConversionOp(int lowerType, int higherType);
 
 void generateCode(struct ast *node)
 {
@@ -329,22 +331,40 @@ void generateCode(struct ast *node)
     {
       if (node->left->type == ID)
       {
+        char *tmpLeft = "__tmp";
+        char *tmpRight = "__tmp";
         // Load variable
-        fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+        fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, getLLVMType(node->left), currentScope);
         generateCode(node->left);
         tmpVarCounter++;
         // Load variable
-        fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+        fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, getLLVMType(node->right), currentScope);
         generateCode(node->right);
         tmpVarCounter++;
         // Make addition operation
-        if (currentType[0] == 'f')
+        if(1/*checkPrecedence(node->left, node->right) true if node->left->type is higher precedence*/)
         {
-          fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
+          char* op = getConversionOp(node->right->type, node->left->type);
+          char* typeFrom = getLLVMType(node->right);
+          char* typeTo = getLLVMType(node->left);
+          fprintf(file, "\n\t%%__tmpCast%d = %s %s %%__tmp%d to %s", tmpVarCounter - 1, op, typeFrom, tmpVarCounter - 1, typeTo);
+          tmpRight = "__tmpCast";
+        }
+        else if(1/*checkPrecedence(node->right, node->left) true if node->right->type is higher precedence*/)
+        {
+          char* op = getConversionOp(node->left->type, node->right->type);
+          char* typeFrom = getLLVMType(node->left);
+          char* typeTo = getLLVMType(node->right);
+          fprintf(file, "\n\t%%__tmpCast%d = %s %s %%__tmp%d to %s", tmpVarCounter - 2, op, typeFrom, tmpVarCounter - 2, typeTo);
+          tmpLeft = "__tmpCast";
+        }
+        if (getLLVMType(node->left)[0] != 'i')
+        {
+          fprintf(file, "\n\t%%__tmp%d = fadd %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, tmpLeft, tmpVarCounter - 1, tmpRight, tmpVarCounter - 2);
         }
         else
         {
-          fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
+          fprintf(file, "\n\t%%__tmp%d = add %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, tmpLeft, tmpVarCounter - 1, tmpRight, tmpVarCounter - 2);
         }
       }
       else if (node->left->type == VAL)
@@ -1351,6 +1371,56 @@ void loadLocalParams(struct ast *node)
         }
         loadLocalParams(node->right);
     }
+}
+
+char* getLLVMType(struct ast *node)
+{
+  struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+
+  // If variable without type declartion check global scope for variable
+  if(search.type == not_found_enum)
+  {
+     search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+  }
+
+  if (search.type == not_found_enum)
+  {
+    printf("Error: Variable %s not declared\n", ((struct astLeafStr *)node->left)->string);
+    exit(1);
+  }
+
+  return typeConverter(search.type);
+}
+
+char* getConversionOp(int lowerType, int higherType)
+{
+  // Order: int8_enum, int16_enum, int32_enum, uint8_enum, uint16_enum, uint32_enum, float16_enum, float32_enum, float64_enum
+  if(higherType >= float16_enum && higherType <= float64_enum)
+  {
+    if(lowerType >= int8_enum && lowerType <= int32_enum )
+    {
+      return "sitofp";
+    }
+    else if(lowerType >= uint8_enum && lowerType <= uint32_enum)
+    {
+      return "uitofp";
+    }
+    else //smaller float to bigger float
+    {
+      return "fpext";
+    }
+  }
+  else if(higherType >= uint8_enum && higherType <= uint32_enum)
+  {
+    // from any integer type to any unsigned integer type
+    return "zext";
+
+  }
+  else // converting to int type (fx. uint8 -> int16 eller int8 -> int32)
+  {
+    // from any integer type to any signed integer type
+    return "sext";
+  }
 }
 
 #endif
