@@ -1,6 +1,5 @@
 setup()
 {
-  uint16 c = 2;
 }
 mainloop(){
   uint16 a = 2;
