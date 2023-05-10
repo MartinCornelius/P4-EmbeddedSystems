@@ -17,6 +17,8 @@ int globalVarCounter = 1;
 int currentScope = -1;
 char *currentVarName;
 char *currentType;
+char *tmpLeft;
+char *tmpRight;
 char tmpVarName[30];
 
 struct HashTables *symTable;
@@ -331,8 +333,8 @@ void generateCode(struct ast *node)
     {
       if (node->left->type == ID)
       {
-        char *tmpLeft = "__tmp";
-        char *tmpRight = "__tmp";
+        tmpLeft = "__tmp";
+        tmpRight = "__tmp";
         // Load variable
         fprintf(file, "\n\t%%__tmp%d = load %s* %%sc%d_", tmpVarCounter, getLLVMType(node->left), currentScope);
         generateCode(node->left);
@@ -360,11 +362,11 @@ void generateCode(struct ast *node)
         }
         if (getLLVMType(node->left)[0] != 'i')
         {
-          fprintf(file, "\n\t%%__tmp%d = fadd %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, tmpLeft, tmpVarCounter - 1, tmpRight, tmpVarCounter - 2);
+          fprintf(file, "\n\t%%__tmp%d = fadd %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, strdup(tmpLeft), tmpVarCounter - 1, strdup(tmpRight), tmpVarCounter - 2);
         }
         else
         {
-          fprintf(file, "\n\t%%__tmp%d = add %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, tmpLeft, tmpVarCounter - 1, tmpRight, tmpVarCounter - 2);
+          fprintf(file, "\n\t%%__tmp%d = add %s %%%s%d, %%%s%d\n", tmpVarCounter, currentType, strdup(tmpLeft), tmpVarCounter - 1, strdup(tmpRight), tmpVarCounter - 2);
         }
       }
       else if (node->left->type == VAL)
@@ -1373,19 +1375,20 @@ void loadLocalParams(struct ast *node)
     }
 }
 
-char* getLLVMType(struct ast *node)
+char* getLLVMType(struct ast *IDnode)
 {
-  struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+  char *string = ((struct astLeafStr *)IDnode)->string;
+  struct searchReturn search = searchSymbol(symTable->hTable[currentScope], string);
 
   // If variable without type declartion check global scope for variable
   if(search.type == not_found_enum)
   {
-     search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+     search = searchSymbol((symTable->hTable[0]), string);
   }
 
   if (search.type == not_found_enum)
   {
-    printf("Error: Variable %s not declared\n", ((struct astLeafStr *)node->left)->string);
+    printf("Error: Variable %s not declared\n", string);
     exit(1);
   }
 
