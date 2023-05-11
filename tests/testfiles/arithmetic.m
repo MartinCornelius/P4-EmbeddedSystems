@@ -4,6 +4,6 @@ setup()
 
 mainloop()
 {
-    uint8 a = expression;
+    exprType a = expr;
     print(a);
 }

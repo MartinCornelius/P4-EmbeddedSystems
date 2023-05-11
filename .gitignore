@@ -11,3 +11,5 @@ output/*.s
 output/*
 .vscode/*
 tests/tmp.m
+.pytest_cache/*
+tests/__pycache__/*
