@@ -131,12 +131,8 @@ void findAllAssignedVariables(struct ast *node){
         }
         //save node->left->left
         struct assignedVarName *tmp = malloc(sizeof(struct assignedVarName));
-        if(assignedVarHandle->next == NULL){
-            tmp->name = assignedVarHandle->name;
-            tmp->next = NULL;
-            assignedVarHandle->next = tmp;
-        }
-        else {tmp = assignedVarHandle;}
+        
+        tmp = assignedVarHandle;
 
         while(tmp->next != NULL)
         {
