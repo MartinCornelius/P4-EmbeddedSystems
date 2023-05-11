@@ -88,16 +88,15 @@ void loopInvariant(struct ast *node)
     if (node == NULL || node->type == VAL || node->type == VALF || node->type == ID || node->type == EMPTY){
         return; 
     }
+
     //Missing func scope implementation
     if (node->type == SETUP || node->type == MAIN){
-        printf("--------------- SCOPE GOES UP -------------\n");
         scope++;
     }
-        
     
     // The loop invariant assignment node
-    struct ast *assignmentNode = malloc(sizeof(struct ast));
     if (node->left->type == WHILE){
+        struct ast *assignmentNode = malloc(sizeof(struct ast));
         findAllAssignedVariables(node->left->right);
         assignmentNode = loopInvariantFinder(node->left->right);
         assignedVarHandle->next = NULL;
