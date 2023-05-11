@@ -7,10 +7,12 @@ tmpfile = './tests/tmp.m';
 # uintTypes = ["uint8", "uint16", "uint32"]
 intTypes = ["int8", "int16", "int32"]
 floatTypes = ["float16", "float32", "float64"]
+operations = ["+", "-", "/", "*"]
 
-def returnArray(array):
-    for x in array:
-        yield x
+def returnArray(typ, op):
+    for x in typ:
+        for y in op:
+            yield x, y
 
 def fileCopyAndOpen(testfile):
     shutil.copyfile(testfile, tmpfile)
@@ -40,6 +42,13 @@ def arithmetiTest(exprType, expr, expect):
     else:
         assert expect == result.stdout.decode("utf-8").replace("\n", "")
 
-@pytest.mark.parametrize("intType" , returnArray(intTypes))
-def test_arithmeticIntOpertaions(intType):
-    arithmetiTest(intType, "100+2", "102")
+
+
+
+
+@pytest.mark.parametrize("intType, operation" , returnArray(intTypes, operations))
+def test_arithmeticIntOpertaions(intType, operation):
+    expr = "2 " + operation + " 3"
+    # expr is evaluted whre the result is conerted to the integer type to prevent floats
+    # finally it's converted to a string to be compared with the output
+    arithmetiTest(intType, expr, str(int(eval(expr))))
