@@ -93,7 +93,7 @@ void generateCode(struct ast *node)
 		}
 		else if (node->left->type == ID)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 1);
 			fprintf(file, "%s %%", currentType);
 			generateCode(node->left);
 		}
@@ -107,7 +107,7 @@ void generateCode(struct ast *node)
 			fprintf(file, ", ");
 			if (node->right->type != PARAMS)
 			{
-				currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+				currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 2);
 				fprintf(file, "%s %%", currentType);
 			}
 			generateCode(node->right);
@@ -151,9 +151,9 @@ void generateCode(struct ast *node)
 	case WHILE:
 		// Get current type
 		if (node->left->left->type == ID)
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type, 4);
 		else if (node->left->right->type == ID)
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type, 5);
 		else
 			currentType = "i32";
 
@@ -181,7 +181,7 @@ void generateCode(struct ast *node)
 		break;
 
 	case DECL:
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 6);
 
 		// Check if constant
 		if (node->right->type == VAL)
@@ -282,7 +282,7 @@ void generateCode(struct ast *node)
 			exit(1);
 		}
 
-		currentType = typeConverter(search.type);
+		currentType = typeConverter(search.type, 7);
 
 		// Check if constant
 		if (node->right->type == VAL)
@@ -1252,8 +1252,8 @@ void generateFile(struct ast *node)
 			int itemType = searchSymbol(symTable->hTable[0], symTable->hTable[0]->items[i]->name).type;
 			// Needs converter
 			printf("itemType: %i\n", itemType);
-			char *floatOrInt = ((typeConverter(itemType) == "half") || (typeConverter(itemType) == "float") || (typeConverter(itemType) == "double")) ? "0.0" : "0";
-			fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType), floatOrInt);
+			char *floatOrInt = ((typeConverter(itemType, 8) == "half") || (typeConverter(itemType, 9) == "float") || (typeConverter(itemType, 10) == "double")) ? "0.0" : "0";
+			fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType, 11), floatOrInt);
 		}
 	}
 	fprintf(file, "\n");
@@ -1274,8 +1274,8 @@ void loadParams(struct ast *node)
 
 	else if (node->left->type == ID)
 	{
-		printf("type %s\n", currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type));
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		printf("type %s\n", currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 12));
+		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 13);
 		fprintf(file, "\t%%");
 		generateCode(node->left);
 		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
@@ -1291,7 +1291,7 @@ void loadParams(struct ast *node)
 	{
 		if (node->right->type != PARAMS)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 14);
 			fprintf(file, "\t%%", currentScope);
 			generateCode(node->right);
 			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType);
@@ -1309,7 +1309,7 @@ void loadLocalParams(struct ast *node)
 
 	else if (node->left->type == ID)
 	{
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 15);
 		fprintf(file, "\t; Load parameters into stack variables\n");
 		fprintf(file, "\t%%sc%d_", currentScope);
 		generateCode(node->left);
@@ -1331,7 +1331,7 @@ void loadLocalParams(struct ast *node)
 	{
 		if (node->right->type != PARAMS)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 16);
 			fprintf(file, "\t; Load parameters into stack variables\n");
 			fprintf(file, "\t%%sc%d_", currentScope);
 			generateCode(node->right);
