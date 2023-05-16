@@ -122,7 +122,24 @@ void generateCode(struct ast *node)
 		break;
 	case PRINT:
 		casted = 0;
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		// currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+
+		struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+
+		// If variable without type declartion check global scope for variable
+		if (search.type == not_found_enum)
+		{
+			search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+		}
+
+		if (search.type == not_found_enum)
+		{
+			printf("Error: Variable %s not declared\n", ((struct astLeafStr *)node->left)->string);
+			exit(1);
+		}
+
+		currentType = typeConverter(search.type, 3);
+
 		fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
 		generateCode(node->left);
 		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
@@ -1252,6 +1269,22 @@ void generateFile(struct ast *node)
 			int itemType = searchSymbol(symTable->hTable[0], symTable->hTable[0]->items[i]->name).type;
 			// Needs converter
 			printf("itemType: %i\n", itemType);
+			// TODO this seems to set all global variables to 0 or 0.0
+			// Unsure if this is correct but seems weird that globals are not used
+
+			// fprintf(file, "%d", ((struct astLeafInt *)node)->value);
+			// 	break;
+			// case VALF:
+			// 	fprintf(file, "%.22g", ((struct astLeafFloat *)node)->value);
+
+			char *floatOrInt = "";
+
+			if ((typeConverter(itemType, 8) == "half") || (typeConverter(itemType, 9) == "float") || (typeConverter(itemType, 10) == "double")) {
+				floatOrInt = ((struct astLeafFloat *)node)->value;
+			} else {
+				floatOrInt = ((struct astLeafInt *)node)->value;
+			}
+
 			char *floatOrInt = ((typeConverter(itemType, 8) == "half") || (typeConverter(itemType, 9) == "float") || (typeConverter(itemType, 10) == "double")) ? "0.0" : "0";
 			fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType, 11), floatOrInt);
 		}

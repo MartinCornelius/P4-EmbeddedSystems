@@ -1,9 +1,9 @@
 setup()
 {
-    int8 test = 100;
+    int8 testing = 8;
 }
 
 mainloop()
 {
-    print(test);
+    print(testing);
 }

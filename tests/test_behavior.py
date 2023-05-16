@@ -117,5 +117,12 @@ def test_LocalScope():
     
 def test_LocalScopeRedefine():
     runTest(100, "./tests/testfiles/scope/local_redefine.m")
+    
+# Operations
+def test_While():
+    runTest(100, "./tests/testfiles/operations/while.m")
+    
+def test_DoubleWhile():
+    runTest(1, "./tests/testfiles/operations/doublewhile.m")
 
 pytest.main()
