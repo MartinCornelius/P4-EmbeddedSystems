@@ -30,7 +30,10 @@ gcc --version
 make --version
 flex --version
 bison --version
+clang --version
 ```
+
+If Clang doesn't work properly install MSVC v142 in Visual Studio (Via C/C++)
 
 ## Commands
 Commands section will be expanded on futher in the future
