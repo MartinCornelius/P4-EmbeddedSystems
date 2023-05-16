@@ -8,7 +8,7 @@
 #include "symbol_types.h"
 #include "type2text.h"
 
-#define DEBUG false
+#define DEBUG true
 
 
 // TODO determine size at some point (Prime is ideal)
@@ -243,7 +243,7 @@ struct HashTables* changeScope(char* call)
 
     symTable->scope++;
     
-    symTable->hTable[symTable->scope] = createTable(5000);
+    symTable->hTable[symTable->scope] = createTable(10000);
 
     return symTable;
 }

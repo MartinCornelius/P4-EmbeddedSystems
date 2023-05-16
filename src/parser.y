@@ -20,6 +20,7 @@
     #include "include/ast.h"
     #include "include/const_folding.h"
     #include "include/code_gen.h"
+    #include "include/loop_invariant.h"
 
     char* inputFile;
 
@@ -63,7 +64,11 @@ prog          : setup mainloop funcs
                     if (optimize)
                     {
                         printf("\n\n=========== OPTIMIZATIONS ===========\n");
-                        constantFolding(root);
+                        //constantFolding(root);
+                        optimization(root);
+
+                        printf("\n\n=====HASHTABLE POST OPTIMIZATION=====\n");
+                        printTables(symTable);
 
                         printf("\n\n=========== OPTIMIZED AST ===========\n");
                         printAST(root, 0);
