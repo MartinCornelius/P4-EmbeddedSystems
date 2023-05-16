@@ -167,7 +167,7 @@ struct ast* loopInvariantFinder(struct ast *node)
         printf("The result: %d\n", result);
         if (!result)
         {
-            struct ast *astNode = allocAST(ASSIGN, replaceWithLoopInvariantVariable(node->left), node->left->right);
+            struct ast *astNode = allocAST(DECL, replaceWithLoopInvariantVariable(node->left), node->left->right);
             node->left->right = replaceWithLoopInvariantVariable(node->left);
             printf("Replace complete\n");
             printf("%s\n",((struct astLeafStr *)astNode->right)->string);
