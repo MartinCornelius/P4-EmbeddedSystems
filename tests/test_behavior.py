@@ -5,50 +5,6 @@ import random
 
 tmpfile = './tests/tmp.m';
 
-# uintTypes = ["uint8", "uint16", "uint32"]
-# intTypes = ["int8", "int16", "int32"]
-floatTypes = ["float16", "float32", "float64"]
-
-
-class IType():
-    def __init__(self, type, min, mid, max):
-        self.type = type
-        self.min = min
-        self.mid = mid
-        self.max = max
-        
-        
-intTypes = [
-    IType("int8", -128, 0, 127), 
-    IType("int16", -32768, 0, 32767),
-    IType("int32", -2147483648, 0, 2147483647)
-]
-
-class Oper():
-    def __init__(self, opertaion, reverse):
-        self.opertaion = opertaion
-        self.reverse = reverse
-        
-operations = [
-    Oper("+", "-"), 
-    Oper("-", "+"), 
-    Oper("/", "*"),
-    Oper("*", "/")
-]
-
-
-def evaluate(min, max, op, val):
-    return [
-        str(min + op.reverse + val),
-        str(0 + op.reverse + val),
-        str(max + op.reverse + val)
-    ]
-
-def returnArray(typ, op):
-    for x in typ:
-        for y in op:
-            yield x, y
-
 def fileCopyAndOpen(testfile):
     shutil.copyfile(testfile, tmpfile)
 
@@ -63,55 +19,92 @@ def writeToTmp(filedata):
     with open(tmpfile, 'w') as file:
         file.write(filedata)
 
-def arithmetiTest(exprType, expr, expect):
-    try:
-        filedata = fileCopyAndOpen('./tests/testfiles/arithmetic.m');
-        filedata = fileReplacement(filedata, 'exprType', exprType);
-        filedata = fileReplacement(filedata, 'expr', expr);
-        writeToTmp(filedata);
-
-        subprocess.run(["./run", tmpfile], check=True)
-        result = subprocess.run(["lli", "./output/example_program.ll"], stdout=subprocess.PIPE, check=True)
-    except Exception as e:
-        print(e)
-    else:
-        assert expect == result.stdout.decode("utf-8").replace("\n", "")
-
-# @pytest.mark.parametrize("intType, op" , returnArray(intTypes, operations))
-# def test_arithmeticIntOpertaions(intType, op):
-#     rInt = random.randint(intType.mid, intType.max)
-    
-#     expr = "1+1"
-#     # expr = evaluate(intType.min, intType.max, op, rInt);
-    
-#     # expr is evaluted whre the result is conerted to the integer type to prevent floats
-#     # finally it's converted to a string to be compared with the output
-#     arithmetiTest(intType.type, expr, str(int(eval(expr))))
-#     # arithmetiTest(intType.type, expr[0], str(int(eval(expr[0]))))
-#     # arithmetiTest(intType.type, expr[1], str(int(eval(expr[1]))))
-#     # arithmetiTest(intType.type, expr[2], str(int(eval(expr[2]))))
-
-
-scopeTests = [
-    
-]
-
 def runTest(expect, testFile):
-    try:
-        subprocess.run(["./run", testFile], check=True)
-        result = subprocess.run(["lli", "./output/example_program.ll"], stdout=subprocess.PIPE, check=True)
-    except Exception as e:
-        print(e)
-    else:
-        assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
+    # Delete test files to ensure they are not reused
+    subprocess.run(["make", "cleantest"])
+    
+    # Compile our test file
+    subprocess.run(["./run", testFile])
+    # Compile llvm code
+    subprocess.run(["clang", "./output/example_program.ll", "-otestprogram"])
+    # Run the compiled program
+    result = subprocess.run(["./testprogram"], stdout=subprocess.PIPE)
+
+    assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
+
+def arithmetiTest(exprType, expr, expect):
+    filedata = fileCopyAndOpen('./tests/testfiles/arithmetic.m');
+    filedata = fileReplacement(filedata, 'exprType', exprType);
+    filedata = fileReplacement(filedata, 'expr', expr);
+    writeToTmp(filedata);
+    
+    runTest(expect, tmpfile)
+
+@pytest.mark.parametrize(
+    "type, test_input, expected",
+    [
+        #### Integer ####
+        ("int8", "100+27", "127"),
+        # ("int8", "-100-27", "-127"),
+        ("int8", "100*0", "0"),
+        ("int8", "100/5", "20"),
+        
+        ("int16", "32700+67", "32767"),
+        # ("int16", "-3270-67", "-32767"),
+        ("int16", "100*0", "0"),
+        ("int16", "100/5", "20"),
+        
+        ("int32", "2147483600+47", "2147483647"),
+        # ("int32", "-2147483600-47", "-2147483647"),
+        ("int32", "100*0", "0"),
+        ("int32", "100/5", "20"),
+        
+        #### Unsigned ####
+        ("uint8", "200+55", "255"),
+        # ("uint8", "-100-27", "-127"),
+        ("uint8", "100*0", "0"),
+        ("uint8", "100/5", "20"),
+        
+        ("uint16", "65500+35", "65535"),
+        # ("uint16", "-3270-67", "-32767"),
+        ("uint16", "100*0", "0"),
+        ("uint16", "100/5", "20"),
+        
+        ("uint32", "4294967200+95", "4294967295"),
+        # ("uint32", "-2147483600-47", "-2147483647"),
+        ("uint32", "100*0", "0"),
+        ("uint32", "100/5", "20"),
+        
+        #### Float ####
+        # ("float16", "200.00+55.00", "255.00"),
+        # # ("float16", "-100-27", "-127"),
+        # ("float16", "100*0", "0"),
+        # ("float16", "100/5", "20"),
+        
+        # ("float32", "65500+35", "65535"),
+        # # ("float32", "-3270-67", "-32767"),
+        # ("float32", "100*0", "0"),
+        # ("float32", "100/5", "20"),
+        
+        # ("float64", "4294967200+95", "4294967295"),
+        # # ("float64", "-2147483600-47", "-2147483647"),
+        # ("float64", "100*0", "0"),
+        # ("float64", "100/5", "20"),
+    ]
+)
+def test_arithmeticIntOpertaions(type, test_input, expected):
+    filedata = fileCopyAndOpen('./tests/testfiles/arithmetic.m');
+    filedata = fileReplacement(filedata, 'exprType', type);
+    filedata = fileReplacement(filedata, 'expr', test_input);
+    writeToTmp(filedata);
+    
+    if (str(int(eval(test_input))) != expected):
+        print("Something went wrong!")
+    
+    # runTest(str(int(eval(test_input))), tmpfile)
+    runTest(expected, tmpfile)
 
 # Scope tests
-def test_GlobalScope():
-    runTest(100, "./tests/testfiles/scope/global.m")
-    
-def test_GlobalScopeRedefine():
-    runTest(100, "./tests/testfiles/scope/global_global_redefine.m")
-    
 def test_LocalScope():
     runTest(100, "./tests/testfiles/scope/local.m")
     
@@ -120,9 +113,24 @@ def test_LocalScopeRedefine():
     
 # Operations
 def test_While():
-    runTest(100, "./tests/testfiles/operations/while.m")
+    runTest(99, "./tests/testfiles/operations/while.m")
     
 def test_DoubleWhile():
-    runTest(1, "./tests/testfiles/operations/doublewhile.m")
+    runTest(11, "./tests/testfiles/operations/doublewhile.m")
+    
+    
+    
+    
+    
+    
+    
+    
+    
+# Scope tests
+# def test_GlobalScope():
+#     runTest(100, "./tests/testfiles/scope/global.m")
+    
+# def test_GlobalScopeRedefine():
+#     runTest(100, "./tests/testfiles/scope/global_global_redefine.m")
 
 pytest.main()

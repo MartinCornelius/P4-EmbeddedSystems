@@ -4,9 +4,9 @@ setup()
 
 mainloop()
 {
-    uint8 a = 90;
+    int8 a = 0;
 
-    while (a < 10)
+    while (a < 99)
     {
         a = a + 1;
     }

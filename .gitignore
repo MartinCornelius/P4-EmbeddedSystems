@@ -13,3 +13,4 @@ output/*
 tests/tmp.m
 .pytest_cache/*
 tests/__pycache__/*
+testprogram

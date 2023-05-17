@@ -53,3 +53,12 @@ run:
 	make
 	make compiletest
 	make runtest
+
+cleantest:
+ifeq ($(OS),Windows_NT)
+	del output\example_program.ll
+	del testprogram
+else
+	rm -f output/example_program.ll
+	rm -f testprogram
+endif
