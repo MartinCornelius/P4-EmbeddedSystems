@@ -32,46 +32,38 @@ def runTest(expect, testFile):
 
     assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
 
-def arithmetiTest(exprType, expr, expect):
-    filedata = fileCopyAndOpen('./tests/testfiles/arithmetic.m');
-    filedata = fileReplacement(filedata, 'exprType', exprType);
-    filedata = fileReplacement(filedata, 'expr', expr);
-    writeToTmp(filedata);
-    
-    runTest(expect, tmpfile)
-
 @pytest.mark.parametrize(
     "type, test_input, expected",
     [
         #### Integer ####
         ("int8", "100+27", "127"),
-        # ("int8", "-100-27", "-127"),
+        # (("int8", "2 - 3", "-100"),
         ("int8", "100*0", "0"),
         ("int8", "100/5", "20"),
         
         ("int16", "32700+67", "32767"),
-        # ("int16", "-3270-67", "-32767"),
+        # (("int16", "-3270 - 67", "-32767"),
         ("int16", "100*0", "0"),
         ("int16", "100/5", "20"),
         
         ("int32", "2147483600+47", "2147483647"),
-        # ("int32", "-2147483600-47", "-2147483647"),
+        # (("int32", "-2147483600 - 47", "-2147483647"),
         ("int32", "100*0", "0"),
         ("int32", "100/5", "20"),
         
         #### Unsigned ####
         ("uint8", "200+55", "255"),
-        # ("uint8", "-100-27", "-127"),
+        # (("uint8", "-100 - 27", "-127"),
         ("uint8", "100*0", "0"),
         ("uint8", "100/5", "20"),
         
         ("uint16", "65500+35", "65535"),
-        # ("uint16", "-3270-67", "-32767"),
+        # (("uint16", "-3270 - 67", "-32767"),
         ("uint16", "100*0", "0"),
         ("uint16", "100/5", "20"),
         
         ("uint32", "4294967200+95", "4294967295"),
-        # ("uint32", "-2147483600-47", "-2147483647"),
+        # ("uint32", "-2147483600 - 47", "-2147483647"),
         ("uint32", "100*0", "0"),
         ("uint32", "100/5", "20"),
         
@@ -93,13 +85,30 @@ def arithmetiTest(exprType, expr, expect):
     ]
 )
 def test_arithmeticIntOpertaions(type, test_input, expected):
-    filedata = fileCopyAndOpen('./tests/testfiles/arithmetic.m');
+    filedata = fileCopyAndOpen('./tests/testfiles/templates/arithmetic.m');
     filedata = fileReplacement(filedata, 'exprType', type);
     filedata = fileReplacement(filedata, 'expr', test_input);
     writeToTmp(filedata);
     
     if (str(int(eval(test_input))) != expected):
         print("Something went wrong!")
+    
+    # runTest(str(int(eval(test_input))), tmpfile)
+    runTest(expected, tmpfile)
+    
+@pytest.mark.parametrize(
+    "value, expr, expected",
+    [
+        ("59", "100 > 99", "59"),
+        ("43", "100 < 150", "43"),
+        ("5", "100 != 50", "5"),
+    ]
+)
+def test_ifStatement(value, expr, expected):
+    filedata = fileCopyAndOpen('./tests/testfiles/templates/ifstatement.m');
+    filedata = fileReplacement(filedata, 'value', value);
+    filedata = fileReplacement(filedata, 'expr', expr);
+    writeToTmp(filedata);
     
     # runTest(str(int(eval(test_input))), tmpfile)
     runTest(expected, tmpfile)
@@ -118,9 +127,12 @@ def test_While():
 def test_DoubleWhile():
     runTest(11, "./tests/testfiles/operations/doublewhile.m")
     
+# Function
+def test_Function():
+    runTest(570, "./tests/testfiles/operations/function.m")
     
-    
-    
+# def test_Functions():
+#     runTest(123, "./tests/testfiles/operations/functions.m")
     
     
     
