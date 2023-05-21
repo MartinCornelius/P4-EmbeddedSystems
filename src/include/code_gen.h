@@ -161,7 +161,7 @@ void generateCode(struct ast *node)
 			casted = 1;
 		}
 
-		fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([5 x i8], [5 x i8]* @pfmt, i32 0, i32 0), i32 %s%d", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"), globalVarCounter);
+		fprintf(file, "\n\tcall i32(i8*,...) @printf(i8* getelementptr([4 x i8], [4 x i8]* @pfmt, i32 0, i32 0), i32 %s%d", (casted == 0 ? "%__tmpGlobal_" : "%__castGlobal_"), globalVarCounter);
 		generateCode(node->left);
 		fprintf(file, ");\n");
 		globalVarCounter++;
@@ -733,7 +733,7 @@ void generateCode(struct ast *node)
 
 void generateFile(struct ast *node)
 {
-	fprintf(file, "@pfmt = constant [5 x i8] c\"%%ld\\0A\\00\"\n");
+	fprintf(file, "@pfmt = constant [4 x i8] c\"%%d\\0A\\00\"\n");
 	fprintf(file, "declare i32 @printf(i8*,...)\n\n");
 
 	generateCode(node);
