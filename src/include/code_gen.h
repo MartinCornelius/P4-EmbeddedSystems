@@ -18,6 +18,7 @@ int currentScope = -1;
 char *currentVarName;
 char *currentType;
 char tmpVarName[30];
+int itemType = 0;
 
 struct HashTables *symTable;
 
@@ -40,11 +41,11 @@ void generateCode(struct ast *node)
 		break;
 	case SETUP:
 		currentScope++;
-		fprintf(file, "define void @setup() {\n");
-		fprintf(file, "entry:\n");
+		// fprintf(file, "define void @setup() {\n");
+		// fprintf(file, "entry:\n");
 		generateCode(node->left);
-		fprintf(file, "\tret void\n");
-		fprintf(file, "}\n\n");
+		// fprintf(file, "\tret void\n");
+		// fprintf(file, "}\n\n");
 		break;
 	case MAIN:
 		currentScope++;
@@ -93,7 +94,7 @@ void generateCode(struct ast *node)
 		}
 		else if (node->left->type == ID)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 1);
 			fprintf(file, "%s %%", currentType);
 			generateCode(node->left);
 		}
@@ -107,7 +108,7 @@ void generateCode(struct ast *node)
 			fprintf(file, ", ");
 			if (node->right->type != PARAMS)
 			{
-				currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+				currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 2);
 				fprintf(file, "%s %%", currentType);
 			}
 			generateCode(node->right);
@@ -122,7 +123,24 @@ void generateCode(struct ast *node)
 		break;
 	case PRINT:
 		casted = 0;
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		// currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+
+		struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
+
+		// If variable without type declartion check global scope for variable
+		if (search.type == not_found_enum)
+		{
+			search = searchSymbol((symTable->hTable[0]), ((struct astLeafStr *)node->left)->string);
+		}
+
+		if (search.type == not_found_enum)
+		{
+			printf("Error: Variable %s not declared\n", ((struct astLeafStr *)node->left)->string);
+			exit(1);
+		}
+
+		currentType = typeConverter(search.type, 3);
+
 		fprintf(file, "\t%%__tmpGlobal_%d", globalVarCounter);
 		generateCode(node->left);
 		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
@@ -151,9 +169,9 @@ void generateCode(struct ast *node)
 	case WHILE:
 		// Get current type
 		if (node->left->left->type == ID)
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->left)->string).type, 4);
 		else if (node->left->right->type == ID)
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left->right)->string).type, 5);
 		else
 			currentType = "i32";
 
@@ -181,26 +199,57 @@ void generateCode(struct ast *node)
 		break;
 
 	case DECL:
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		itemType = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type;
+		currentType = typeConverter(itemType, 6);
+		struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->left)->string);
+		int isGlobal = 0;
+
+		// If variable without type declartion check global scope for variable
+		if (globalCheck.type != not_found_enum)
+		{
+			isGlobal = 1;
+		}
+
+		// Global Scope
+		if (currentScope == 0) {
+			char floatOrInt[10];
+
+			if ((typeConverter(itemType, 8) == "half") || (typeConverter(itemType, 9) == "float") || (typeConverter(itemType, 10) == "double")) {
+				sprintf(floatOrInt, "%d", ((struct astLeafFloat *)node->right)->value);
+			} else {
+				sprintf(floatOrInt, "%d", ((struct astLeafInt *)node->right)->value);
+			}
+
+			fprintf(file, "@%s = global %s %s\n", ((struct astLeafStr *)node->left)->string, typeConverter(itemType, 11), floatOrInt);
+
+			break;
+		}
 
 		// Check if constant
 		if (node->right->type == VAL)
 		{
-			fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
-			fprintf(file, "\tstore %s ", currentType);
-			generateCode(node->right);
-			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
+
+
+			// if (isGlobal) {
+
+			// } else {
+				fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+				fprintf(file, "\tstore %s ", currentType);
+				generateCode(node->right);
+				fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+				fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
+			// }
+
 			tmpVarCounter++;
 		}
 		else if (node->right->type == VALF)
 		{
-			fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
-			fprintf(file, "\tstore %s ", currentType);
-			generateCode(node->right);
-			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
-			tmpVarCounter++;
+			// fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+			// fprintf(file, "\tstore %s ", currentType);
+			// generateCode(node->right);
+			// fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+			// fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
+			// tmpVarCounter++;
 		}
 		else if (node->right->type == ID)
 		{
@@ -282,7 +331,7 @@ void generateCode(struct ast *node)
 			exit(1);
 		}
 
-		currentType = typeConverter(search.type);
+		currentType = typeConverter(search.type, 7);
 
 		// Check if constant
 		if (node->right->type == VAL)
@@ -1145,22 +1194,51 @@ void generateCode(struct ast *node)
 	case COPEQ:
 		if (node->left->type == ID)
 		{
-			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-			generateCode(node->left);
-			if (node->right->type == ID)
+
+			struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->left)->string);
+			int isGlobal = 0;
+
+			// If variable without type declartion check global scope for variable
+			if (globalCheck.type != not_found_enum)
 			{
+				isGlobal = 1;
+			}
+
+			if (isGlobal) {
+				// Load variable
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+				generateCode(node->left);
+				if (node->right->type == ID)
+				{
+					tmpVarCounter++;
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+					generateCode(node->right);
+					fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
+				}
+				else
+				{
+					fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter);
+					generateCode(node->right);
+				}
 				tmpVarCounter++;
+			} else {
+				// Load variable
 				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-				generateCode(node->right);
-				fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
+				generateCode(node->left);
+				if (node->right->type == ID)
+				{
+					tmpVarCounter++;
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+					generateCode(node->right);
+					fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
+				}
+				else
+				{
+					fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter);
+					generateCode(node->right);
+				}
+				tmpVarCounter++;
 			}
-			else
-			{
-				fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter);
-				generateCode(node->right);
-			}
-			tmpVarCounter++;
 		}
 		else if (node->right->type == ID)
 		{
@@ -1244,24 +1322,10 @@ void generateFile(struct ast *node)
 	fprintf(file, "@pfmt = constant [5 x i8] c\"%%ld\\0A\\00\"\n");
 	fprintf(file, "declare i32 @printf(i8*,...)\n\n");
 
-	// Global variables
-	for (int i = 0; i < symTable->hTable[0]->size; i++)
-	{
-		if (symTable->hTable[0]->items[i] != NULL)
-		{
-			int itemType = searchSymbol(symTable->hTable[0], symTable->hTable[0]->items[i]->name).type;
-			// Needs converter
-			printf("itemType: %i\n", itemType);
-			char *floatOrInt = ((typeConverter(itemType) == "half") || (typeConverter(itemType) == "float") || (typeConverter(itemType) == "double")) ? "0.0" : "0";
-			fprintf(file, "@%s = global %s %s\n", symTable->hTable[0]->items[i]->name, typeConverter(itemType), floatOrInt);
-		}
-	}
-	fprintf(file, "\n");
-
 	generateCode(node);
 	fprintf(file, "\ndefine i32 @main() {\n");
 	fprintf(file, "entry:\n");
-	fprintf(file, "\tcall void @setup()\n");
+	// fprintf(file, "\tcall void @setup()\n");
 	fprintf(file, "\tcall void @mainloop()\n");
 	fprintf(file, "\tret i32 0\n");
 	fprintf(file, "}\n\n");
@@ -1274,8 +1338,8 @@ void loadParams(struct ast *node)
 
 	else if (node->left->type == ID)
 	{
-		printf("type %s\n", currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type));
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		printf("type %s\n", currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 12));
+		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 13);
 		fprintf(file, "\t%%");
 		generateCode(node->left);
 		fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
@@ -1291,7 +1355,7 @@ void loadParams(struct ast *node)
 	{
 		if (node->right->type != PARAMS)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 14);
 			fprintf(file, "\t%%", currentScope);
 			generateCode(node->right);
 			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType);
@@ -1309,7 +1373,7 @@ void loadLocalParams(struct ast *node)
 
 	else if (node->left->type == ID)
 	{
-		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type);
+		currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type, 15);
 		fprintf(file, "\t; Load parameters into stack variables\n");
 		fprintf(file, "\t%%sc%d_", currentScope);
 		generateCode(node->left);
@@ -1331,7 +1395,7 @@ void loadLocalParams(struct ast *node)
 	{
 		if (node->right->type != PARAMS)
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
+			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 16);
 			fprintf(file, "\t; Load parameters into stack variables\n");
 			fprintf(file, "\t%%sc%d_", currentScope);
 			generateCode(node->right);
