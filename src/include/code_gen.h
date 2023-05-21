@@ -25,6 +25,7 @@ struct HashTables *symTable;
 void loadParams(struct ast *node);
 void loadLocalParams(struct ast *node);
 
+void arthemticOperation(struct ast *node, char *operation);
 void compareFunc( struct ast *node, char *operation);
 
 void generateCode(struct ast *node)
@@ -203,14 +204,6 @@ void generateCode(struct ast *node)
 	case DECL:
 		itemType = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string).type;
 		currentType = typeConverter(itemType, 6);
-		struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->left)->string);
-		int isGlobal = 0;
-
-		// If variable without type declartion check global scope for variable
-		if (globalCheck.type != not_found_enum)
-		{
-			isGlobal = 1;
-		}
 
 		// Global Scope
 		if (currentScope == 0) {
@@ -229,29 +222,22 @@ void generateCode(struct ast *node)
 
 		// Check if constant
 		if (node->right->type == VAL)
-		{
-
-
-			// if (isGlobal) {
-
-			// } else {
-				fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
-				fprintf(file, "\tstore %s ", currentType);
-				generateCode(node->right);
-				fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-				fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
-			// }
-
+	{
+			fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+			fprintf(file, "\tstore %s ", currentType);
+			generateCode(node->right);
+			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
 			tmpVarCounter++;
 		}
 		else if (node->right->type == VALF)
 		{
-			// fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
-			// fprintf(file, "\tstore %s ", currentType);
-			// generateCode(node->right);
-			// fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
-			// fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
-			// tmpVarCounter++;
+			fprintf(file, "\t%%__const%d = alloca %s\n", tmpVarCounter, currentType);
+			fprintf(file, "\tstore %s ", currentType);
+			generateCode(node->right);
+			fprintf(file, ", %s* %%__const%d\n", currentType, tmpVarCounter);
+			fprintf(file, "\t%%__tmp%d = load %s, %s* %%__const%d\n", tmpVarCounter, currentType, currentType, tmpVarCounter);
+			tmpVarCounter++;
 		}
 		else if (node->right->type == ID)
 		{
@@ -371,10 +357,10 @@ void generateCode(struct ast *node)
 	}
 	/* Arithmetic */
 	case PLUS:
-		// arthemticOperation(node, "add");
+		arthemticOperation(node, "add");
 		break;
 	case MINUS:
-		// arthemticOperation(node, "sub");
+		arthemticOperation(node, "sub");
 		break;
 	case TIMES:
 		if (node->right->type == ID)
@@ -925,24 +911,13 @@ void arthemticOperation(struct ast *node, char *operation) {
 			generateCode(node->right);
 			tmpVarCounter++;
 			// Make addition operation
-			if (operation == "add") {
-				if (currentType[0] == 'f')
-				{
-					fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
-				}
-				else
-				{
-					fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
-				}
-			} else {
-				if (currentType[0] == 'f')
-				{
-					fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
-				}
-				else
-				{
-					fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
-				}
+			if (currentType[0] == 'f')
+			{
+				fprintf(file, "\n\t%%__tmp%d = f%s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
+			}
+			else
+			{
+				fprintf(file, "\n\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
 			}
 		}
 		else if (node->left->type == VAL)
@@ -974,23 +949,13 @@ void arthemticOperation(struct ast *node, char *operation) {
 			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 			generateCode(node->right);
 			tmpVarCounter++;
-
-
-			if (operation == "add") {
-				if (currentType[0] == 'f')
-				{
-					fprintf(file, "\n\t%%__tmp%d = fadd %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
-				}
-				else
-				{
-					fprintf(file, "\n\t%%__tmp%d = add %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
-				}
-			} else {
-				if (currentType[0] == 'f')
-				{
-					fprintf(file, "\n\t%%__tmp%d = fsub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
-				}
-				fprintf(file, "\n\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
+			if (currentType[0] == 'f')
+			{
+				fprintf(file, "\n\t%%__tmp%d = f%s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
+			}
+			else
+			{
+				fprintf(file, "\n\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
 			}
 		}
 	}
@@ -1061,15 +1026,9 @@ void arthemticOperation(struct ast *node, char *operation) {
 		int tmp = tmpVarCounter - 1;
 		if (node->left->type == VAL)
 		{
-			if (operation == "add") {
-				fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, ", tmpVarCounter, operation, currentType, tmpVarCounter - 1);
-				generateCode(node->left);
-				fprintf(file, "\n");
-			} else {
-				fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
-				generateCode(node->left);
-				fprintf(file, ", %%__tmp%d\n", tmpVarCounter - 1);
-			}
+			fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, ", tmpVarCounter, operation, currentType, tmpVarCounter - 1);
+			generateCode(node->left);
+			fprintf(file, "\n");
 		}
 		else
 		{
@@ -1083,71 +1042,30 @@ void arthemticOperation(struct ast *node, char *operation) {
 		int tmp = tmpVarCounter - 1;
 		if (node->right->type == VAL)
 		{
-			if (operation == "add") {
-				fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, ", tmpVarCounter, operation, currentType, tmpVarCounter - 1);
-			} else {
-				fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
-				fprintf(file, "%%__tmp%d, ", tmpVarCounter - 1);
-			}
-
+			fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, ", tmpVarCounter, operation, currentType, tmpVarCounter - 1);
 			generateCode(node->right);
 			fprintf(file, "\n");
 		}
 		else
 		{
 			generateCode(node->right);
-
-			if (operation == "add") {
-				fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmp);
-			} else {
-				fprintf(file, "\t%%__tmp%d = sub %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, currentType, tmpVarCounter - 1, tmp);
-			}
+			fprintf(file, "\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation, currentType, tmpVarCounter - 1, tmp);
 		}
 	}
 	else
 	{
-		if (operation == "add") {
-			if (currentType[0] == 'f')
-			{
-				fprintf(file, "\t%%__tmp%d = f%s %s ", tmpVarCounter, operation, currentType);
-			}
-			else
-			{
-				fprintf(file, "\t%%__tmp%d = %s %s ", tmpVarCounter, operation, currentType);
-			}
-		}
-	}
-
-	if (node->right != NULL)
-	{
-		if (node->right->type != PARAMS)
+		if (currentType[0] == 'f')
 		{
-			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 14);
-			fprintf(file, "\t%%", currentScope);
+			fprintf(file, "\t%%__tmp%d = f%s %s ", tmpVarCounter, operation, currentType);
 		}
-
-		if (node->right != NULL)
+		else
 		{
-			if (node->right->type != PARAMS)
-			{
-				currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type, 14);
-				fprintf(file, "\t%%", currentScope);
-				generateCode(node->right);
-
-				if (operation == "add") {
-					generateCode(node->right);
-					fprintf(file, ", ");
-					generateCode(node->left);
-				} else {
-					fprintf(file, "\t%%__tmp%d = sub %s ", tmpVarCounter, currentType);
-					generateCode(node->left);
-					fprintf(file, ", ");
-					generateCode(node->right);
-				}
-
-				fprintf(file, "\n");
-			}
+			fprintf(file, "\t%%__tmp%d = %s %s ", tmpVarCounter, operation, currentType);
 		}
+		generateCode(node->right);
+		fprintf(file, ", ");
+		generateCode(node->left);
+		fprintf(file, "\n");
 	}
 	tmpVarCounter++;
 }
