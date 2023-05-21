@@ -1174,8 +1174,21 @@ void compareFunc(struct ast *node, char *operation) {
 
 	if (node->left->type == ID)
 	{
+		struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->left)->string);
+		int isGlobal = 0;
+
+		// If variable without type declartion check global scope for variable
+		if (globalCheck.type != not_found_enum)
+		{
+			isGlobal = 1;
+		}
+
 		// Load variable
-		fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+		if (isGlobal) {
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+		} else {
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+		}
 		generateCode(node->left);
 		if (node->right->type == ID)
 		{
@@ -1193,8 +1206,22 @@ void compareFunc(struct ast *node, char *operation) {
 	}
 	else if (node->right->type == ID)
 	{
+		struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->right)->string);
+		int isGlobal = 0;
+
+		// If variable without type declartion check global scope for variable
+		if (globalCheck.type != not_found_enum)
+		{
+			isGlobal = 1;
+		}
+
 		// Load variable
-		fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+		if (isGlobal) {
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
+		} else {
+			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+		}
+		
 		generateCode(node->right);
 		fprintf(file, "\n\t%%cmp%d = icmp %s %s ", cmpCounter, operation, currentType);
 		generateCode(node->left);
@@ -1211,71 +1238,4 @@ void compareFunc(struct ast *node, char *operation) {
 	fprintf(file, "\n");
 }
 
-
-// if (node->left->type == ID)
-		// {
-
-		// 	struct searchReturn globalCheck = searchSymbol(symTable->hTable[0], ((struct astLeafStr *)node->left)->string);
-		// 	int isGlobal = 0;
-
-		// 	// If variable without type declartion check global scope for variable
-		// 	if (globalCheck.type != not_found_enum)
-		// 	{
-		// 		isGlobal = 1;
-		// 	}
-
-		// 	if (isGlobal) {
-		// 		// Load variable
-		// 		fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType);
-		// 		generateCode(node->left);
-		// 		if (node->right->type == ID)
-		// 		{
-		// 			tmpVarCounter++;
-		// 			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-		// 			generateCode(node->right);
-		// 			fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
-		// 		}
-		// 		else
-		// 		{
-		// 			fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter);
-		// 			generateCode(node->right);
-		// 		}
-		// 		tmpVarCounter++;
-		// 	} else {
-		// 		// Load variable
-		// 		fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-		// 		generateCode(node->left);
-		// 		if (node->right->type == ID)
-		// 		{
-		// 			tmpVarCounter++;
-		// 			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-		// 			generateCode(node->right);
-		// 			fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, %%__tmp%d", cmpCounter, currentType, tmpVarCounter - 1, tmpVarCounter);
-		// 		}
-		// 		else
-		// 		{
-		// 			fprintf(file, "\n\t%%cmp%d = icmp eq %s %%__tmp%d, ", cmpCounter, currentType, tmpVarCounter);
-		// 			generateCode(node->right);
-		// 		}
-		// 		tmpVarCounter++;
-		// 	}
-		// }
-		// else if (node->right->type == ID)
-		// {
-		// 	// Load variable
-		// 	fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-		// 	generateCode(node->right);
-		// 	fprintf(file, "\n\t%%cmp%d = icmp eq %s ", cmpCounter, currentType);
-		// 	generateCode(node->left);
-		// 	fprintf(file, ", %%__tmp%d", tmpVarCounter);
-		// 	tmpVarCounter++;
-		// }
-		// else
-		// {
-		// 	fprintf(file, "\n\t%%cmp%d = icmp eq %s ", cmpCounter, currentType);
-		// 	generateCode(node->left);
-		// 	fprintf(file, ", ");
-		// 	generateCode(node->right);
-		// }
-		// fprintf(file, "\n");
 #endif
