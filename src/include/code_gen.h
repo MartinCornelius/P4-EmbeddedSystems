@@ -573,6 +573,19 @@ void compareFunc(struct ast *node, char *operation) {
 }
 
 
+int globalCheck(char *string) {
+	struct searchReturn searchCheck = searchSymbol(symTable->hTable[0], string);
+
+	// If variable without type declartion check global scope for variable
+	if (searchCheck.type != not_found_enum)
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+
 void arthemticOperation(struct ast *node, char *operation) {
 	// All other opertaions is just op or f + op but div is sdiv and fdiv
 	char *operation2 = operation;
@@ -585,14 +598,26 @@ void arthemticOperation(struct ast *node, char *operation) {
 	if (node->right->type == ID)
 	{
 		if (node->left->type == ID || node->left->type == VAL || node->left->type == VALF) {
-			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-
 			if (node->left->type == ID) {
+				int isGlobalLeft = globalCheck(((struct astLeafStr *)node->left)->string);
+				int isGlobalRight = globalCheck(((struct astLeafStr *)node->right)->string);
+
+				// Load variable
+				if (isGlobalLeft) {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+				} else {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				}
+
 				generateCode(node->left);
 				tmpVarCounter++;
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				if (isGlobalLeft) {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+				} else {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				}
+
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -605,6 +630,15 @@ void arthemticOperation(struct ast *node, char *operation) {
 					fprintf(file, "\n\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation2, currentType, tmpVarCounter - 1, tmpVarCounter - 2);
 				}
 			} else if (node->left->type == VAL || node->left->type == VALF) {
+				int isGlobalRight = globalCheck(((struct astLeafStr *)node->right)->string);
+
+				// Load variable
+				if (isGlobalRight) {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+				} else {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				}
+
 				generateCode(node->right);
 				tmpVarCounter++;
 
@@ -626,9 +660,15 @@ void arthemticOperation(struct ast *node, char *operation) {
 		}
 		else
 		{
+			int isGlobalRight = globalCheck(((struct astLeafStr *)node->right)->string);
+
 			generateCode(node->left);
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+			if (isGlobalRight) {
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+			} else {
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+			}
 			generateCode(node->right);
 			tmpVarCounter++;
 			if (currentType[0] == 'f')
@@ -644,16 +684,24 @@ void arthemticOperation(struct ast *node, char *operation) {
 	else if (node->left->type == ID)
 	{
 		if (node->right->type == ID || node->right->type == VAL || node->right->type == VALF) {
-			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
-
 			if (node->right->type == ID) {
+				int isGlobalLeft = globalCheck(((struct astLeafStr *)node->left)->string);
+				int isGlobalRight = globalCheck(((struct astLeafStr *)node->right)->string);
+
+				if (isGlobalRight) {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+				} else {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				}
+
 				generateCode(node->right);
 				tmpVarCounter++;
+
 				// Load variable
 				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->left);
 				tmpVarCounter++;
+				
 				// Make addition operation
 				if (currentType[0] == 'f')
 				{
@@ -664,6 +712,14 @@ void arthemticOperation(struct ast *node, char *operation) {
 					fprintf(file, "\n\t%%__tmp%d = %s %s %%__tmp%d, %%__tmp%d\n", tmpVarCounter, operation2, currentType, tmpVarCounter - 2, tmpVarCounter - 1);
 				}
 			} else if (node->right->type == VAL || node->right->type == VALF) {
+				int isGlobalLeft = globalCheck(((struct astLeafStr *)node->left)->string);
+
+				if (isGlobalLeft) {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+				} else {
+					fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+				}
+
 				generateCode(node->left);
 				tmpVarCounter++;
 
@@ -687,7 +743,13 @@ void arthemticOperation(struct ast *node, char *operation) {
 		{
 			generateCode(node->right);
 			// Load variable
-			fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+			int isGlobalLeft = globalCheck(((struct astLeafStr *)node->left)->string);
+			if (isGlobalLeft) {
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* @", tmpVarCounter, currentType, currentType, currentScope);
+			} else {
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
+			}
+			
 			generateCode(node->left);
 			tmpVarCounter++;
 			if (currentType[0] == 'f')
