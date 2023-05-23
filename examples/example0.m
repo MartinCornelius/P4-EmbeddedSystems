@@ -2,17 +2,26 @@ setup()
 {
 }
 
-mainloop()
-{
-  int8 a = 12;
-  int8 b = 55;
-  redbull(a -> b);
-  print(b);
-}
+mainloop(){
+  uint16 a = 2;
+  uint16 b = 2;
+  uint16 c = 2;
+  uint16 d = 2;
+  uint16 i = 0;
+  uint16 k = 0;
 
-func redbull(int8 a, int8 b)
-{
-    print(a);
-    a = 2 + a;
-    print(a);
+  while (k <= 10000){
+    while (i <= 10000)
+    {
+    a = b + c;
+    d = a * i;
+    i = i + 1; 
+   }
+   i = i - i;
+
+   k = k + 1;
+  }
+
+
+  print(c);
 }
