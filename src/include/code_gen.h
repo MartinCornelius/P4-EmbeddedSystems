@@ -804,9 +804,9 @@ void arthemticOperation(struct ast *node, char *operation) {
 		{
 			fprintf(file, "\t%%__tmp%d = %s %s ", tmpVarCounter, operation2, currentType);
 		}
-		generateCode(node->right);
-		fprintf(file, ", ");
 		generateCode(node->left);
+		fprintf(file,", ");
+		generateCode(node->right);
 		fprintf(file, "\n");
 	}
 	tmpVarCounter++;
