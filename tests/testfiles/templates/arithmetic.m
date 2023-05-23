@@ -4,6 +4,6 @@ setup()
 
 mainloop()
 {
-    uint8 a = 6 - 2;
+    exprType a = expr;
     print(a);
 }

@@ -517,7 +517,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VAL)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -528,7 +528,7 @@ void generateCode(struct ast *node)
 			else if (node->left->type == VALF)
 			{
 				// Load variable
-				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentScope);
+				fprintf(file, "\n\t%%__tmp%d = load %s, %s* %%sc%d_", tmpVarCounter, currentType, currentType, currentScope);
 				generateCode(node->right);
 				tmpVarCounter++;
 				// Make addition operation
@@ -1261,7 +1261,7 @@ void generateFile(struct ast *node)
 	generateCode(node);
 	fprintf(file, "\ndefine i32 @main() {\n");
 	fprintf(file, "entry:\n");
-	fprintf(file, "\tcall void @setup()\n");
+	fprintf(file, "\tcall void @s`etup()\n");
 	fprintf(file, "\tcall void @mainloop()\n");
 	fprintf(file, "\tret i32 0\n");
 	fprintf(file, "}\n\n");
@@ -1292,9 +1292,9 @@ void loadParams(struct ast *node)
 		if (node->right->type != PARAMS)
 		{
 			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
-			fprintf(file, "\t%%", currentScope);
+			fprintf(file, "\t%d", currentScope);
 			generateCode(node->right);
-			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType);
+			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n");
 		}
