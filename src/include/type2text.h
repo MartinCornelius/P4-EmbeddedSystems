@@ -175,9 +175,8 @@ char *getCustomType(int varType)
 }
 
 /* Converts from enum type to llvm ir type */
-char *typeConverter(int type, int debug)
+char *typeConverter(int type)
 {
-  printf("TYPECONVERT: %d type: %d\n", debug, type);
   char *result;
   switch (type)
   {
