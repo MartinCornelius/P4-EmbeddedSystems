@@ -1,5 +1,5 @@
-*.exe
-*.out
+run*
+testprogram*
 *.tab.c
 *.tab.h
 *.yy.c
@@ -12,3 +12,6 @@ output/*.s
 output/*
 .vscode/*
 munit
+tests/tmp.m
+.pytest_cache/*
+tests/__pycache__/*
