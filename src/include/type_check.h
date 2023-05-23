@@ -37,7 +37,7 @@ void checkNode(char* name, struct ast* node) {
 
         if (searchAssign.type == not_found_enum)
         {
-            printf("Error: Variable not declared\n", ((struct astLeafStr *)node)->string);
+            printf("Error: Variable not declared %s\n", ((struct astLeafStr *)node)->string);
             exit(1);
         }
 

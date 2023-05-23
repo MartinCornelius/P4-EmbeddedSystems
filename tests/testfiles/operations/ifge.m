@@ -4,6 +4,9 @@ setup()
 
 mainloop()
 {
-    uint8 a = 8 + 4;
+  int32 a = 959;
+
+  if (a == 100) {
     print(a);
+  }
 }

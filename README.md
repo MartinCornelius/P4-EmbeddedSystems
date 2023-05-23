@@ -6,18 +6,21 @@
 
 ### Arch
 ```
-sudo pacman -S flex bison make clang llvm
+sudo pacman -S flex bison make clang llvm python
+pip install pytest
 ```
 ### Ubuntu
 ```
-sudo apt-get install flex bison make clang llvm
+sudo apt-get install flex bison make clang llvm python
+pip install pytest
 ```
 ### Windows
 Download & Install Chocolatey (https://chocolatey.org/install)
 
 Open a command promot and run the following
 ```
-choco install mingw winflexbison3 llvm
+choco install mingw winflexbison3 llvm python
+pip install pytest
 ```
 Procecced to ``C:\ProgramData\chocolatey\bin`` \
 Rename ``mingw32-make.exe`` to ``make.exe`` \
@@ -30,7 +33,10 @@ gcc --version
 make --version
 flex --version
 bison --version
+clang --version
 ```
+
+If Clang doesn't work properly install MSVC v142 in Visual Studio (Via C/C++)
 
 ## Commands
 Commands section will be expanded on futher in the future
