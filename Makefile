@@ -8,11 +8,14 @@ program = program
 # TESTS
 testcompiler = tests/RunTests
 testsources = $(wildcard tests/*.c)
+ext =
 
 ifeq ($(OS), Windows_NT)
-	ext = .exe
-else
-	ext =
+	override ext = .exe
+endif
+
+ifeq ($(gccCompiler), x86_64-w64-mingw32-gcc)
+	override ext = .exe
 endif
 
 $(compiler)$(ext): src/lex.yy.c src/parser.tab.c

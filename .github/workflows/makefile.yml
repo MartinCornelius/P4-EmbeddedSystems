@@ -25,6 +25,6 @@ jobs:
 
     - name: MinGW Compile Compiler
       run: |
-        make clean
+        make gccCompiler=x86_64-w64-mingw32-gcc clean
         make gccCompiler=x86_64-w64-mingw32-gcc
-        make check
+        make gccCompiler=x86_64-w64-mingw32-gcc check
