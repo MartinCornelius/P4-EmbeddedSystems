@@ -2,12 +2,12 @@ lexer = src/lexer.l
 parser = src/parser.y
 gccCompiler = gcc
 
+compiler = run
+program = program
+
 ifeq ($(OS),Windows_NT)
-	compiler = "run.exe"
-	program = "program.exe"
-else
-	compiler = "run"
-	program = "program"
+	compiler = run.exe
+	program = program.exe
 endif
 
 $(compiler): src/lex.yy.c src/parser.tab.c
