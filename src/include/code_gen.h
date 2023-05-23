@@ -1292,9 +1292,9 @@ void loadParams(struct ast *node)
 		if (node->right->type != PARAMS)
 		{
 			currentType = typeConverter(searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->right)->string).type);
-			fprintf(file, "\t%s", currentScope);
+			fprintf(file, "\t%d", currentScope);
 			generateCode(node->right);
-			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType);
+			fprintf(file, " = load %s, %s* %%sc%d_", currentType, currentType, currentScope);
 			generateCode(node->right);
 			fprintf(file, "\n");
 		}
