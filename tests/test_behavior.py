@@ -29,7 +29,7 @@ def runTest(expect, testFile):
     subprocess.run(["make", "cleantest"])
     subprocess.run(["make"])
     
-    # Compile our test file
+    # # Compile our test file
     if (platform.system() == "Windows"):
         # Compile our test file
         subprocess.run(["run.exe", testFile])
@@ -37,16 +37,15 @@ def runTest(expect, testFile):
         subprocess.run(["clang",  "output/example_program.ll", "-otestprogram.exe"])
         # Run the compiled program
         result = subprocess.run(["testprogram.exe"], stdout=subprocess.PIPE)
-    # else:
-    #     # Compile our test file
-    #     subprocess.run(["./run", testFile])
-    #      # Compile llvm code
-    #     subprocess.run(["clang",  Path("output/example_program.ll"), "-otestprogram"])
-    #     # Run the compiled program
-    #     result = subprocess.run([ Path("testprogram")], stdout=subprocess.PIPE)
-    
+    else:
+        # Compile our test file
+        subprocess.run(["./run", "./" + testFile])
+            # Compile llvm code
+        subprocess.run(["clang",  "./output/example_program.ll", "-otestprogram"])
+        # Run the compiled program
+        result = subprocess.run(["./testprogram"], stdout=subprocess.PIPE)
 
-    # assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
+    assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
 
 @pytest.mark.parametrize(
     "type, test_input, expected",
