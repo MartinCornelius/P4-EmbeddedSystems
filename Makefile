@@ -62,3 +62,6 @@ run:
 	make
 	make compiletest
 	make runtest
+
+munit: ./src/lib/munit.h ./src/lib/munit.c ./src/testing.c
+	$(CC) -o $@ ./src/lib/munit.c ./src/testing.c
