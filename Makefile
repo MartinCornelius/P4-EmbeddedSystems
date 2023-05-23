@@ -1,8 +1,14 @@
-compiler = "run"
-program = "program"
 lexer = src/lexer.l
 parser = src/parser.y
 gccCompiler = gcc
+
+ifeq ($(OS),Windows_NT)
+	compiler = "run.exe"
+	program = "program.exe"
+else
+	compiler = "run"
+	program = "program"
+endif
 
 $(compiler): src/lex.yy.c src/parser.tab.c
 	$(gccCompiler) src/lex.yy.c src/parser.tab.c -o $(compiler)

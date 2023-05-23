@@ -1,4 +1,5 @@
 run*
+testprogram*
 *.tab.c
 *.tab.h
 *.yy.c
@@ -13,4 +14,3 @@ output/*
 tests/tmp.m
 .pytest_cache/*
 tests/__pycache__/*
-testprogram
