@@ -1,9 +1,13 @@
 setup()
 {
-    int8 testing = 8;
+    int16 testing = 8;
 }
 
 mainloop()
 {
-    print(testing);
+    int16 a = 137;
+
+    if (testing == 8) {
+        print(a);
+    }
 }
