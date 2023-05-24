@@ -105,7 +105,6 @@ def test_arithmeticIntOpertaions(type, test_input, expected):
     if (str(int(eval(test_input))) != expected):
         print("Something went wrong!")
     
-    # runTest(str(int(eval(test_input))), tmpfile)
     runTest(expected, tmpfile)
     
 @pytest.mark.parametrize(
@@ -122,7 +121,6 @@ def test_ifStatement(value, expr, expected):
     filedata = fileReplacement(filedata, 'expr', expr);
     writeToTmp(filedata);
     
-    # runTest(str(int(eval(test_input))), tmpfile)
     runTest(expected, tmpfile)
 
 # Scope tests
