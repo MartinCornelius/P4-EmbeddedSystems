@@ -27,7 +27,6 @@ def writeToTmp(filedata):
 def runTest(expect, testFile):
     # Delete test files to ensure they are not reused
     subprocess.run(["make", "cleantest"])
-    subprocess.run(["make"])
     
     # # Compile our test file
     if (platform.system() == "Windows"):
@@ -45,7 +44,7 @@ def runTest(expect, testFile):
         # Run the compiled program
         result = subprocess.run(["./testprogram"], stdout=subprocess.PIPE)
 
-    assert str(expect) == result.stdout.decode("utf-8").replace("\n", "")
+    assert str(expect) == result.stdout.decode("utf-8").replace("\n", "").replace("\r", "")
 
 @pytest.mark.parametrize(
     "type, test_input, expected",
@@ -127,8 +126,9 @@ def test_ifStatement(value, expr, expected):
 def test_LocalScope():
     runTest(100, "tests/testfiles/scope/local.m")
     
-# def test_LocalScopeRedefine(): # This one does not work on Windows for some odd reason
-#     runTest(100, "tests/testfiles/scope/localredefine.m")
+def test_LocalScopeRedefine(): # This one does not work on Windows for some odd reason
+    if (platform.system() != "Windows"):
+        runTest(100, "tests/testfiles/scope/localredefine.m")
     
 # Operations
 def test_While():
@@ -142,13 +142,14 @@ def test_Function():
     runTest(570, "tests/testfiles/operations/function.m")
     
 def test_Functions():
-    runTest(5705, "./tests/testfiles/operations/functions.m")
+    runTest(5705, "tests/testfiles/operations/functions.m")
     
 # Scope tests
 def test_GlobalScope():
-    runTest(137, "./tests/testfiles/scope/global.m")
+    runTest(137, "tests/testfiles/scope/global.m")
     
-# def test_GlobalScopeRedefine():
-#     runTest(598, "./tests/testfiles/scope/globalredefine.m")
+def test_GlobalScopeRedefine():
+    if (platform.system() != "Windows"):
+        runTest(589, "tests/testfiles/scope/globalredefine.m")
 
 pytest.main()
