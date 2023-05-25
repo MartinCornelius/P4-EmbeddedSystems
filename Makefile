@@ -44,6 +44,7 @@ ifeq ($(OS),Windows_NT)
 	del src\parser.tab.h
 	del output\example_program.ll
 	del $(program)$(ext)
+	del munit
 else
 	rm -f $(compiler)$(ext)
 	rm -f src/lex.yy.c
@@ -51,6 +52,7 @@ else
 	rm -f src/parser.tab.h
 	rm -f output/example_program.ll
 	rm -f $(program)$(ext)
+	rm -f munit
 endif
 
 compiletest:
@@ -59,6 +61,9 @@ compiletest:
 runtest:
 	clang output/example_program.ll -o $(program)$(ext)
 
+munit: ./src/lib/munit.h ./src/lib/munit.c ./src/testing.c
+	$(CC) -o $@ ./src/lib/munit.c ./src/testing.c
+  
 cleantest:
 ifeq ($(OS), Windows_NT)
 	del output\example_program.ll

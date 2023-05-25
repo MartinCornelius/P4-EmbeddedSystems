@@ -28,3 +28,8 @@ jobs:
         make gccCompiler=x86_64-w64-mingw32-gcc clean
         make gccCompiler=x86_64-w64-mingw32-gcc
         make gccCompiler=x86_64-w64-mingw32-gcc check
+
+    - name: Unit Test
+      run: |
+        make munit
+        ./munit

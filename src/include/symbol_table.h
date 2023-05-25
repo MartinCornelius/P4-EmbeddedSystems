@@ -7,8 +7,7 @@
 
 #include "symbol_types.h"
 #include "type2text.h"
-
-#define DEBUG false
+#define DEBUG 0
 
 
 // TODO determine size at some point (Prime is ideal)

@@ -11,6 +11,7 @@ output/*.S
 output/*.s
 output/*
 .vscode/*
+munit
 tests/tmp.m
 .pytest_cache/*
 tests/__pycache__/*
