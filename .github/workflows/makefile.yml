@@ -47,4 +47,4 @@ jobs:
 
     - name: Pytest
       run: |
-        pytest tests/test_behavior.py
+        python tests/test_behavior.py
