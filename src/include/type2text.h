@@ -1,6 +1,7 @@
 #ifndef TYPE2TEXT_H
 #define TYPE2TEXT_H
 
+#include <stdio.h>
 #include "symbol_types.h"
 #include "../parser.tab.h"
 
@@ -177,7 +178,6 @@ char *getCustomType(int varType)
 /* Converts from enum type to llvm ir type */
 char *typeConverter(int type, int debug)
 {
-  printf("TYPECONVERT: %d type: %d\n", debug, type);
   char *result;
   switch (type)
   {

@@ -44,6 +44,7 @@ ifeq ($(OS),Windows_NT)
 	del src\parser.tab.h
 	del output\example_program.ll
 	del $(program)$(ext)
+	del munit
 else
 	rm -f $(compiler)$(ext)
 	rm -f src/lex.yy.c
@@ -51,6 +52,7 @@ else
 	rm -f src/parser.tab.h
 	rm -f output/example_program.ll
 	rm -f $(program)$(ext)
+	rm -f munit
 endif
 
 compiletest:
