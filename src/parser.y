@@ -206,7 +206,7 @@ void main(int argc, char **argv)
     /* if (argc > 2)
         sprintf(outputFile, "output/%s", argv[2]); */
 
-    if (argc > 2)
+    if (argc > 2) {
         if (strcmp(argv[2], "const") == 0) {
             optimize = 3;
         }
@@ -216,6 +216,7 @@ void main(int argc, char **argv)
         if (strcmp(argv[2], "opt") == 0) {
             optimize = 1;
         }
+    }
 
     yyparse();
     fclose(file);

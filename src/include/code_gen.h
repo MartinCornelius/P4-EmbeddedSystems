@@ -25,6 +25,8 @@ struct HashTables *symTable;
 void loadParams(struct ast *node);
 void loadLocalParams(struct ast *node);
 
+int globalCheck(char *string);
+
 void arthemticOperation(struct ast *node, char *operation);
 void compareFunc( struct ast *node, char *operation);
 
@@ -305,6 +307,7 @@ void generateCode(struct ast *node)
 
 	case ASSIGN:
 	{
+		int isGlobalLeft = globalCheck(((struct astLeafStr *)node->left)->string);
 		struct searchReturn search = searchSymbol(symTable->hTable[currentScope], ((struct astLeafStr *)node->left)->string);
 
 		// If variable without type declartion check global scope for variable
@@ -350,7 +353,13 @@ void generateCode(struct ast *node)
 		{
 			generateCode(node->right);
 		}
-		fprintf(file, "\n\tstore %s %%__tmp%d, %s* %%sc%d_", currentType, tmpVarCounter - 1, currentType, currentScope);
+		// Load variable
+		if (isGlobalLeft) {
+			fprintf(file, "\n\tstore %s %%__tmp%d, %s* @", currentType, tmpVarCounter - 1, currentType, currentScope);
+		} else {
+			fprintf(file, "\n\tstore %s %%__tmp%d, %s* %%sc%d_", currentType, tmpVarCounter - 1, currentType, currentScope);
+		}
+
 		generateCode(node->left);
 		tmpVarCounter++;
 		break;
@@ -804,9 +813,9 @@ void arthemticOperation(struct ast *node, char *operation) {
 		{
 			fprintf(file, "\t%%__tmp%d = %s %s ", tmpVarCounter, operation2, currentType);
 		}
-		generateCode(node->right);
-		fprintf(file, ", ");
 		generateCode(node->left);
+		fprintf(file,", ");
+		generateCode(node->right);
 		fprintf(file, "\n");
 	}
 	tmpVarCounter++;

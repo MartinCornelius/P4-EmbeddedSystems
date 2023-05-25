@@ -7,7 +7,6 @@
 
 #include "symbol_types.h"
 #include "type2text.h"
-;
 #define DEBUG 0
 
 
