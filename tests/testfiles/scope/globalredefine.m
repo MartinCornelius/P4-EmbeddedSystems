@@ -1,10 +1,15 @@
 setup()
 {
-    int8 test = 1;
+    int16 test = 50;
 }
 
 mainloop()
 {
-    test = 100
-    print(test);
+    int16 a = 589;
+    print(a);
+    test = 100;
+
+    if (test == 100) {
+        print(a);
+    }
 }

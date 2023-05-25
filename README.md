@@ -58,13 +58,15 @@ Path's are Linux specific
 | ./program.out                                  | Runs the compiled program                    |
 
 ## Tools used
-* Flex
-* Bison
-* Make
-* GCC
+* [Flex](https://github.com/westes/flex)
+* [Bison](https://github.com/akimd/bison)
+* [Make](https://github.com/mirror/make)
+* [GCC](https://gcc.gnu.org/)
 * Github Actions
-* Valgrind & Massif visualizer
-* LLVM
+* [Valgrind](https://gcc.gnu.org/) & [Massif visualizer](https://github.com/KDE/massif-visualizer)
+* [LLVM](https://llvm.org/)
+* [PyTest](https://github.com/pytest-dev/pytest)
+* [µunit](https://github.com/nemequ/munit)
 
 ## Memory usage
 ```bash
