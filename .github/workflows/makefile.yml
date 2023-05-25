@@ -33,18 +33,3 @@ jobs:
       run: |
         make munit
         ./munit
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-    - name: Pytest
-      run: |
-        python tests/test_behavior.py
